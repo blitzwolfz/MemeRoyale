@@ -7,11 +7,12 @@ require('dotenv').config()
 //@ts-ignore
 const globPromise = promisify(glob)
 
-export const client = new Discord.Client
+export const client = new Discord.Client({partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"]});
 
 export let prefix: string = process.env.prefix!
 import * as c from "./commands/index"
 import { connectToDB, getMatch, updateMatch } from "./db"
+import { backgroundMatchLoop } from "./commands/match/background"
 var commands: Command[] = c.default
 
 //Express for hosting
@@ -62,45 +63,83 @@ client.once("ready", async () => {
     // await insertDoc('config', obj3)
     // await insertDoc('config', obj4)
 
+    setInterval(async function () {
+        await backgroundMatchLoop(client)
+      }, 15000)
+
     console.log("\n")
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`)
     console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}`)
 
 })
 
-client.on("messageReactionAdd", async (messageReaction, user) =>{
-    if(messageReaction.emoji.name === '1️⃣'){
-        if(user.bot) return;
+client.on("messageReactionAdd", async (messageReaction, user) => {
+    if (user.id === "722303830368190485") return;
+    if (user.bot) return;
+
+    if (messageReaction.partial) await messageReaction.fetch();
+    if (messageReaction.message.partial) await messageReaction.message.fetch();
+    
+    if (messageReaction.emoji.name === '1️⃣') {
+        if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id)
-        if(m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
+        if (!m) return;
+        messageReaction.users.remove(user.id)
+        if (m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
         m.p1.voters.push(user.id)
         m.p1.votes += 1
 
-        if(m.p2.voters.includes(user.id)){
+        if (m.p2.voters.includes(user.id)) {
             m.p2.voters.splice(m.p2.voters.indexOf(user.id), 1)
             m.p2.votes -= 1
         }
 
-        messageReaction.users.remove(user.id)
         await updateMatch(m)
         await user.send(`Vote counted for Player 1's memes in <#${m._id}>. You gained 2 points for voting`)
     }
 
-    if(messageReaction.emoji.name === '2️⃣'){
-        if(user.bot) return;
+    if (messageReaction.emoji.name === '2️⃣') {
+        if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id)
-        if(m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
+        if (!m) return;
+        messageReaction.users.remove(user.id)
+        if (m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
         m.p2.voters.push(user.id)
         m.p2.votes += 1
 
-        if(m.p1.voters.includes(user.id)){
+        if (m.p1.voters.includes(user.id)) {
             m.p1.voters.splice(m.p1.voters.indexOf(user.id), 1)
             m.p1.votes -= 1
         }
-
-        messageReaction.users.remove(user.id)
+        
         await updateMatch(m)
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`)
+    }
+
+    if (messageReaction.emoji.name === '🅰️') {
+        await messageReaction.users.remove(user.id)
+        if (!!user.client.guilds.cache
+            .get(messageReaction.message.guild!.id)!
+            .members.cache.get(user.id)!.roles.cache
+            .find(x => x.name.toLowerCase() === "referee") === false) {
+                return;
+            };
+        let m = await getMatch(messageReaction.message.channel.id)
+        if (!m) return;
+        c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
+    }
+
+    if (messageReaction.emoji.name === '🅱️') {
+        await messageReaction.users.remove(user.id)
+        if (!!user.client.guilds.cache
+            .get(messageReaction.message.guild!.id)!
+            .members.cache.get(user.id)!.roles.cache
+            .find(x => x.name.toLowerCase() === "referee") === false) {
+                return;
+            };
+        let m = await getMatch(messageReaction.message.channel.id)
+        if (!m) return;
+        c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
     }
 })
 

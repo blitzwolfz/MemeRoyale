@@ -1,6 +1,7 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js"
 import { getAllMatches, getConfig, updateMatch } from "../../db"
 import { Match } from "../../types"
+import { grandwinner, winner } from "./utils"
 
 export async function backgroundMatchLoop(client: Client) {
     let matches = await getAllMatches()
@@ -112,6 +113,19 @@ async function matchResults(client: Client, m: Match) {
                     `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
                 .setColor(await (await getConfig()).colour)
         )
+        
+        if(await (await getConfig()).isfinale === false){
+            channel.send(
+                await winner(client, m.p1.userid)
+            )
+        }
+
+        else{
+            channel.send(
+                await grandwinner(client, m.p1.userid)
+            )
+        }
+
     }
 
     else if (m.p1.votes < m.p2.votes) {
@@ -131,6 +145,18 @@ async function matchResults(client: Client, m: Match) {
                     `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
                 .setColor(await (await getConfig()).colour)
         )
+
+        if(await (await getConfig()).isfinale === false){
+            channel.send(
+                await winner(client, m.p2.userid)
+            )
+        }
+
+        else{
+            channel.send(
+                await grandwinner(client, m.p2.userid)
+            )
+        }
     }
 
     else if (m.p1.votes === m.p2.votes) {
@@ -142,8 +168,7 @@ async function matchResults(client: Client, m: Match) {
                 .setColor(await (await getConfig()).colour)
         );
 
-        channel
-            .send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
+        channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
 
     }
 }

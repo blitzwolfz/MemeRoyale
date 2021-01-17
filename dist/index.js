@@ -25,10 +25,11 @@ const util_1 = require("util");
 const Discord = __importStar(require("discord.js"));
 require('dotenv').config();
 const globPromise = util_1.promisify(glob);
-exports.client = new Discord.Client;
+exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
 exports.prefix = process.env.prefix;
 const c = __importStar(require("./commands/index"));
 const db_1 = require("./db");
+const background_1 = require("./commands/match/background");
 var commands = c.default;
 const express = require('express');
 const app = express();
@@ -46,15 +47,30 @@ const listener = app.listen(process.env.PORT, () => {
 exports.client.once("ready", async () => {
     var _a;
     await db_1.connectToDB();
+    setInterval(async function () {
+        await background_1.backgroundMatchLoop(exports.client);
+    }, 15000);
     console.log("\n");
     console.log(`Logged in as ${(_a = exports.client.user) === null || _a === void 0 ? void 0 : _a.tag}\nPrefix is ${exports.prefix}`);
     console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}`);
 });
 exports.client.on("messageReactionAdd", async (messageReaction, user) => {
+    var _a, _b;
+    if (user.id === "722303830368190485")
+        return;
+    if (user.bot)
+        return;
+    if (messageReaction.partial)
+        await messageReaction.fetch();
+    if (messageReaction.message.partial)
+        await messageReaction.message.fetch();
     if (messageReaction.emoji.name === '1️⃣') {
         if (user.bot)
             return;
         let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!m)
+            return;
+        messageReaction.users.remove(user.id);
         if (m.p1.userid === user.id || m.p2.userid === user.id)
             return user.send("Can't vote in your own match");
         m.p1.voters.push(user.id);
@@ -63,7 +79,6 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
             m.p2.voters.splice(m.p2.voters.indexOf(user.id), 1);
             m.p2.votes -= 1;
         }
-        messageReaction.users.remove(user.id);
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 1's memes in <#${m._id}>. You gained 2 points for voting`);
     }
@@ -71,6 +86,9 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         if (user.bot)
             return;
         let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!m)
+            return;
+        messageReaction.users.remove(user.id);
         if (m.p1.userid === user.id || m.p2.userid === user.id)
             return user.send("Can't vote in your own match");
         m.p2.voters.push(user.id);
@@ -79,9 +97,36 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
             m.p1.voters.splice(m.p1.voters.indexOf(user.id), 1);
             m.p1.votes -= 1;
         }
-        messageReaction.users.remove(user.id);
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`);
+    }
+    if (messageReaction.emoji.name === '🅰️') {
+        await messageReaction.users.remove(user.id);
+        if (!!user.client.guilds.cache
+            .get(messageReaction.message.guild.id)
+            .members.cache.get(user.id).roles.cache
+            .find(x => x.name.toLowerCase() === "referee") === false) {
+            return;
+        }
+        ;
+        let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!m)
+            return;
+        (_a = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _a === void 0 ? void 0 : _a.execute(messageReaction.message, exports.client, [m.p1.userid]);
+    }
+    if (messageReaction.emoji.name === '🅱️') {
+        await messageReaction.users.remove(user.id);
+        if (!!user.client.guilds.cache
+            .get(messageReaction.message.guild.id)
+            .members.cache.get(user.id).roles.cache
+            .find(x => x.name.toLowerCase() === "referee") === false) {
+            return;
+        }
+        ;
+        let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!m)
+            return;
+        (_b = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _b === void 0 ? void 0 : _b.execute(messageReaction.message, exports.client, [m.p2.userid]);
     }
 });
 exports.client.on("message", async (message) => {

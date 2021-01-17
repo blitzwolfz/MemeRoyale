@@ -293,15 +293,25 @@ export const startsplit: Command = {
     owner: true,
     admins: false,
     mods: true,
-    async execute(message: Message, client: Client, args: string[]) {
+    async execute(message: Message, client: Client, args: string[], ...rest:Array<string>) {
         try {
-            if (message.mentions.users.array().length === 0 && args.length === 0) return message.reply("Please mention the user.")
-
+            console.log(args)
+            if (message.mentions.users.array().length === 0 && args.length === 0 ) return message.reply("Please mention the user.")
+            
             let m = await getMatch(message.channel.id)
+            let id = "";
+
+            if(message.mentions.users.first() === undefined) {
+                id = args[0]
+            }
+            else {
+                id = message.mentions.users.first()?.id!
+            }
+            console.log(id)
 
             let arr = [m.p1, m.p2]
 
-            let e = arr.find(x => x.userid === (message.mentions.users.first()!.id))!
+            let e = arr.find(x => x.userid === (id))!
 
             e.donesplit = true
             e.time = Math.floor(Date.now() / 1000);

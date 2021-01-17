@@ -240,13 +240,23 @@ exports.startsplit = {
     owner: true,
     admins: false,
     mods: true,
-    async execute(message, client, args) {
+    async execute(message, client, args, ...rest) {
+        var _a;
         try {
+            console.log(args);
             if (message.mentions.users.array().length === 0 && args.length === 0)
                 return message.reply("Please mention the user.");
             let m = await db_1.getMatch(message.channel.id);
+            let id = "";
+            if (message.mentions.users.first() === undefined) {
+                id = args[0];
+            }
+            else {
+                id = (_a = message.mentions.users.first()) === null || _a === void 0 ? void 0 : _a.id;
+            }
+            console.log(id);
             let arr = [m.p1, m.p2];
-            let e = arr.find(x => x.userid === (message.mentions.users.first().id));
+            let e = arr.find(x => x.userid === (id));
             e.donesplit = true;
             e.time = Math.floor(Date.now() / 1000);
             (await client.users.cache.get(e.userid)).send(`This is your ${m.temp.istheme ? "theme: " : "template: "}` +

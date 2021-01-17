@@ -27,6 +27,9 @@ export const reload: Command = {
         match.p2.votes = 0
 
         await updateMatch(match)
+        return message.reply("Reloading").then(m =>{
+            m.delete({timeout:1500})
+        })
     }
 }
 

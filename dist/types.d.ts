@@ -12,6 +12,7 @@ export interface config {
     _id: 1;
     disabledcommands: Array<string>;
     colour: string;
+    isfinale: boolean;
 }
 export interface Match {
     _id: string;

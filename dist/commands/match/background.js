@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.backgroundMatchLoop = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
+const utils_1 = require("./utils");
 async function backgroundMatchLoop(client) {
     let matches = await db_1.getAllMatches();
     for (let m of matches) {
@@ -82,6 +83,12 @@ async function matchResults(client, m) {
             .setDescription(`${(_f = client.users.cache.get(m.p1.userid)) === null || _f === void 0 ? void 0 : _f.username} beat ${(_g = client.users.cache.get(m.p1.userid)) === null || _g === void 0 ? void 0 : _g.username}\n` +
             `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
             .setColor(await (await db_1.getConfig()).colour));
+        if (await (await db_1.getConfig()).isfinale === false) {
+            channel.send(await utils_1.winner(client, m.p1.userid));
+        }
+        else {
+            channel.send(await utils_1.grandwinner(client, m.p1.userid));
+        }
     }
     else if (m.p1.votes < m.p2.votes) {
         channel.send(new discord_js_1.MessageEmbed()
@@ -94,6 +101,12 @@ async function matchResults(client, m) {
             .setDescription(`${(_o = client.users.cache.get(m.p2.userid)) === null || _o === void 0 ? void 0 : _o.username} beat ${(_p = client.users.cache.get(m.p1.userid)) === null || _p === void 0 ? void 0 : _p.username}\n` +
             `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
             .setColor(await (await db_1.getConfig()).colour));
+        if (await (await db_1.getConfig()).isfinale === false) {
+            channel.send(await utils_1.winner(client, m.p2.userid));
+        }
+        else {
+            channel.send(await utils_1.grandwinner(client, m.p2.userid));
+        }
     }
     else if (m.p1.votes === m.p2.votes) {
         channel.send(new discord_js_1.MessageEmbed()
@@ -101,7 +114,6 @@ async function matchResults(client, m) {
             .setDescription(`${(_q = client.users.cache.get(m.p2.userid)) === null || _q === void 0 ? void 0 : _q.username} and ${(_r = client.users.cache.get(m.p1.userid)) === null || _r === void 0 ? void 0 : _r.username}\n` +
             `both got a score of ${m.p2.votes}`)
             .setColor(await (await db_1.getConfig()).colour));
-        channel
-            .send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
+        channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
     }
 }

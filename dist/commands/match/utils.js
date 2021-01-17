@@ -28,6 +28,9 @@ exports.reload = {
         match.p1.votes = 0;
         match.p2.votes = 0;
         await db_1.updateMatch(match);
+        return message.reply("Reloading").then(m => {
+            m.delete({ timeout: 1500 });
+        });
     }
 };
 exports.forcevote = {
