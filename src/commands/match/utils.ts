@@ -8,7 +8,7 @@ export const reload: Command = {
     name: "reload-match",
     description: "This reload the voting portion of a match.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -37,7 +37,7 @@ export const forcevote: Command = {
     name: "forcevote-match",
     description: "This will force the voting portion of a match to come.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -57,7 +57,7 @@ export const matchlist: Command = {
     name: "matchlist",
     description: "View all the players fighting in brackets",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {

@@ -6,7 +6,7 @@ export const startmatch: Command = {
     name: "start",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -147,7 +147,7 @@ export const splitmatch: Command = {
     name: "split",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -290,12 +290,11 @@ export const startsplit: Command = {
     name: "start-split",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
-    async execute(message: Message, client: Client, args: string[], ...rest:Array<string>) {
+    async execute(message: Message, client: Client, args: string[]) {
         try {
-            console.log(args)
             if (message.mentions.users.array().length === 0 && args.length === 0 ) return message.reply("Please mention the user.")
             
             let m = await getMatch(message.channel.id)
@@ -307,7 +306,6 @@ export const startsplit: Command = {
             else {
                 id = message.mentions.users.first()?.id!
             }
-            console.log(id)
 
             let arr = [m.p1, m.p2]
 
@@ -355,7 +353,7 @@ export const cancelmatch: Command = {
         "in the channel, or in a mod\n" +
         "channel by mentioning the channel.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -389,7 +387,7 @@ export const endmatch: Command = {
     name: "match-end",
     description: "This will end a match.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
@@ -397,6 +395,8 @@ export const endmatch: Command = {
         m.votetime = Math.floor(Date.now()/1000) - 7200
         await updateMatch(m)
 
-        return message.reply("Match has ended")
+        return message.reply("Match has ended").then(async m =>{
+            m.delete({timeout:1500})
+        })
     }
 }

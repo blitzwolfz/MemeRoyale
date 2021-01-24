@@ -7,7 +7,7 @@ exports.startmatch = {
     name: "start",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
@@ -122,7 +122,7 @@ exports.splitmatch = {
     name: "split",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
@@ -237,13 +237,12 @@ exports.startsplit = {
     name: "start-split",
     description: "",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
-    async execute(message, client, args, ...rest) {
+    async execute(message, client, args) {
         var _a;
         try {
-            console.log(args);
             if (message.mentions.users.array().length === 0 && args.length === 0)
                 return message.reply("Please mention the user.");
             let m = await db_1.getMatch(message.channel.id);
@@ -254,7 +253,6 @@ exports.startsplit = {
             else {
                 id = (_a = message.mentions.users.first()) === null || _a === void 0 ? void 0 : _a.id;
             }
-            console.log(id);
             let arr = [m.p1, m.p2];
             let e = arr.find(x => x.userid === (id));
             e.donesplit = true;
@@ -288,7 +286,7 @@ exports.cancelmatch = {
         "in the channel, or in a mod\n" +
         "channel by mentioning the channel.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
@@ -315,13 +313,15 @@ exports.endmatch = {
     name: "match-end",
     description: "This will end a match.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
         let m = await db_1.getMatch(message.channel.id);
         m.votetime = Math.floor(Date.now() / 1000) - 7200;
         await db_1.updateMatch(m);
-        return message.reply("Match has ended");
+        return message.reply("Match has ended").then(async (m) => {
+            m.delete({ timeout: 1500 });
+        });
     }
 };

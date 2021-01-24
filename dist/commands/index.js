@@ -14,5 +14,8 @@ exports.default = [
     match_1.cancelmatch,
     submit_1.submit,
     quals_1.splitqual,
-    help_1.help
+    help_1.help,
+    quals_1.startsplitqual,
+    quals_1.cancelqual,
+    quals_1.endqual
 ];

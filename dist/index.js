@@ -55,7 +55,7 @@ exports.client.once("ready", async () => {
     console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}`);
 });
 exports.client.on("messageReactionAdd", async (messageReaction, user) => {
-    var _a, _b;
+    var _a, _b, _c;
     if (user.id === "722303830368190485")
         return;
     if (user.bot)
@@ -100,33 +100,38 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`);
     }
-    if (messageReaction.emoji.name === '🅰️') {
+    if (['🅰️', '🅱️'].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);
-        if (!!user.client.guilds.cache
-            .get(messageReaction.message.guild.id)
+        let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!!user.client.guilds.cache.get(messageReaction.message.guild.id)
             .members.cache.get(user.id).roles.cache
-            .find(x => x.name.toLowerCase() === "referee") === false) {
-            return;
+            .find(x => x.name.toLowerCase() === "referee") === false || m.p1.userid !== user.id || m.p2.userid !== user.id) {
+            return user.send("No.");
         }
         ;
-        let m = await db_1.getMatch(messageReaction.message.channel.id);
         if (!m)
             return;
-        (_a = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _a === void 0 ? void 0 : _a.execute(messageReaction.message, exports.client, [m.p1.userid]);
+        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 0) {
+            return (_a = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _a === void 0 ? void 0 : _a.execute(messageReaction.message, exports.client, [m.p1.userid]);
+        }
+        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 1) {
+            return (_b = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _b === void 0 ? void 0 : _b.execute(messageReaction.message, exports.client, [m.p2.userid]);
+        }
     }
-    if (messageReaction.emoji.name === '🅱️') {
+    if (['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);
-        if (!!user.client.guilds.cache
+        if (!await (await db_1.getQual(messageReaction.message.channel.id)).players.some(x => x.userid === user.id) || !!user.client.guilds.cache
             .get(messageReaction.message.guild.id)
             .members.cache.get(user.id).roles.cache
             .find(x => x.name.toLowerCase() === "referee") === false) {
             return;
         }
         ;
-        let m = await db_1.getMatch(messageReaction.message.channel.id);
+        let m = await db_1.getQual(messageReaction.message.channel.id);
         if (!m)
             return;
-        (_b = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _b === void 0 ? void 0 : _b.execute(messageReaction.message, exports.client, [m.p2.userid]);
+        let pos = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].indexOf(messageReaction.emoji.name);
+        (_c = c.default.find(c => c.name.toLowerCase() === "start-qual")) === null || _c === void 0 ? void 0 : _c.execute(messageReaction.message, exports.client, [m.players[pos].userid]);
     }
 });
 exports.client.on("message", async (message) => {
@@ -168,7 +173,7 @@ exports.client.on("message", async (message) => {
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields({ name: 'Channel Name', value: `${(await exports.client.channels.fetch(message.channel.id)).name}`, inline: true }, { name: 'Channel Id', value: `${message.channel.id}`, inline: true }, { name: 'User', value: `${message.author.tag}`, inline: true }, { name: 'User Id', value: `${message.author.id}`, inline: true })
-                    .setDescription(`\`\`\`${error.message}\`\`\``)
+                    .setDescription(`\`\`\`${error.message}\n${error.stack}\`\`\``)
                     .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512"));
             }
         }
@@ -183,7 +188,7 @@ exports.client.on("message", async (message) => {
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields({ name: 'Channel Name', value: `${(await exports.client.channels.fetch(message.channel.id)).name}`, inline: true }, { name: 'Channel Id', value: `${message.channel.id}`, inline: true }, { name: 'User', value: `${message.author.tag}`, inline: true }, { name: 'User Id', value: `${message.author.id}`, inline: true })
-                    .setDescription(`\`\`\`${error.message}\`\`\``));
+                    .setDescription(`\`\`\`${error.message}\n${error.stack}\`\`\``));
             }
         }
     }

@@ -29,7 +29,7 @@ exports.help = {
     description: "Access the help menu",
     owner: false,
     admins: false,
-    mods: true,
+    mods: false,
     async execute(message, client, args) {
         if (args.length === 0) {
             let string = "";
@@ -37,6 +37,9 @@ exports.help = {
             c.default.forEach(c => array.push(c.group));
             array.splice(0, array.length, ...(new Set(array)));
             string = array.join(' ');
+            if (!!message.member.roles.cache.find(x => x.name.toLowerCase() === "referee") === false) {
+                string = "tourny";
+            }
             return await message.channel.send(`The following command groups are availabe. Please do \`!help <group-name>\`:\n` +
                 `\`${string}\``);
         }
@@ -55,10 +58,16 @@ exports.help = {
         if (c.default.find(c => c.group === args[0])) {
             let g = args[0];
             const embed = new discord_js_1.MessageEmbed()
-                .setTitle(`Here's a list of my ${g} commands:`)
+                .setTitle(`Here's a list of my ${g} commands\n§ = mods, §§ = admin:`)
                 .setDescription(c.default.map(cmd => {
                 if (g === cmd.group) {
                     if (cmd.owner) {
+                        return "`" + "§§§" + cmd.name + "`" + "\n";
+                    }
+                    if (cmd.admins) {
+                        return "`" + "§§" + cmd.name + "`" + "\n";
+                    }
+                    if (cmd.mods) {
                         return "`" + "§" + cmd.name + "`" + "\n";
                     }
                     return "`" + cmd.name + "`" + "\n";

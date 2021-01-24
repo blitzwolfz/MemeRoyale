@@ -1,7 +1,7 @@
 import { help } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
 import { reload, forcevote } from "./match/utils";
-import { splitqual } from "./quals";
+import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
 import { submit } from "./submit";
 
 
@@ -14,5 +14,8 @@ export default [
     cancelmatch,
     submit,
     splitqual,
-    help
+    help,
+    startsplitqual,
+    cancelqual,
+    endqual
 ]

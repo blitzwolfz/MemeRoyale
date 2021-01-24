@@ -11,7 +11,7 @@ export const client = new Discord.Client({partials: ["CHANNEL", "CHANNEL", "MESS
 
 export let prefix: string = process.env.prefix!
 import * as c from "./commands/index"
-import { connectToDB, getMatch, updateMatch } from "./db"
+import { connectToDB, getMatch, getQual, updateMatch } from "./db"
 import { backgroundMatchLoop } from "./commands/match/background"
 var commands: Command[] = c.default
 
@@ -116,30 +116,39 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`)
     }
 
-    if (messageReaction.emoji.name === '🅰️') {
+    if (['🅰️', '🅱️'].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id)
-        if (!!user.client.guilds.cache
-            .get(messageReaction.message.guild!.id)!
-            .members.cache.get(user.id)!.roles.cache
-            .find(x => x.name.toLowerCase() === "referee") === false) {
-                return;
-            };
         let m = await getMatch(messageReaction.message.channel.id)
+        if (!!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
+            .members.cache.get(user.id)!.roles.cache
+            .find(x => x.name.toLowerCase() === "referee") === false || m.p1.userid !== user.id || m.p2.userid !== user.id) {
+            return user.send("No.");
+        };
+
         if (!m) return;
-        c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
+
+        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 0 && user.id !== m.p2.userid) {
+            return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
+
+        }
+        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 1 && user.id !== m.p1.userid) {
+            return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
+
+        }
     }
 
-    if (messageReaction.emoji.name === '🅱️') {
+    if(['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(messageReaction.emoji.name)){
         await messageReaction.users.remove(user.id)
-        if (!!user.client.guilds.cache
+        if (!await (await getQual(messageReaction.message.channel.id)).players.some(x => x.userid === user.id) || !!user.client.guilds.cache
             .get(messageReaction.message.guild!.id)!
             .members.cache.get(user.id)!.roles.cache
             .find(x => x.name.toLowerCase() === "referee") === false) {
                 return;
-            };
-        let m = await getMatch(messageReaction.message.channel.id)
+        };
+        let m = await getQual(messageReaction.message.channel.id)
         if (!m) return;
-        c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
+        let pos = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].indexOf(messageReaction.emoji.name)
+        c.default.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid])
     }
 })
 
@@ -194,7 +203,7 @@ client.on("message", async message => {
                         { name: 'User', value: `${message.author.tag}`, inline: true },
                         { name: 'User Id', value: `${message.author.id}`, inline: true },
                     )
-                    .setDescription(`\`\`\`${error.message}\`\`\``)
+                    .setDescription(`\`\`\`${error.message}\n${error.stack}\`\`\``)
                     .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
                 )
             }
@@ -216,7 +225,7 @@ client.on("message", async message => {
                         { name: 'User', value: `${message.author.tag}`, inline: true },
                         { name: 'User Id', value: `${message.author.id}`, inline: true },
                     )
-                    .setDescription(`\`\`\`${error.message}\`\`\``)
+                    .setDescription(`\`\`\`${error.message}\n${error.stack}\`\`\``)
                 )
             }
         }

@@ -9,7 +9,7 @@ export const help: Command = {
     description: "Access the help menu",
     owner:false,
     admins: false,
-    mods: true,
+    mods: false,
     async execute(message: Message, client:Client, args: string[]){
         if(args.length === 0){
 
@@ -19,6 +19,10 @@ export const help: Command = {
 
             array.splice(0, array.length, ...(new Set(array)))
             string = array.join(' ')
+
+            if(!!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee") === false){
+                string = "tourny"
+            }
 
             return await message.channel.send(
                 `The following command groups are availabe. Please do \`!help <group-name>\`:\n` +
@@ -47,11 +51,19 @@ export const help: Command = {
             let g = args[0]
 
             const embed = new MessageEmbed()
-                .setTitle(`Here's a list of my ${g} commands:`)
+                .setTitle(`Here's a list of my ${g} commands\n§ = mods, §§ = admin:`)
 
                 .setDescription(c.default.map(cmd => {
                     if (g === cmd.group) {
                         if (cmd.owner) {
+                            return "`"+"§§§" + cmd.name + "`" + "\n"
+                        }
+
+                        if (cmd.admins) {
+                            return "`"+"§§" + cmd.name + "`" + "\n"
+                        }
+
+                        if (cmd.mods) {
                             return "`"+"§" + cmd.name + "`" + "\n"
                         }
 

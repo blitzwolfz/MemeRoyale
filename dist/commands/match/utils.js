@@ -12,7 +12,7 @@ exports.reload = {
     name: "reload-match",
     description: "This reload the voting portion of a match.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
@@ -37,7 +37,7 @@ exports.forcevote = {
     name: "forcevote-match",
     description: "This will force the voting portion of a match to come.",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {
@@ -53,7 +53,7 @@ exports.matchlist = {
     name: "matchlist",
     description: "View all the players fighting in brackets",
     group: "match",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message, client, args) {

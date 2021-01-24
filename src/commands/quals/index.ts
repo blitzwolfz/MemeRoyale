@@ -1,40 +1,40 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js"
-import { getQual, getTemplatedb, getThemes, insertQual } from "../../db"
+import { deleteQual, getConfig, getQual, getTemplatedb, getThemes, insertQual, updateQual } from "../../db"
 import { Command, Qual } from "../../types"
 
 export const splitqual: Command = {
     name: "split-qual",
     description: "",
     group: "qual",
-    owner: true,
+    owner: false,
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        if (message.mentions.users.array().length < 4 || message.mentions.users.array().length > 6) return message.reply("Please mention the users");
+        if (message.mentions.users.array().length < 3 || message.mentions.users.array().length > 6) return message.reply("Please mention the users");
 
         if (await getQual(message.channel.id)) return message.reply("On going match.");
 
 
-        let q:Qual = {
-            _id:message.channel.id,
-            players:[],
-            temp:{
-                istheme:false,
-                link:""
+        let q: Qual = {
+            _id: message.channel.id,
+            players: [],
+            temp: {
+                istheme: false,
+                link: ""
             },
-            votes:[],
-            votingperiod:false,
-            votetime:0
+            votes: [],
+            votingperiod: false,
+            votetime: 0
         }
 
-        for(let u of message.mentions.users.array()){
+        for (let u of message.mentions.users.array()) {
             q.players.push({
-                userid:u.id,
-                memedone:false,
-                memelink:"",
-                time:0,
-                split:false,
-                failed:false
+                userid: u.id,
+                memedone: false,
+                memelink: "",
+                time: 0,
+                split: false,
+                failed: false
             })
 
             q.votes.push([])
@@ -129,16 +129,132 @@ export const splitqual: Command = {
                 new MessageEmbed()
                     .setTitle(`Qualifier Match`)
                     .setColor("#d7be26")
-                    .setDescription(`${c.name}, your match has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
+                    .setDescription(`Your qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
                     .setTimestamp()
             ).then(async m => {
-                let emojis = ['🇦', '🇧', '🇨','🇩','🇪','🇫']
-                for(let i = 0; i < q.players.length; i++){
+                let emojis = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫']
+                for (let i = 0; i < q.players.length; i++) {
                     m.react(emojis[i])
                 }
             });
 
         });
-        
+
+    }
+}
+
+export const startsplitqual: Command = {
+    name: "start-qual",
+    description: "",
+    group: "qual",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        try {
+            if (message.mentions.users.array().length === 0 && args.length === 0) return message.reply("Please mention the user.")
+
+            let q = await getQual(message.channel.id)
+            let id = "";
+
+            if (message.mentions.users.first() === undefined) {
+                id = args[0]
+            }
+            else {
+                id = message.mentions.users.first()?.id!
+            }
+
+            let arr = q.players
+
+            let e = arr.find(x => x.userid === id)!;
+
+            (await client.users.cache.get(e.userid))!.send(
+                `This is your ${q.temp.istheme ? "theme: " : "template: "}` +
+                q.temp.link,
+                new MessageEmbed()
+                    .setColor(await (await getConfig()).colour)
+                    .setDescription(
+                        `<@${e.userid}> your match has been split.\n` +
+                        `You have 30 mins to complete your meme\n` +
+                        `Use \`!qualsubmit\` to submit to submit each image seperately`
+                    )
+            )
+
+            e.split = true
+            e.time = Math.floor(Date.now() / 1000)
+
+            arr[arr.findIndex(x => x.userid === id)] = e
+
+            q.players = arr
+
+            await updateQual(q)
+
+            return (<TextChannel>await client.channels.cache.get(q._id)!).send(
+                new MessageEmbed()
+                    .setColor(await (await getConfig()).colour)
+                    .setDescription(
+                        `<@${e.userid}> your match has been split.\n` +
+                        `You have 30 mins to complete your meme\n` +
+                        `Use \`!qualsubmit\` to submit to submit each image seperately`
+                    )
+            )
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
+}
+
+export const cancelqual: Command = {
+    name: "cancel-qual",
+    description: "This will cancel a qual.\n" +
+        "You can either do this command\n" +
+        "in the channel, or in a mod\n" +
+        "channel by mentioning the channel.",
+    group: "qual",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+
+        if (message.mentions.channels.array().length === 1) {
+            if (!await getQual(message.mentions.channels.array()[0].id)) return message.reply("There is no active match here");
+            await deleteQual(message.mentions.channels.array()[0].id)
+
+            return message.channel.send(
+                new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle(`${message.mentions.channels.array()[0].name}`)
+                    .setDescription("Match has been canceled")
+            )
+        }
+
+        else {
+            if (!await getQual(message.channel.id)) return message.reply("There is no active match here");
+            await deleteQual(message.channel.id)
+
+            return message.channel.send(
+                new MessageEmbed()
+                    .setColor("RED")
+                    .setDescription("Match has been canceled")
+            )
+        }
+    }
+}
+
+export const endqual: Command = {
+    name: "end-qual",
+    description: "This will end a qual.",
+    group: "qual",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let m = await getQual(message.channel.id)
+        m.votetime = Math.floor(Date.now()/1000) - 7200
+        await updateQual(m)
+
+        return message.reply("Qualifier has ended").then(async m =>{
+            m.delete({timeout:1500})
+        })
     }
 }
