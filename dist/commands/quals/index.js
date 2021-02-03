@@ -17,9 +17,10 @@ exports.splitqual = {
             return message.reply("On going match.");
         let q = {
             _id: message.channel.id,
+            messageID: [],
             players: [],
             temp: {
-                istheme: false,
+                istheme: true,
                 link: ""
             },
             votes: [],
@@ -37,8 +38,8 @@ exports.splitqual = {
             });
             q.votes.push([]);
         }
-        if (args.includes("theme")) {
-            q.temp.istheme = true;
+        if (args.includes("template")) {
+            q.temp.istheme = false;
         }
         let c = await client.channels.fetch(await message.guild.channels.cache.find(x => x.name.toLowerCase() === "mod-bot-spam").id);
         let em = new discord_js_1.MessageEmbed();

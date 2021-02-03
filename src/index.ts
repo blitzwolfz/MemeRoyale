@@ -13,6 +13,7 @@ export let prefix: string = process.env.prefix!
 import * as c from "./commands/index"
 import { connectToDB, getMatch, getQual, updateMatch } from "./db"
 import { backgroundMatchLoop } from "./commands/match/background"
+import { backgroundQualLoop } from "./commands/quals/background"
 var commands: Command[] = c.default
 
 //Express for hosting
@@ -65,7 +66,8 @@ client.once("ready", async () => {
 
     setInterval(async function () {
         await backgroundMatchLoop(client)
-      }, 15000)
+        await backgroundQualLoop(client)
+    }, 15000)
 
     console.log("\n")
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`)
@@ -116,25 +118,28 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`)
     }
 
-    if (['🅰️', '🅱️'].includes(messageReaction.emoji.name)) {
+    if (messageReaction.emoji.name === '🅰️'){
         await messageReaction.users.remove(user.id)
         let m = await getMatch(messageReaction.message.channel.id)
-        if (!!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
-            .members.cache.get(user.id)!.roles.cache
-            .find(x => x.name.toLowerCase() === "referee") === false || m.p1.userid !== user.id || m.p2.userid !== user.id) {
-            return user.send("No.");
-        };
 
-        if (!m) return;
-
-        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 0 && user.id !== m.p2.userid) {
-            return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
-
+        if(!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
+        .members.cache.get(user.id)!.roles.cache
+        .find(x => x.name.toLowerCase() === "referee") && m.p1.userid !== user.id){
+            return user.send("No.")
         }
-        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 1 && user.id !== m.p1.userid) {
-            return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
+        return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
+    }
 
+    if (messageReaction.emoji.name === '🅱️'){
+        await messageReaction.users.remove(user.id)
+        let m = await getMatch(messageReaction.message.channel.id)
+
+        if(!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
+        .members.cache.get(user.id)!.roles.cache
+        .find(x => x.name.toLowerCase() === "referee") && m.p2.userid !== user.id){
+            return user.send("No.")
         }
+        return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
     }
 
     if(['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(messageReaction.emoji.name)){

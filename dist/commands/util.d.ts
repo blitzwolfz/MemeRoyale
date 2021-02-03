@@ -9,3 +9,14 @@ export declare const forwardsFilter: (reaction: {
         name: string;
     };
 }, user: User) => boolean;
+export declare let emojis: string[];
+export declare let timeconsts: {
+    match: {
+        votingtime: number;
+        memetime: number;
+    };
+    qual: {
+        votingtime: number;
+        memetime: number;
+    };
+};

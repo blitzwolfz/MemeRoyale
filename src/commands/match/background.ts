@@ -1,20 +1,67 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js"
-import { getAllMatches, getConfig, updateMatch } from "../../db"
+import { deleteMatch, getAllMatches, getConfig, updateMatch } from "../../db"
 import { Match } from "../../types"
 import { grandwinner, winner } from "./utils"
+
+// export async function backgroundMatchLoop(client: Client) {
+//     let matches = await getAllMatches()
+
+//     for (let m of matches) {
+//         try {
+//             console.log(m)
+//             console.log((Math.floor(Date.now())/1000 - m.p1.time))
+//             console.log((Math.floor(Date.now())/1000 - m.p1.time > 3200))
+//             console.log((Math.floor(Date.now())/1000 - m.votetime))
+//             console.log((Math.floor(Date.now())/1000 - m.votetime > 7200))
+//             if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now())/1000 - m.p1.time > 3200) ||
+//                 m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now())/1000 - m.p2.time > 3200)){
+//                     m.p1.donesplit = true
+//                     m.p2.donesplit = true
+//                     m.split = false
+//                     m.votingperiod = false
+//                     await updateMatch(m)
+//             }
+
+//             if (m.p1.donesplit && m.p2.donesplit && m.split === false && m.votingperiod === false) {
+//                 console.log("HMM")
+//                 await matchVotingLogic(client, m)
+//             }
+
+//             if (m.votingperiod === true && (Math.floor(Date.now() / 1000) - m.votetime > 7200)) {
+//                 await matchResults(client, m)
+//             }
+//         } catch (error) {
+//             console.log(error.message)
+//         }
+//     }
+// }
 
 export async function backgroundMatchLoop(client: Client) {
     let matches = await getAllMatches()
 
     for (let m of matches) {
         try {
-            if (m.p1.donesplit && m.p2.donesplit && m.split === false && m.votingperiod === false) {
+            if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now())/1000 - m.p1.time > 3200) ||
+                m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now())/1000 - m.p2.time > 3200)){
+                    (<TextChannel>await client.channels.cache.get(m._id)).send(
+                        new MessageEmbed()
+                            .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                            .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won!`)
+                            .setColor(await (await getConfig()).colour)
+                    )
+                await deleteMatch(m._id)
+            }
+
+            if (m.p1.donesplit && m.p1.memedone 
+                && m.p2.memedone && m.p2.donesplit 
+                && m.split === false && m.votingperiod === false) {
                 await matchVotingLogic(client, m)
             }
 
             if (m.votingperiod === true && (Math.floor(Date.now() / 1000) - m.votetime > 7200)) {
                 await matchResults(client, m)
             }
+            
         } catch (error) {
             console.log(error.message)
         }
@@ -22,6 +69,7 @@ export async function backgroundMatchLoop(client: Client) {
 }
 
 async function matchVotingLogic(client: Client, m: Match) {
+
     let channel = <TextChannel>await client.channels.cache.get(m._id)
 
     if (Math.floor(Math.random() * (5 - 1) + 1) % 2 === 1) {
@@ -86,7 +134,7 @@ async function matchVotingLogic(client: Client, m: Match) {
     })
 
 
-    await channel.send(`<@&719936221572235295>`)
+    //await channel.send(`<@&719936221572235295>`)
 
     m.votingperiod = true
     m.votetime = (Math.floor(Date.now() / 1000))
@@ -96,6 +144,28 @@ async function matchVotingLogic(client: Client, m: Match) {
 
 async function matchResults(client: Client, m: Match) {
     let channel = <TextChannel>await client.channels.cache.get(m._id)
+
+    if(m.p1.memedone === true && m.p2.memedone === false || m.p1.memedone === false && m.p2.memedone === true){
+        console.log("M")
+        if(m.p1.memedone){
+            channel.send(
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
+                    .setColor(await (await getConfig()).colour)
+            );
+        }
+
+        if(m.p2.memedone){
+            channel.send(
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
+                    .setColor(await (await getConfig()).colour)
+            );
+        }
+        return;
+    }
 
     if (m.p1.votes > m.p2.votes) {
         channel.send(
@@ -171,4 +241,6 @@ async function matchResults(client: Client, m: Match) {
         channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
 
     }
+
+    return await deleteMatch(m._id)
 }

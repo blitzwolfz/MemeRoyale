@@ -30,6 +30,7 @@ exports.prefix = process.env.prefix;
 const c = __importStar(require("./commands/index"));
 const db_1 = require("./db");
 const background_1 = require("./commands/match/background");
+const background_2 = require("./commands/quals/background");
 var commands = c.default;
 const express = require('express');
 const app = express();
@@ -49,6 +50,7 @@ exports.client.once("ready", async () => {
     await db_1.connectToDB();
     setInterval(async function () {
         await background_1.backgroundMatchLoop(exports.client);
+        await background_2.backgroundQualLoop(exports.client);
     }, 15000);
     console.log("\n");
     console.log(`Logged in as ${(_a = exports.client.user) === null || _a === void 0 ? void 0 : _a.tag}\nPrefix is ${exports.prefix}`);
@@ -100,23 +102,25 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`);
     }
-    if (['🅰️', '🅱️'].includes(messageReaction.emoji.name)) {
+    if (messageReaction.emoji.name === '🅰️') {
         await messageReaction.users.remove(user.id);
         let m = await db_1.getMatch(messageReaction.message.channel.id);
-        if (!!user.client.guilds.cache.get(messageReaction.message.guild.id)
+        if (!user.client.guilds.cache.get(messageReaction.message.guild.id)
             .members.cache.get(user.id).roles.cache
-            .find(x => x.name.toLowerCase() === "referee") === false || m.p1.userid !== user.id || m.p2.userid !== user.id) {
+            .find(x => x.name.toLowerCase() === "referee") && m.p1.userid !== user.id) {
             return user.send("No.");
         }
-        ;
-        if (!m)
-            return;
-        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 0) {
-            return (_a = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _a === void 0 ? void 0 : _a.execute(messageReaction.message, exports.client, [m.p1.userid]);
+        return (_a = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _a === void 0 ? void 0 : _a.execute(messageReaction.message, exports.client, [m.p1.userid]);
+    }
+    if (messageReaction.emoji.name === '🅱️') {
+        await messageReaction.users.remove(user.id);
+        let m = await db_1.getMatch(messageReaction.message.channel.id);
+        if (!user.client.guilds.cache.get(messageReaction.message.guild.id)
+            .members.cache.get(user.id).roles.cache
+            .find(x => x.name.toLowerCase() === "referee") && m.p2.userid !== user.id) {
+            return user.send("No.");
         }
-        if (['🅰️', '🅱️'].indexOf(messageReaction.emoji.name) === 1) {
-            return (_b = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _b === void 0 ? void 0 : _b.execute(messageReaction.message, exports.client, [m.p2.userid]);
-        }
+        return (_b = c.default.find(c => c.name.toLowerCase() === "start-split")) === null || _b === void 0 ? void 0 : _b.execute(messageReaction.message, exports.client, [m.p2.userid]);
     }
     if (['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);

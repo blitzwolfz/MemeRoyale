@@ -17,9 +17,10 @@ export const splitqual: Command = {
 
         let q: Qual = {
             _id: message.channel.id,
+            messageID: [],
             players: [],
             temp: {
-                istheme: false,
+                istheme: true,
                 link: ""
             },
             votes: [],
@@ -40,8 +41,8 @@ export const splitqual: Command = {
             q.votes.push([])
         }
 
-        if (args.includes("theme")) {
-            q.temp.istheme = true
+        if (args.includes("template")) {
+            q.temp.istheme = false
         }
 
         let c: TextChannel = <TextChannel>await client.channels.fetch(await message.guild!.channels.cache.find(x => x.name.toLowerCase() === "mod-bot-spam")!.id)

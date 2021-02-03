@@ -52,6 +52,7 @@ export interface Match{
 
 export interface Qual{
     _id:string;
+    messageID:Array<string>;
     players: Array<QualPlayer>;
     temp:{
         istheme:boolean;

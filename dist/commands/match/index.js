@@ -92,7 +92,7 @@ exports.startmatch = {
         });
         disapprove.on('collect', async () => {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            msg.channel.send(new discord_js_1.MessageEmbed()
+            message.channel.send(new discord_js_1.MessageEmbed()
                 .setColor("RED")
                 .setTitle("FAILED")
                 .setDescription("Please try again"));
@@ -207,7 +207,7 @@ exports.splitmatch = {
         });
         disapprove.on('collect', async () => {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            msg.channel.send(new discord_js_1.MessageEmbed()
+            message.channel.send(new discord_js_1.MessageEmbed()
                 .setColor("RED")
                 .setTitle("FAILED")
                 .setDescription("Please try again"));

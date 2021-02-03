@@ -111,7 +111,7 @@ export const startmatch: Command = {
 
         disapprove.on('collect', async () => {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            msg.channel.send(
+            message.channel.send(
                 new MessageEmbed()
                     .setColor("RED")
                     .setTitle("FAILED")
@@ -252,7 +252,7 @@ export const splitmatch: Command = {
 
         disapprove.on('collect', async () => {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            msg.channel.send(
+            message.channel.send(
                 new MessageEmbed()
                     .setColor("RED")
                     .setTitle("FAILED")

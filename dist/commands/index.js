@@ -8,14 +8,23 @@ const submit_1 = require("./submit");
 exports.default = [
     match_1.startmatch,
     match_1.startsplit,
+    match_1.endmatch,
     utils_1.reload,
     utils_1.forcevote,
     match_1.splitmatch,
     match_1.cancelmatch,
     submit_1.submit,
+    submit_1.qualsubmit,
     quals_1.splitqual,
     help_1.help,
     quals_1.startsplitqual,
     quals_1.cancelqual,
     quals_1.endqual
-];
+].sort(function keyOrder(k1, k2) {
+    if (k1.name < k2.name)
+        return -1;
+    else if (k1.name > k2.name)
+        return 1;
+    else
+        return 0;
+});
