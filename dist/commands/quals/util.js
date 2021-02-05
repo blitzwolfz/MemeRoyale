@@ -77,12 +77,10 @@ async function QualifierResults(channel, client, ids) {
     finalResults.sort(function (a, b) {
         return b.value - a.value;
     });
-    console.log(finalResults);
     for (let f of finalResults) {
         f.name = (await client.users.fetch(f.name)).username;
         f.value = `Got ${f.value} in total`;
     }
-    console.log(finalResults);
     return {
         title: `Final Results for Group ${channel.name}`,
         description: `Players with highest move on`,

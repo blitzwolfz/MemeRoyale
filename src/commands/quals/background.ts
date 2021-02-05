@@ -24,7 +24,7 @@ export async function backgroundQualLoop(client: Client) {
                 console.log("Updated.")
             }
 
-            if((q.players.filter(p => p.split === true).length === q.players.length)
+            if((q.players.filter(p => p.split === true && (p.memedone === true || p.failed === true)).length === q.players.length)
                 && q.votingperiod === false){
                 await matchVotingLogic(client, q)
             }
@@ -52,16 +52,22 @@ async function matchVotingLogic(client: Client, m: Qual) {
     for (var i = 0; i < m.players.length - 1; i++) {
         var j = i + Math.floor(Math.random() * (m.players.length - i));
 
-        var temp = m.players[j];
-        var temp2 = m.players[j]
-
+        let temp = m.players[j];
 
         m.players[j] = m.players[i];
         m.players[i] = temp;
 
-        m.players[j] = m.players[i]
-        m.players[i] = temp2
     }
+
+    // for (var i = 0; i < m.length - 1; i++) {
+    //     var j = i + Math.floor(Math.random() * (m.length - i));
+
+    //     let temp = m[j];
+
+    //     m[j] = m[i];
+    //     m[i] = temp;
+
+    // }
 
     if (m.temp.istheme) {
         channel.send(
@@ -173,6 +179,12 @@ async function matchResults(client: Client, q: Qual) {
             if (!t) {
                 await channel.setTopic(message.id)
                 t = []
+                let string = "";
+
+                for(let p of q.players){
+                    string += `<@${p.userid}>\n`
+                }
+                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
             }
     
             else if ((t!.concat([message.id])).length === timeconsts.qual.results && t !== undefined) {
@@ -212,16 +224,18 @@ async function matchResults(client: Client, q: Qual) {
         });
 
         //Stole from https://stackoverflow.com/a/27879955
-        let totalvotes = q.players.reduce(function(a, b) {
-            return a + b.votes.length;
-          }, 0)
+        let totalvotes:number = 0;
+
+        q.players.forEach(function(v){
+            totalvotes += v.votes.length
+        })
 
         for(let x = 0; x < q.players.length; x++){
 
             if(q.players[x].failed === false && q.players[x].memedone === true){
                 fields.push({
                     name:`${await (await client.users.fetch(q.players[x].userid)).username} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
-                    value: `${`Finished with ${q.players[x].votes.length} | Earned: ${(Math.floor(q.players[x].votes.length/totalvotes) * 100)}% of the votes\nUserID: ${q.players[x].userid}`}`,
+                    value: `${`Finished with ${q.players[x].votes.length} | Earned: ${Math.round(q.players[x].votes.length / totalvotes * 100)}% of the votes\nUserID: ${q.players[x].userid}`}`,
                 })
             }
 
@@ -259,6 +273,12 @@ async function matchResults(client: Client, q: Qual) {
             if (!t) {
                 await channel.setTopic(message.id)
                 t = []
+                let string = "";
+
+                for(let p of q.players){
+                    string += `<@${p.userid}>\n`
+                }
+                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
             }
     
             else if ((t!.concat([message.id])).length === timeconsts.qual.results && t !== undefined) {

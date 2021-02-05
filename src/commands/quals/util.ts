@@ -104,14 +104,13 @@ export async function QualifierResults(channel: TextChannel, client: Client, ids
         return b.value - a.value
     })
 
-    console.log(finalResults)
-
     for(let f of finalResults){
         f.name = (await client.users.fetch(f.name)).username
         //@ts-ignore
+        //Ik types are important, but sometimes you want to cheat 
+        //and do this since it's much easier to work with lol
         f.value = `Got ${f.value} in total`
     }
-    console.log(finalResults)
 
     return {
         title: `Final Results for Group ${channel.name}`,

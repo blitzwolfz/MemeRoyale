@@ -107,16 +107,20 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         let q = await db_1.getQual(messageReaction.message.channel.id);
         if (!q)
             return;
-        if (q.players.some(x => x.userid === user.id))
-            return user.send("Can't vote in your own qualifer");
         let pos = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"].indexOf(messageReaction.emoji.name);
         if (q.players[pos].votes.includes(user.id) === false) {
             if (q.players.filter(y => y.votes.includes(user.id)).length === 2) {
                 return await user.send("You can only vote for 2 memes. Please hit recycle button to reset your votes");
             }
+            if (q.players[pos].failed === true) {
+                return await user.send("You can't vote for a user who failed");
+            }
             q.players[pos].votes.push(user.id);
             await db_1.updateQual(q);
             return user.send(`You have voted for Meme #${pos + 1} in <#${messageReaction.message.channel.id}>`);
+        }
+        else {
+            return user.send("You have already voted for this meme");
         }
     }
     if (messageReaction.emoji.name === '♻️') {
@@ -127,7 +131,7 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         q.players.forEach(function (v) {
             if (v.votes.includes(user.id)) {
                 let pos = q.players.indexOf(v);
-                v.votes.splice(pos, 1);
+                v.votes = v.votes.splice(pos, 1);
             }
         });
         await db_1.updateQual(q);
