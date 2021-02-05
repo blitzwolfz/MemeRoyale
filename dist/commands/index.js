@@ -21,7 +21,9 @@ exports.default = [
     help_1.help,
     quals_1.startsplitqual,
     quals_1.cancelqual,
-    quals_1.endqual
+    quals_1.endqual,
+    util_1.qual_stats,
+    utils_1.match_stats
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name)
         return -1;

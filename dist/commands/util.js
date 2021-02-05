@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.timeconsts = exports.emojis = exports.forwardsFilter = exports.backwardsFilter = void 0;
+exports.toHHMMSS = exports.timeconsts = exports.emojis = exports.forwardsFilter = exports.backwardsFilter = void 0;
 const backwardsFilter = (reaction, user) => reaction.emoji.name === '⬅' && !user.bot;
 exports.backwardsFilter = backwardsFilter;
 const forwardsFilter = (reaction, user) => reaction.emoji.name === '➡' && !user.bot;
@@ -28,3 +28,7 @@ exports.timeconsts = {
         results: 2
     },
 };
+async function toHHMMSS(timestamp, howlong) {
+    return new Date((howlong - (Math.floor(Date.now() / 1000) - timestamp)) * 1000).toISOString().substr(11, 8);
+}
+exports.toHHMMSS = toHHMMSS;

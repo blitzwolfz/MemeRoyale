@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.grandwinner = exports.winner = exports.matchcard = exports.matchlist = exports.forcevote = exports.reload_match = void 0;
+exports.grandwinner = exports.winner = exports.matchcard = exports.match_stats = exports.matchlist = exports.forcevote = exports.reload_match = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
 const util_1 = require("../util");
@@ -72,6 +72,29 @@ exports.matchlist = {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
             m.edit({ embed: await matchlistEmbed(++page, client, list.users) });
         });
+    }
+};
+exports.match_stats = {
+    name: "match-stats",
+    description: "View Match Statistics except voting.\mJust mention the channel name" + `\`!match-stats @Channel\``,
+    group: "qual",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message, client, args) {
+        if (!message.mentions.channels.first())
+            return message.reply("Please mention channel");
+        else {
+            let m = await db_1.getMatch(message.mentions.channels.first().id);
+            if (!m)
+                return message.reply("No match is in that channel.");
+            let statsEmbed = new discord_js_1.MessageEmbed()
+                .setTitle(`${message.mentions.channels.first().name}`)
+                .setColor("LUMINOUS_VIVID_PINK")
+                .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
+                .addFields({ name: `${m.temp.istheme ? `Match theme:` : `Match template`}`, value: `${m.temp.link}` }, { name: `${(await client.users.cache.get(m.p1.userid)).username} Meme Done:`, value: `${m.p1.memedone ? `Yes` : `No`}`, inline: true }, { name: 'Match Portion Done:', value: `${m.p1.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`, inline: true }, { name: 'Meme Link:', value: `${m.p1.memedone ? `${m.p1.memelink}` : `No meme submitted yet`}`, inline: true }, { name: 'Time left', value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`, inline: true }, { name: '\u200B', value: '\u200B' }, { name: `${(await client.users.cache.get(m.p2.userid)).username} Meme Done:`, value: `${m.p2.memedone ? `Yes` : `No`}`, inline: true }, { name: 'Match Portion Done:', value: `${m.p2.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`, inline: true }, { name: 'Meme Link:', value: `${m.p2.memedone ? `${m.p2.memelink}` : `No meme submitted yet`}`, inline: true }, { name: 'Time left', value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`, inline: true }, { name: '\u200B', value: '\u200B' }, { name: `Voting period:`, value: `${m.votingperiod ? `Yes` : `No`}`, inline: true }, { name: `Voting time:`, value: `${m.votingperiod ? `${await util_1.toHHMMSS(util_1.timeconsts.match.votingtime, m.votetime)}` : "Voting has not started"}`, inline: true });
+            return await message.channel.send(statsEmbed);
+        }
     }
 };
 async function matchlistEmbed(page = 1, client, list, ...rest) {
