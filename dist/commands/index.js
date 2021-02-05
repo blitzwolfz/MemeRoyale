@@ -4,12 +4,14 @@ const help_1 = require("./help");
 const match_1 = require("./match");
 const utils_1 = require("./match/utils");
 const quals_1 = require("./quals");
+const util_1 = require("./quals/util");
 const submit_1 = require("./submit");
 exports.default = [
     match_1.startmatch,
     match_1.startsplit,
     match_1.endmatch,
-    utils_1.reload,
+    utils_1.reload_match,
+    util_1.reload_qual,
     utils_1.forcevote,
     match_1.splitmatch,
     match_1.cancelmatch,

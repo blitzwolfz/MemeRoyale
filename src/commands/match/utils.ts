@@ -4,7 +4,7 @@ import { getDoc, getMatch, updateMatch } from "../../db"
 import { backwardsFilter, forwardsFilter } from "../util"
 import Canvas from 'canvas';
 
-export const reload: Command = {
+export const reload_match: Command = {
     name: "reload-match",
     description: "This reload the voting portion of a match.",
     group: "match",

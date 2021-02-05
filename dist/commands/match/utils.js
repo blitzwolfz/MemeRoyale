@@ -3,12 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.grandwinner = exports.winner = exports.matchcard = exports.matchlist = exports.forcevote = exports.reload = void 0;
+exports.grandwinner = exports.winner = exports.matchcard = exports.matchlist = exports.forcevote = exports.reload_match = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
 const util_1 = require("../util");
 const canvas_1 = __importDefault(require("canvas"));
-exports.reload = {
+exports.reload_match = {
     name: "reload-match",
     description: "This reload the voting portion of a match.",
     group: "match",

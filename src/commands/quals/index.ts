@@ -23,7 +23,6 @@ export const splitqual: Command = {
                 istheme: true,
                 link: ""
             },
-            votes: [],
             votingperiod: false,
             votetime: 0
         }
@@ -35,10 +34,9 @@ export const splitqual: Command = {
                 memelink: "",
                 time: 0,
                 split: false,
-                failed: false
+                failed: false,
+                votes: [],
             })
-
-            q.votes.push([])
         }
 
         if (args.includes("template")) {

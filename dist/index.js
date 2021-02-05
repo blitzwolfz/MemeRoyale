@@ -23,14 +23,14 @@ exports.prefix = exports.client = void 0;
 const glob = require("glob");
 const util_1 = require("util");
 const Discord = __importStar(require("discord.js"));
-require('dotenv').config();
-const globPromise = util_1.promisify(glob);
-exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
-exports.prefix = process.env.prefix;
 const c = __importStar(require("./commands/index"));
 const db_1 = require("./db");
 const background_1 = require("./commands/match/background");
 const background_2 = require("./commands/quals/background");
+exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
+exports.prefix = process.env.prefix;
+require('dotenv').config();
+const globPromise = util_1.promisify(glob);
 var commands = c.default;
 const express = require('express');
 const app = express();
@@ -66,7 +66,7 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         await messageReaction.fetch();
     if (messageReaction.message.partial)
         await messageReaction.message.fetch();
-    if (messageReaction.emoji.name === '1️⃣') {
+    if (messageReaction.emoji.name === '1️⃣' && await db_1.getMatch(messageReaction.message.channel.id)) {
         if (user.bot)
             return;
         let m = await db_1.getMatch(messageReaction.message.channel.id);
@@ -84,7 +84,7 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 1's memes in <#${m._id}>. You gained 2 points for voting`);
     }
-    if (messageReaction.emoji.name === '2️⃣') {
+    if (messageReaction.emoji.name === '2️⃣' && await db_1.getMatch(messageReaction.message.channel.id)) {
         if (user.bot)
             return;
         let m = await db_1.getMatch(messageReaction.message.channel.id);
@@ -101,6 +101,37 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
         }
         await db_1.updateMatch(m);
         await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`);
+    }
+    if (["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"].includes(messageReaction.emoji.name) && await db_1.getQual(messageReaction.message.channel.id)) {
+        await messageReaction.users.remove(user.id);
+        let q = await db_1.getQual(messageReaction.message.channel.id);
+        if (!q)
+            return;
+        if (q.players.some(x => x.userid === user.id))
+            return user.send("Can't vote in your own qualifer");
+        let pos = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣"].indexOf(messageReaction.emoji.name);
+        if (q.players[pos].votes.includes(user.id) === false) {
+            if (q.players.filter(y => y.votes.includes(user.id)).length === 2) {
+                return await user.send("You can only vote for 2 memes. Please hit recycle button to reset your votes");
+            }
+            q.players[pos].votes.push(user.id);
+            await db_1.updateQual(q);
+            return user.send(`You have voted for Meme #${pos + 1} in <#${messageReaction.message.channel.id}>`);
+        }
+    }
+    if (messageReaction.emoji.name === '♻️') {
+        await messageReaction.users.remove(user.id);
+        let q = await db_1.getQual(messageReaction.message.channel.id);
+        if (!q)
+            return;
+        q.players.forEach(function (v) {
+            if (v.votes.includes(user.id)) {
+                let pos = q.players.indexOf(v);
+                v.votes.splice(pos, 1);
+            }
+        });
+        await db_1.updateQual(q);
+        return user.send(`All votes in <#${messageReaction.message.channel.id}> reset`);
     }
     if (messageReaction.emoji.name === '🅰️') {
         await messageReaction.users.remove(user.id);
@@ -157,6 +188,14 @@ exports.client.on("message", async (message) => {
         if (message.author.id !== process.env.owner && !((_b = process.env.mods) === null || _b === void 0 ? void 0 : _b.split(",").includes(message.author.id))) {
             return await message.reply("nah b");
         }
+        let q = await db_1.getQual(message.channel.id);
+        let one = q.players[1].userid;
+        let two = q.players[2].userid;
+        q.players[1] = q.players[0];
+        q.players[2] = q.players[0];
+        q.players[1].userid = one;
+        q.players[2].userid = two;
+        await db_1.updateQual(q);
     }
     else if (command) {
         if (command.owner || command.admins || command.mods) {

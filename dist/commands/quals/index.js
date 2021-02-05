@@ -23,7 +23,6 @@ exports.splitqual = {
                 istheme: true,
                 link: ""
             },
-            votes: [],
             votingperiod: false,
             votetime: 0
         };
@@ -34,9 +33,9 @@ exports.splitqual = {
                 memelink: "",
                 time: 0,
                 split: false,
-                failed: false
+                failed: false,
+                votes: [],
             });
-            q.votes.push([]);
         }
         if (args.includes("template")) {
             q.temp.istheme = false;

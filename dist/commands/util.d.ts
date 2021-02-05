@@ -18,5 +18,6 @@ export declare let timeconsts: {
     qual: {
         votingtime: number;
         memetime: number;
+        results: number;
     };
 };

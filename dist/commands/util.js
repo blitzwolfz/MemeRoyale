@@ -24,6 +24,7 @@ exports.timeconsts = {
     },
     qual: {
         votingtime: 7200,
-        memetime: 1800
+        memetime: 1800,
+        results: 2
     },
 };

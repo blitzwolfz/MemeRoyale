@@ -45,7 +45,7 @@ exports.submit = {
             m.p1 = e;
         else
             m.p2 = e;
-        if (m.p1.donesplit && m.p2.donesplit && m.split) {
+        if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false;
             m.p1.time = Math.floor(Date.now() / 1000) - 3200;
             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
@@ -78,12 +78,8 @@ exports.qualsubmit = {
             return message.reply("Video submissions aren't allowed");
         else {
             let match = await (await db_1.getAllQuals()).find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false));
-            console.log(await (await db_1.getAllQuals()).find(x => x.players.find(y => y.userid === message.author.id)));
-            console.log(match.players.findIndex(x => x.userid === message.author.id));
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
-            console.log(u);
-            console.log(match.players[index]);
             if (u.split === false)
                 return message.reply("Can't submit when you haven't started your portion");
             u.split = true;

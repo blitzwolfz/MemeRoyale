@@ -53,7 +53,6 @@ export interface Qual {
         istheme: boolean;
         link: string;
     };
-    votes: Array<Array<string>>;
     votingperiod: boolean;
     votetime: number;
 }
@@ -64,6 +63,7 @@ export interface QualPlayer {
     time: number;
     split: boolean;
     failed: boolean;
+    votes: Array<string>;
 }
 export interface Signups {
     _id: "signups";
