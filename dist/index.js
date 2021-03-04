@@ -240,7 +240,6 @@ exports.client.on("message", async (message) => {
         }
     }
 });
-console.log(process.env.dev);
 if (process.env.dev)
     exports.client.login(process.env.devtoken);
 else

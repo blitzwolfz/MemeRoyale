@@ -11,6 +11,7 @@ export interface Command {
 export interface config {
     _id: 1;
     disabledcommands: Array<string>;
+    status: string;
     colour: string;
     isfinale: boolean;
 }

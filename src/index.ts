@@ -208,7 +208,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 client.on("message", async message => {
     // Prevent the bot from replying to itself or other bots
     if (message.author.bot) {
-        return
+        return;
     }
 
     var args: Array<string>;
@@ -308,7 +308,6 @@ client.on("message", async message => {
         }
     }
 })
-console.log(process.env.dev!)
 
 if (process.env.dev!) client.login(process.env.devtoken!)
 else client.login(process.env.token!)

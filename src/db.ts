@@ -27,6 +27,9 @@ export async function connectToDB(): Promise<void> {
 
 
 //General db commands
+
+//db.test.updateMany({foo: "bar"}, {$set: {test: "success!"}})
+//See this StackOverflow post https://stackoverflow.com/a/1740258
 export async function updater(coll:string, filter:object, update:object){
     await dB.collection(coll).updateMany(filter, update)
 }

@@ -19,51 +19,31 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ping = void 0;
-const discord_js_1 = require("discord.js");
-const help_1 = require("./help");
-const match_1 = require("./match");
-const utils_1 = require("./match/utils");
-const quals_1 = require("./quals");
-const util_1 = require("./quals/util");
-const submit_1 = require("./submit");
-const s = __importStar(require("./tournament/index"));
-exports.ping = {
-    name: "ping",
-    description: "ping",
-    group: "",
+exports.cycle_restart = void 0;
+const db_1 = require("../../db");
+const signup_1 = require("./signup");
+const s = __importStar(require("./challonge"));
+exports.cycle_restart = {
+    name: "cyclereset",
+    description: "Reset for a cycle",
+    group: "tournament-manager",
     owner: false,
     admins: false,
-    mods: false,
+    mods: true,
     async execute(message, client, args) {
-        message.channel.send("Pinging...").then(m => {
-            let ping = m.createdTimestamp - message.createdTimestamp;
-            let embed = new discord_js_1.MessageEmbed()
-                .setAuthor(`Your ping is ${ping}`)
-                .setColor("RANDOM");
-            m.edit(embed);
-        });
+        let signup = await db_1.getDoc("config", "signups");
+        signup.users = [];
+        await db_1.updateDoc("config", "signups", signup);
+        await signup_1.signup_manager.execute(message, client, ["open"]);
+        let c = await db_1.getConfig();
+        c.status = "Signups are now open!";
+        await db_1.updateConfig(c);
     }
 };
 exports.default = [
-    match_1.startmatch,
-    match_1.startsplit,
-    match_1.endmatch,
-    utils_1.reload_match,
-    util_1.reload_qual,
-    exports.ping,
-    utils_1.forcevote,
-    match_1.splitmatch,
-    match_1.cancelmatch,
-    submit_1.submit,
-    submit_1.qualsubmit,
-    quals_1.splitqual,
-    help_1.help,
-    quals_1.startsplitqual,
-    quals_1.cancelqual,
-    quals_1.endqual,
-    util_1.qual_stats,
-    utils_1.match_stats
+    signup_1.signup,
+    signup_1.signup_manager,
+    exports.cycle_restart
 ]
     .concat(s.default)
     .sort(function keyOrder(k1, k2) {
