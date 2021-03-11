@@ -1,7 +1,7 @@
 import { Message, Client } from "discord.js";
 import { getConfig, getDoc, updateConfig, updateDoc } from "../../db";
 import { Command, config, Signups } from "../../types";
-import { signup, signup_manager } from "./signup";
+import { signup, signup_manager, unsignup } from "./signup";
 import * as s from "./challonge"
 
 export const cycle_restart: Command = {
@@ -27,7 +27,8 @@ export const cycle_restart: Command = {
 export default[
     signup,
     signup_manager,
-    cycle_restart
+    cycle_restart, 
+    unsignup
 ]
 .concat(s.default)
 .sort(function keyOrder(k1, k2) {

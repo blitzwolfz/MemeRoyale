@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signup_manager = exports.signup = void 0;
+exports.unsignup = exports.signup_manager = exports.signup = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
 exports.signup = {
@@ -13,7 +13,7 @@ exports.signup = {
     async execute(message, client, args) {
         let signup = await db_1.getDoc("config", "signups");
         if (message.channel.type !== "dm") {
-            await message.reply("You have to signup in bot dm if they are open").then(async (m) => {
+            return await message.reply("You have to signup in bot dm if they are open").then(async (m) => {
                 message.delete();
                 m.delete({ timeout: 1600 });
             });
@@ -60,15 +60,13 @@ exports.signup_manager = {
             signup.open = false;
             await db_1.updateDoc("config", "signups", signup);
             return await c.send(new discord_js_1.MessageEmbed()
-                .setDescription("Match signups have started!"
-                + "\nPlease use the command `!signup`"
-                + "\nYou can also use 🗳️ to signup"
-                + "\nIf you wish to remove your signup use `!unsignup`"
-                + "\nOf course if you have problems contact mods!")
+                .setDescription("Match signups have closed!"
+                + "\nIf there is an issue with your signup"
+                + "\nyou will be contacted. If you wish to unsignup"
+                + "\nuse `!unsignup` or contact mods. Of course "
+                + "\nif you have problems contact mods!")
                 .setColor("#d7be26")
-                .setTimestamp()).then(async (msg) => {
-                msg.react('🗳️');
-            });
+                .setTimestamp());
         }
         if (args[0] === "reopen") {
             signup.open = true;
@@ -88,6 +86,33 @@ exports.signup_manager = {
             signup.users.splice(signup.users.indexOf(message.author.id), 1);
             await db_1.updateDoc("config", "signups", signup);
             return message.reply(`Removed user <@${args[1]}>`);
+        }
+    }
+};
+exports.unsignup = {
+    name: "unsignup",
+    description: "Command to signup for tournament",
+    group: "tourny",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message, client, args) {
+        let signup = await db_1.getDoc("config", "signups");
+        if (message.channel.type !== "dm") {
+            return await message.reply("You have to signup in bot dm if they are open").then(async (m) => {
+                message.delete();
+                m.delete({ timeout: 3000 });
+            });
+        }
+        ;
+        if (signup.open === false)
+            return message.reply("You can't signup as they are not open");
+        if (signup.users.includes(message.author.id))
+            return message.reply("You already signed up");
+        else {
+            signup.users = signup.users.splice(signup.users.findIndex(x => x === message.author.id), 1);
+            await db_1.updateDoc("config", "signup", signup);
+            return message.reply("You have been removed!");
         }
     }
 };

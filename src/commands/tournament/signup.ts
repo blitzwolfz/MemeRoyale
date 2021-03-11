@@ -13,7 +13,7 @@ export const signup: Command = {
         let signup:Signups = await getDoc("config", "signups")
 
         if(message.channel.type !== "dm") {
-            await message.reply("You have to signup in bot dm if they are open").then(async m =>{
+            return await message.reply("You have to signup in bot dm if they are open").then(async m =>{
                 message.delete()
                 m.delete({timeout:1600})
             })
@@ -70,16 +70,13 @@ export const signup_manager: Command = {
             await updateDoc("config", "signups", signup)
 
             return await c.send(new MessageEmbed()
-            .setDescription("Match signups have started!"
-            +"\nPlease use the command `!signup`"
-            +"\nYou can also use 🗳️ to signup"
-            +"\nIf you wish to remove your signup use `!unsignup`"
-            +"\nOf course if you have problems contact mods!")
+            .setDescription("Match signups have closed!"
+            +"\nIf there is an issue with your signup"
+            +"\nyou will be contacted. If you wish to unsignup"
+            +"\nuse `!unsignup` or contact mods. Of course "
+            +"\nif you have problems contact mods!")
             .setColor("#d7be26")
-            .setTimestamp()).then(async msg =>{
-                msg.react('🗳️')
-            })
-
+            .setTimestamp())
         }
 
         if(args[0] === "reopen"){
@@ -107,6 +104,37 @@ export const signup_manager: Command = {
 
             return message.reply(`Removed user <@${args[1]}>`)
 
+        }
+    }
+}
+
+export const unsignup: Command = {
+    name: "unsignup",
+    description: "Command to signup for tournament",
+    group: "tourny",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let signup:Signups = await getDoc("config", "signups")
+
+        if(message.channel.type !== "dm") {
+            return await message.reply("You have to signup in bot dm if they are open").then(async m =>{
+                message.delete()
+                m.delete({timeout:3000})
+            })
+        };
+
+        if(signup.open === false) return message.reply("You can't signup as they are not open");
+
+        if(signup.users.includes(message.author.id)) return message.reply("You already signed up");
+
+        else{
+            signup.users = signup.users.splice(signup.users.findIndex(x => x === message.author.id), 1);
+
+            await updateDoc("config", "signup", signup)
+
+            return message.reply("You have been removed!")
         }
     }
 }

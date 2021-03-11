@@ -43,7 +43,8 @@ exports.cycle_restart = {
 exports.default = [
     signup_1.signup,
     signup_1.signup_manager,
-    exports.cycle_restart
+    exports.cycle_restart,
+    signup_1.unsignup
 ]
     .concat(s.default)
     .sort(function keyOrder(k1, k2) {
