@@ -68,6 +68,7 @@ export interface QualPlayer {
 }
 export interface Signups {
     _id: "signups";
+    msgID: string;
     open: boolean;
     users: Array<string>;
 }

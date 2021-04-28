@@ -43,7 +43,7 @@ app.get('/', (_request, response) => {
     response.sendStatus(200);
 });
 const listener = app.listen(process.env.PORT, () => {
-    console.log('Your app is listening on port ' + listener.address().port);
+    console.log(`Your app is listening on port ${listener.address().port}`);
 });
 exports.client.once("ready", async () => {
     var _a;
@@ -174,7 +174,7 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
     }
 });
 exports.client.on("message", async (message) => {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     if (message.author.bot) {
         return;
     }
@@ -189,7 +189,7 @@ exports.client.on("message", async (message) => {
         return;
     const command = commands.find(c => c.name.toLowerCase() === commandName);
     if (commandName === "test") {
-        if (message.author.id !== process.env.owner && !((_b = process.env.mods) === null || _b === void 0 ? void 0 : _b.split(",").includes(message.author.id))) {
+        if (message.author.id !== process.env.owner) {
             return await message.reply("nah b");
         }
         let q = await db_1.getQual(message.channel.id);
@@ -204,11 +204,11 @@ exports.client.on("message", async (message) => {
     else if (command) {
         if (command.owner || command.admins || command.mods) {
             try {
-                if (command.admins || message.author.id === process.env.owner && ((_c = message.member) === null || _c === void 0 ? void 0 : _c.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
+                if (command.admins || message.author.id === process.env.owner && ((_b = message.member) === null || _b === void 0 ? void 0 : _b.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
                     await command.execute(message, exports.client, args, process.env.owner);
                 }
                 else if (command.admins || message.author.id === process.env.owner
-                    && (((_d = message.member) === null || _d === void 0 ? void 0 : _d.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) || ((_e = message.member) === null || _e === void 0 ? void 0 : _e.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
+                    && (((_c = message.member) === null || _c === void 0 ? void 0 : _c.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) || ((_d = message.member) === null || _d === void 0 ? void 0 : _d.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
                     await command.execute(message, exports.client, args, process.env.owner);
                 }
                 else {

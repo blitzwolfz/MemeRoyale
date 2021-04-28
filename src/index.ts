@@ -30,7 +30,7 @@ app.get('/', (_request: any, response: any) => {
 });
 
 const listener = app.listen(process.env.PORT, () => {
-    console.log('Your app is listening on port ' + listener.address().port);
+    console.log(`Your app is listening on port ${listener.address().port}`);
 });
 
 client.once("ready", async () => {
@@ -203,6 +203,10 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         let pos = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].indexOf(messageReaction.emoji.name)
         c.default.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid])
     }
+
+    if(messageReaction.emoji.name === '🗳️'){
+        c.default.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id])
+    }
 })
 
 client.on("message", async message => {
@@ -224,7 +228,7 @@ client.on("message", async message => {
     const command = commands.find(c => c.name.toLowerCase() === commandName)
 
     if (commandName === "test") {
-        if (message.author.id !== process.env.owner && !process.env.mods?.split(",").includes(message.author.id)) {
+        if (message.author.id !== process.env.owner ) {
             return await message.reply("nah b")
         }
 

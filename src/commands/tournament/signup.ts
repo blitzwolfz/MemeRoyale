@@ -12,23 +12,41 @@ export const signup: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let signup:Signups = await getDoc("config", "signups")
 
-        if(message.channel.type !== "dm") {
+        if(message.channel.type !== "dm" && message.id !== signup.msgID) {
             return await message.reply("You have to signup in bot dm if they are open").then(async m =>{
                 message.delete()
                 m.delete({timeout:1600})
             })
         };
 
-        if(signup.open === false) return message.reply("You can't signup as they are not open");
+        if(signup.open === false){
+            if(message.id !== signup.msgID) return message.reply("You can't signup as they are not open");
 
-        if(signup.users.includes(message.author.id)) return message.reply("You already signed up");
+            else{
+                return await client.users.cache.find(x => x.id === args[0])?.send("You can't signup as they are not open");
+            }
+        }
+
+        if(signup.users.includes(message.author.id) || signup.users.includes(args[0])){
+            if(message.id !== signup.msgID) return message.reply("You already signed up");
+
+            else{
+                return await client.users.cache.find(x => x.id === args[0])?.send("You already signed up");
+            }
+        }
 
         else{
-            signup.users.push(message.author.id)
+            if(message.id !== signup.msgID){
+                await message.reply("You have been signed up!")
+                signup.users.push(message.author.id);
+            }
 
-            await updateDoc("config", "signup", signup)
+            else{
+                await client.users.cache.find(x => x.id === args[0])?.send("You have been signed up!");
+                signup.users.push(args[0]);
+            }
 
-            return message.reply("You have been signed up!")
+            return await updateDoc("config", "signup", signup);
         }
     }
 }
@@ -49,9 +67,7 @@ export const signup_manager: Command = {
         if(args[0] === "open"){
             signup.open = true;
 
-            await updateDoc("config", "signups", signup)
-
-            return await c.send(new MessageEmbed()
+            await c.send(new MessageEmbed()
             .setDescription("Match signups have started!"
             +"\nPlease use the command `!signup`"
             +"\nYou can also use 🗳️ to signup"
@@ -60,7 +76,10 @@ export const signup_manager: Command = {
             .setColor("#d7be26")
             .setTimestamp()).then(async msg =>{
                 msg.react('🗳️')
+                signup.msgID = msg.id
             })
+
+            return await updateDoc("config", "signups", signup)
 
         }
 

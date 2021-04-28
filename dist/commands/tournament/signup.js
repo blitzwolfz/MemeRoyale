@@ -44,8 +44,7 @@ exports.signup_manager = {
             .find(x => x.name.toLowerCase() === "announcements").id);
         if (args[0] === "open") {
             signup.open = true;
-            await db_1.updateDoc("config", "signups", signup);
-            return await c.send(new discord_js_1.MessageEmbed()
+            await c.send(new discord_js_1.MessageEmbed()
                 .setDescription("Match signups have started!"
                 + "\nPlease use the command `!signup`"
                 + "\nYou can also use 🗳️ to signup"
@@ -54,7 +53,9 @@ exports.signup_manager = {
                 .setColor("#d7be26")
                 .setTimestamp()).then(async (msg) => {
                 msg.react('🗳️');
+                signup.msgID = msg.id;
             });
+            return await db_1.updateDoc("config", "signups", signup);
         }
         if (args[0] === "close") {
             signup.open = false;
