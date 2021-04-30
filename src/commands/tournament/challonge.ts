@@ -12,7 +12,7 @@ export const matchchannelcreate: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        if (!args) return message.reply("Please input round number!")
+        if (!args) return message.reply("Please input round number and how long the round is!")
 
         else {
     
@@ -44,7 +44,7 @@ export const matchchannelcreate: Command = {
                     if (err) console.log(err)
     
                     for (let d of data) {
-                        if (d.match.round = parseInt(args[0])) {
+                        if (d.match.round === parseInt(args[0])) {
                             if (d.match.player1Id === null || d.match.player2Id === null) continue;
     
                             let channelstringname: string = "", name1: string = "", name2: string = ""

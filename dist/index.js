@@ -57,7 +57,7 @@ exports.client.once("ready", async () => {
     console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}`);
 });
 exports.client.on("messageReactionAdd", async (messageReaction, user) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     if (user.id === "722303830368190485")
         return;
     if (user.bot)
@@ -171,6 +171,9 @@ exports.client.on("messageReactionAdd", async (messageReaction, user) => {
             return;
         let pos = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].indexOf(messageReaction.emoji.name);
         (_c = c.default.find(c => c.name.toLowerCase() === "start-qual")) === null || _c === void 0 ? void 0 : _c.execute(messageReaction.message, exports.client, [m.players[pos].userid]);
+    }
+    if (messageReaction.emoji.name === '🗳️') {
+        (_d = c.default.find(c => c.name.toLowerCase() === "signup")) === null || _d === void 0 ? void 0 : _d.execute(messageReaction.message, exports.client, [user.id]);
     }
 });
 exports.client.on("message", async (message) => {

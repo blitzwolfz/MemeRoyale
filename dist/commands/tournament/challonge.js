@@ -13,7 +13,7 @@ exports.matchchannelcreate = {
     mods: true,
     async execute(message, client, args) {
         if (!args)
-            return message.reply("Please input round number!");
+            return message.reply("Please input round number and how long the round is!");
         else {
             let names = [];
             let match = await db_1.getDoc("config", "matchlist");
@@ -39,7 +39,7 @@ exports.matchchannelcreate = {
                     if (err)
                         console.log(err);
                     for (let d of data) {
-                        if (d.match.round = parseInt(args[0])) {
+                        if (d.match.round === parseInt(args[0])) {
                             if (d.match.player1Id === null || d.match.player2Id === null)
                                 continue;
                             let channelstringname = "", name1 = "", name2 = "";

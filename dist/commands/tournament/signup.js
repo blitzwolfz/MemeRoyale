@@ -11,22 +11,39 @@ exports.signup = {
     admins: false,
     mods: false,
     async execute(message, client, args) {
+        var _a, _b, _c;
         let signup = await db_1.getDoc("config", "signups");
-        if (message.channel.type !== "dm") {
+        if (message.channel.type !== "dm" && message.id !== signup.msgID) {
             return await message.reply("You have to signup in bot dm if they are open").then(async (m) => {
                 message.delete();
                 m.delete({ timeout: 1600 });
             });
         }
         ;
-        if (signup.open === false)
-            return message.reply("You can't signup as they are not open");
-        if (signup.users.includes(message.author.id))
-            return message.reply("You already signed up");
+        if (signup.open === false) {
+            if (message.id !== signup.msgID)
+                return message.reply("You can't signup as they are not open");
+            else {
+                return await ((_a = client.users.cache.find(x => x.id === args[0])) === null || _a === void 0 ? void 0 : _a.send("You can't signup as they are not open"));
+            }
+        }
+        if (signup.users.includes(message.author.id) || signup.users.includes(args[0])) {
+            if (message.id !== signup.msgID)
+                return message.reply("You already signed up");
+            else {
+                return await ((_b = client.users.cache.find(x => x.id === args[0])) === null || _b === void 0 ? void 0 : _b.send("You already signed up"));
+            }
+        }
         else {
-            signup.users.push(message.author.id);
-            await db_1.updateDoc("config", "signup", signup);
-            return message.reply("You have been signed up!");
+            if (message.id !== signup.msgID) {
+                await message.reply("You have been signed up!");
+                signup.users.push(message.author.id);
+            }
+            else {
+                await ((_c = client.users.cache.find(x => x.id === args[0])) === null || _c === void 0 ? void 0 : _c.send("You have been signed up!"));
+                signup.users.push(args[0]);
+            }
+            return await db_1.updateDoc("config", "signup", signup);
         }
     }
 };
