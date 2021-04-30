@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
+exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
 const mongodb = __importStar(require("mongodb"));
 require("dotenv").config();
 const url = process.env.dburl;
@@ -148,3 +148,21 @@ async function updateThemedb(st) {
     await dB.collection("config").updateOne({ _id: "themelist" }, { $set: st });
 }
 exports.updateThemedb = updateThemedb;
+async function getExhibition() {
+    return await dB.collection("config").findOne({ _id: "exhibition" });
+}
+exports.getExhibition = getExhibition;
+async function updateExhibition(ex) {
+    await dB.collection("config").updateOne({ _id: "exhibition" }, { $set: ex });
+}
+exports.updateExhibition = updateExhibition;
+async function insertExhibition() {
+    let e = {
+        _id: "exhibition",
+        cooldowns: [],
+        activematches: [],
+        activeoffers: []
+    };
+    await dB.collection("config").insertOne(e);
+}
+exports.insertExhibition = insertExhibition;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toHHMMSS = exports.timeconsts = exports.emojis = exports.forwardsFilter = exports.backwardsFilter = void 0;
+exports.toHHMMSS = exports.timeconsts = exports.dateBuilder = exports.emojis = exports.forwardsFilter = exports.backwardsFilter = void 0;
 const backwardsFilter = (reaction, user) => reaction.emoji.name === '⬅' && !user.bot;
 exports.backwardsFilter = backwardsFilter;
 const forwardsFilter = (reaction, user) => reaction.emoji.name === '➡' && !user.bot;
@@ -17,6 +17,18 @@ exports.emojis = [
     "❌",
     "🌀"
 ];
+function dateBuilder() {
+    let d = new Date();
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let day = days[d.getDay()];
+    let date = d.getDate();
+    console.log(d.getMonth());
+    let month = months[d.getMonth()];
+    let year = d.getFullYear();
+    return `${day}, ${month} ${date} ${year}`;
+}
+exports.dateBuilder = dateBuilder;
 exports.timeconsts = {
     match: {
         votingtime: 7200,

@@ -5,7 +5,7 @@ import { Command } from "../types";
 
 export const submit: Command = {
     name: "submit",
-    description: "",
+    description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
     group: "tourny",
     owner: false,
     admins: false,
@@ -28,7 +28,18 @@ export const submit: Command = {
             return message.reply("Your image was not submitted properly. Contact a mod")
         };
 
-        let m = (await (await getAllMatches())).find(x => (x.p1.userid === message.author.id || x.p2.userid === message.author.id))!
+        let duels = false;
+
+        if(args.length > 0 && args[0].toLowerCase() === "-duel"){
+            duels = true
+        }
+
+        let m = (await (await getAllMatches())).find(x => (x.p1.userid === message.author.id && x.p1.memedone === false && x.exhibition === duels
+            || x.p2.userid === message.author.id && x.p2.memedone === false && x.exhibition === duels))!
+        
+        if(!m) {
+            return await message.author.send("You are not in any match. If you are trying to submit for a duel use `!submit -duel` to submit.")
+        }
 
         let arr = [m.p1, m.p2]
 
@@ -39,18 +50,21 @@ export const submit: Command = {
         e.memelink = message.attachments.array()[0].url
         e.memedone = true
         e.donesplit = true
-
-        await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
+        
+        if(m.exhibition === false){
+            await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
                                 
-            embed:{
-                description: `<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`,
-                color:"#d7be26",
-                image: {
-                    url: message.attachments.array()[0].url,
-                },
-                timestamp: new Date()
-            }
-        });
+                embed:{
+                    description: `<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`,
+                    color:"#d7be26",
+                    image: {
+                        url: message.attachments.array()[0].url,
+                    },
+                    timestamp: new Date()
+                }
+            });
+        }
+
 
         if (m.p1.userid === e.userid) m.p1 = e;
         else m.p2 = e;

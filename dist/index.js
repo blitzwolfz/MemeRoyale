@@ -27,6 +27,7 @@ const c = __importStar(require("./commands/index"));
 const db_1 = require("./db");
 const background_1 = require("./commands/match/background");
 const background_2 = require("./commands/quals/background");
+const background_3 = require("./commands/exhibition/background");
 exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
 exports.prefix = process.env.prefix;
 require('dotenv').config();
@@ -51,6 +52,7 @@ exports.client.once("ready", async () => {
     setInterval(async function () {
         await background_1.backgroundMatchLoop(exports.client);
         await background_2.backgroundQualLoop(exports.client);
+        await background_3.backgroundExhibitionLoop(exports.client);
     }, 15000);
     console.log("\n");
     console.log(`Logged in as ${(_a = exports.client.user) === null || _a === void 0 ? void 0 : _a.tag}\nPrefix is ${exports.prefix}`);

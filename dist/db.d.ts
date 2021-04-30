@@ -1,4 +1,4 @@
-import { config, Match, Qual } from "./types";
+import { config, exhibition, Match, Qual } from "./types";
 export declare function connectToDB(): Promise<void>;
 export declare function updater(coll: string, filter: object, update: object): Promise<void>;
 export declare function insertDoc(coll: string, upd: object): Promise<void>;
@@ -32,3 +32,6 @@ export declare function updateThemedb(st: {
     _id: "themelist";
     list: string[];
 }): Promise<void>;
+export declare function getExhibition(): Promise<exhibition>;
+export declare function updateExhibition(ex: exhibition): Promise<void>;
+export declare function insertExhibition(): Promise<void>;

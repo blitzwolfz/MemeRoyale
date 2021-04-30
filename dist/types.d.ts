@@ -88,3 +88,13 @@ export interface VerificationForm {
         code: string;
     }>;
 }
+export interface exhibition {
+    _id: "exhibition";
+    cooldowns: Array<cooldown>;
+    activematches: Array<string>;
+    activeoffers: Array<cooldown>;
+}
+export interface cooldown {
+    user: string;
+    time: number;
+}

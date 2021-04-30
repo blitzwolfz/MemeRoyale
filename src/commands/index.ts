@@ -6,7 +6,9 @@ import { forcevote, match_stats, reload_match } from "./match/utils";
 import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
 import { qual_stats, reload_qual } from "./quals/util";
 import { qualsubmit, submit } from "./submit";
-import * as s from "./tournament/index"
+import * as a from "./tournament/index"
+import * as b from "./exhibition/index"
+
 
 // export const example: Command = {
 //     name: "",
@@ -64,7 +66,8 @@ export default [
     qual_stats,
     match_stats
 ]
-.concat(s.default)
+.concat(a.default)
+.concat(b.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1;
     else if (k1.name > k2.name) return 1;

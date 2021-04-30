@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb"
-import { config, Match, Qual } from "./types";
+import { config, exhibition, Match, Qual } from "./types";
 //import { config } from "./types"
 require("dotenv").config();
 const url: string = process.env.dburl!;
@@ -139,4 +139,25 @@ export async function getThemes(): Promise<{
 
 export async function updateThemedb(st:{_id:"themelist",list:string[]}) {
     await dB.collection("config").updateOne({_id:"themelist"}, {$set: st})!;
+}
+
+//Exhibition matches
+
+export async function getExhibition(): Promise<exhibition>{
+    return await dB.collection("config").findOne({ _id: "exhibition" })!;
+}
+
+export async function updateExhibition(ex: exhibition){
+    await dB.collection("config").updateOne({_id: "exhibition"}, {$set: ex});        
+}
+
+export async function insertExhibition(){
+
+    let e:exhibition ={
+        _id: "exhibition",
+        cooldowns: [],
+        activematches: [],
+        activeoffers: []
+    }
+    await dB.collection("config").insertOne(e);        
 }

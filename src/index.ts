@@ -6,6 +6,7 @@ import * as c from "./commands/index"
 import { connectToDB, getMatch, getQual, updateMatch, updateQual } from "./db"
 import { backgroundMatchLoop } from "./commands/match/background"
 import { backgroundQualLoop } from "./commands/quals/background"
+import { backgroundExhibitionLoop } from "./commands/exhibition/background"
 export const client = new Discord.Client({partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"]});
 
 export let prefix: string = process.env.prefix!
@@ -58,6 +59,8 @@ client.once("ready", async () => {
     //     user:[]
     // }
 
+    // await insertExhibition()
+
     // await insertDoc('config', obj)
     // await insertDoc('config', obj2)
     // await insertDoc('config', obj3)
@@ -66,6 +69,7 @@ client.once("ready", async () => {
     setInterval(async function () {
         await backgroundMatchLoop(client)
         await backgroundQualLoop(client)
+        await backgroundExhibitionLoop(client)
     }, 15000)
 
     console.log("\n")

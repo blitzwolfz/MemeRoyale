@@ -10,6 +10,7 @@ export declare const forwardsFilter: (reaction: {
     };
 }, user: User) => boolean;
 export declare let emojis: string[];
+export declare function dateBuilder(): string;
 export declare let timeconsts: {
     match: {
         votingtime: number;

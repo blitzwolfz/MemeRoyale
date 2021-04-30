@@ -27,7 +27,8 @@ const utils_1 = require("./match/utils");
 const quals_1 = require("./quals");
 const util_1 = require("./quals/util");
 const submit_1 = require("./submit");
-const s = __importStar(require("./tournament/index"));
+const a = __importStar(require("./tournament/index"));
+const b = __importStar(require("./exhibition/index"));
 exports.ping = {
     name: "ping",
     description: "ping",
@@ -65,7 +66,8 @@ exports.default = [
     util_1.qual_stats,
     utils_1.match_stats
 ]
-    .concat(s.default)
+    .concat(a.default)
+    .concat(b.default)
     .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name)
         return -1;
