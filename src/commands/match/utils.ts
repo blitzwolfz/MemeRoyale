@@ -33,6 +33,24 @@ export const reload_match: Command = {
     }
 }
 
+export const end_match: Command = {
+    name: "end-match",
+    description: "This will end the match.",
+    group: "match",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+
+        let match = await getMatch(message.channel.id)
+        return message.reply("Ending").then(async m =>{
+            match.votetime += 7200
+            m.delete({timeout:1500})
+            await updateMatch(match)
+        })
+    }
+}
+
 export const forcevote: Command = {
     name: "forcevote-match",
     description: "This will force the voting portion of a match to come.",

@@ -9,6 +9,8 @@ async function backgroundMatchLoop(client) {
     let matches = await db_1.getAllMatches();
     for (let m of matches) {
         try {
+            if (m.exhibition === true)
+                continue;
             if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now()) / 1000 - m.p1.time > 3200) ||
                 m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now()) / 1000 - m.p2.time > 3200)) {
                 (await client.channels.cache.get(m._id)).send(new discord_js_1.MessageEmbed()
@@ -108,7 +110,8 @@ async function matchResults(client, m) {
             .setTitle(`${(_k = client.users.cache.get(m.p1.userid)) === null || _k === void 0 ? void 0 : _k.username}-vs-${(_l = client.users.cache.get(m.p1.userid)) === null || _l === void 0 ? void 0 : _l.username}`)
             .setDescription(`${(_m = client.users.cache.get(m.p1.userid)) === null || _m === void 0 ? void 0 : _m.username} beat ${(_o = client.users.cache.get(m.p1.userid)) === null || _o === void 0 ? void 0 : _o.username}\n` +
             `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-            .setColor(await (await db_1.getConfig()).colour));
+            .setColor(await (await db_1.getConfig()).colour)
+            .setImage(m.p1.memelink));
         if (await (await db_1.getConfig()).isfinale === false) {
             channel.send(await utils_1.winner(client, m.p1.userid));
         }
@@ -126,7 +129,8 @@ async function matchResults(client, m) {
             .setTitle(`${(_s = client.users.cache.get(m.p2.userid)) === null || _s === void 0 ? void 0 : _s.username}-vs-${(_t = client.users.cache.get(m.p1.userid)) === null || _t === void 0 ? void 0 : _t.username}`)
             .setDescription(`${(_u = client.users.cache.get(m.p2.userid)) === null || _u === void 0 ? void 0 : _u.username} beat ${(_v = client.users.cache.get(m.p1.userid)) === null || _v === void 0 ? void 0 : _v.username}\n` +
             `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-            .setColor(await (await db_1.getConfig()).colour));
+            .setColor(await (await db_1.getConfig()).colour)
+            .setImage(m.p2.memelink));
         if (await (await db_1.getConfig()).isfinale === false) {
             channel.send(await utils_1.winner(client, m.p2.userid));
         }

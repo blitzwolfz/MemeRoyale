@@ -41,6 +41,7 @@ export async function backgroundMatchLoop(client: Client) {
 
     for (let m of matches) {
         try {
+            if(m.exhibition === true) continue;
             if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now())/1000 - m.p1.time > 3200) ||
                 m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now())/1000 - m.p2.time > 3200)){
                     (<TextChannel>await client.channels.cache.get(m._id)).send(
@@ -182,6 +183,7 @@ async function matchResults(client: Client, m: Match) {
                 .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` +
                     `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
                 .setColor(await (await getConfig()).colour)
+                .setImage(m.p1.memelink)
         )
         
         if(await (await getConfig()).isfinale === false){
@@ -214,6 +216,7 @@ async function matchResults(client: Client, m: Match) {
                 .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` +
                     `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
                 .setColor(await (await getConfig()).colour)
+                .setImage(m.p2.memelink)
         )
 
         if(await (await getConfig()).isfinale === false){

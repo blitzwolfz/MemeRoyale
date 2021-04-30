@@ -1,6 +1,7 @@
 import { Command } from "../../types";
 import { Client, MessageAttachment } from "discord.js";
 export declare const reload_match: Command;
+export declare const end_match: Command;
 export declare const forcevote: Command;
 export declare const matchlist: Command;
 export declare const match_stats: Command;

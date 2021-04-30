@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.grandwinner = exports.winner = exports.matchcard = exports.match_stats = exports.matchlist = exports.forcevote = exports.reload_match = void 0;
+exports.grandwinner = exports.winner = exports.matchcard = exports.match_stats = exports.matchlist = exports.forcevote = exports.end_match = exports.reload_match = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
 const util_1 = require("../util");
@@ -30,6 +30,22 @@ exports.reload_match = {
         await db_1.updateMatch(match);
         return message.reply("Reloading").then(m => {
             m.delete({ timeout: 1500 });
+        });
+    }
+};
+exports.end_match = {
+    name: "end-match",
+    description: "This will end the match.",
+    group: "match",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message, client, args) {
+        let match = await db_1.getMatch(message.channel.id);
+        return message.reply("Ending").then(async (m) => {
+            match.votetime += 7200;
+            m.delete({ timeout: 1500 });
+            await db_1.updateMatch(match);
         });
     }
 };
