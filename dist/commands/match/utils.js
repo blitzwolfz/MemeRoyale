@@ -93,7 +93,7 @@ exports.matchlist = {
 exports.match_stats = {
     name: "match-stats",
     description: "View Match Statistics except voting.\mJust mention the channel name" + `\`!match-stats @Channel\``,
-    group: "qual",
+    group: "match",
     owner: false,
     admins: false,
     mods: true,

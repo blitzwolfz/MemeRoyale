@@ -58,6 +58,8 @@ exports.default = [
     match_1.cancelmatch,
     submit_1.submit,
     submit_1.qualsubmit,
+    submit_1.modsubmit,
+    submit_1.modqualsubmit,
     quals_1.splitqual,
     help_1.help,
     quals_1.startsplitqual,

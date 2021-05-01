@@ -62,7 +62,7 @@ export const splitqual: Command = {
                 .setImage(temps[Math.floor(Math.random() * temps.length)])
         }
 
-        let msg = await c.send(em)
+        let msg = await c.send(`<@${message.author.id}>`, em)
 
         msg.react('✅')
         msg.react('❌')

@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js"
-import { deleteMatch, getConfig, getMatch, getTemplatedb, getThemes, insertMatch, updateMatch } from "../../db"
+import { deleteMatch, getConfig, getMatch, getTemplatedb, getThemes, insertMatch, insertReminder, updateMatch } from "../../db"
 import { Command, Match } from "../../types"
 
 export const startmatch: Command = {
@@ -68,7 +68,7 @@ export const startmatch: Command = {
                 .setImage(temps[Math.floor(Math.random() * temps.length)])
         }
 
-        let msg = await c.send(em)
+        let msg = await c.send(`<@${message.author.id}>`, em)
 
         msg.react('✅')
         msg.react('❌')
@@ -117,8 +117,6 @@ export const startmatch: Command = {
                     .setTitle("FAILED")
                     .setDescription("Please try again")
             )
-            randomize.on("end", async () => { })
-            approve.on("end", async () => { })
         });
 
         approve.on('collect', async () => {
@@ -139,6 +137,28 @@ export const startmatch: Command = {
                 await message.mentions.users.array()[0].send("Your template is " + m.temp.link)
                 await message.mentions.users.array()[1].send("Your template is " + m.temp.link)
             }
+
+            await insertReminder(
+                {
+                    _id: message.mentions.users.array()[0].id,
+                    mention: "",
+                    channel: "",
+                    type: "meme",
+                    time: 1800,
+                    timestamp: Math.floor(Date.now() / 1000)
+                }
+            )
+
+            await insertReminder(
+                {
+                    _id: message.mentions.users.array()[1].id,
+                    mention: "",
+                    channel: "",
+                    type: "meme",
+                    time: 1800,
+                    timestamp: Math.floor(Date.now() / 1000)
+                }
+            )
         });
     }
 }
@@ -209,7 +229,7 @@ export const splitmatch: Command = {
                 .setImage(temps[Math.floor(Math.random() * temps.length)])
         }
 
-        let msg = await c.send(em)
+        let msg = await c.send(`<@${message.author.id}>`, em)
 
         msg.react('✅')
         msg.react('❌')
@@ -258,8 +278,6 @@ export const splitmatch: Command = {
                     .setTitle("FAILED")
                     .setDescription("Please try again")
             )
-            randomize.on("end", async () => { })
-            approve.on("end", async () => { })
         });
 
         approve.on('collect', async () => {
@@ -324,6 +342,17 @@ export const startsplit: Command = {
                         `You have 1 hours to complete your meme\n` +
                         `Use \`!submit\` to submit to submit each image seperately`
                     )
+            )
+
+            await insertReminder(
+                {
+                    _id: e.userid,
+                    mention: "",
+                    channel: "",
+                    type: "meme",
+                    time: 1800,
+                    timestamp: Math.floor(Date.now() / 1000)
+                }
             )
 
             if (m.p1.userid === e.userid) m.p1 = e;

@@ -103,7 +103,7 @@ export const matchlist: Command = {
 export const match_stats: Command = {
     name: "match-stats",
     description: "View Match Statistics except voting.\mJust mention the channel name"+`\`!match-stats @Channel\``,
-    group: "qual",
+    group: "match",
     owner: false,
     admins: false,
     mods: true,

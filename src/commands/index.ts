@@ -5,7 +5,7 @@ import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./mat
 import { forcevote, match_stats, reload_match } from "./match/utils";
 import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
 import { qual_stats, reload_qual } from "./quals/util";
-import { qualsubmit, submit } from "./submit";
+import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as a from "./tournament/index"
 import * as b from "./exhibition/index"
 
@@ -58,6 +58,8 @@ export default [
     cancelmatch,
     submit,
     qualsubmit,
+    modsubmit,
+    modqualsubmit,
     splitqual,
     help,
     startsplitqual,

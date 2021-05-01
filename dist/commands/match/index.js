@@ -61,7 +61,7 @@ exports.startmatch = {
             em.setTitle(`Template for ${c.name}`)
                 .setImage(temps[Math.floor(Math.random() * temps.length)]);
         }
-        let msg = await c.send(em);
+        let msg = await c.send(`<@${message.author.id}>`, em);
         msg.react('✅');
         msg.react('❌');
         msg.react('🌀');
@@ -96,8 +96,6 @@ exports.startmatch = {
                 .setColor("RED")
                 .setTitle("FAILED")
                 .setDescription("Please try again"));
-            randomize.on("end", async () => { });
-            approve.on("end", async () => { });
         });
         approve.on('collect', async () => {
             var _a;
@@ -115,6 +113,22 @@ exports.startmatch = {
                 await message.mentions.users.array()[0].send("Your template is " + m.temp.link);
                 await message.mentions.users.array()[1].send("Your template is " + m.temp.link);
             }
+            await db_1.insertReminder({
+                _id: message.mentions.users.array()[0].id,
+                mention: "",
+                channel: "",
+                type: "meme",
+                time: 1800,
+                timestamp: Math.floor(Date.now() / 1000)
+            });
+            await db_1.insertReminder({
+                _id: message.mentions.users.array()[1].id,
+                mention: "",
+                channel: "",
+                type: "meme",
+                time: 1800,
+                timestamp: Math.floor(Date.now() / 1000)
+            });
         });
     }
 };
@@ -176,7 +190,7 @@ exports.splitmatch = {
             em.setTitle(`Template for ${c.name}`)
                 .setImage(temps[Math.floor(Math.random() * temps.length)]);
         }
-        let msg = await c.send(em);
+        let msg = await c.send(`<@${message.author.id}>`, em);
         msg.react('✅');
         msg.react('❌');
         msg.react('🌀');
@@ -211,8 +225,6 @@ exports.splitmatch = {
                 .setColor("RED")
                 .setTitle("FAILED")
                 .setDescription("Please try again"));
-            randomize.on("end", async () => { });
-            approve.on("end", async () => { });
         });
         approve.on('collect', async () => {
             var _a;
@@ -263,6 +275,14 @@ exports.startsplit = {
                 .setDescription(`<@${e.userid}> your match has been split.\n` +
                 `You have 1 hours to complete your meme\n` +
                 `Use \`!submit\` to submit to submit each image seperately`));
+            await db_1.insertReminder({
+                _id: e.userid,
+                mention: "",
+                channel: "",
+                type: "meme",
+                time: 1800,
+                timestamp: Math.floor(Date.now() / 1000)
+            });
             if (m.p1.userid === e.userid)
                 m.p1 = e;
             else

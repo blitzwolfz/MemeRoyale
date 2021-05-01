@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.channeldelete = exports.matchbracket = exports.qualchannelcreate = exports.matchchannelcreate = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
+const utils_1 = require("../match/utils");
 const challonge = require("challonge-js");
 exports.matchchannelcreate = {
     name: "channelcreate",
@@ -63,8 +64,9 @@ exports.matchchannelcreate = {
                                     }
                                     await message.guild.channels.create(channelstringname, { type: 'text', topic: `48h to complete` })
                                         .then(async (channel) => {
-                                        var _a, _b, _c, _d;
+                                        var _a, _b;
                                         let category = await message.guild.channels.cache.find(c => c.name == "matches" && c.type == "category");
+                                        await utils_1.matchcard(client, channel.id, [names.find(x => x.str === name1).id, names.find(x => x.str === name2).id]);
                                         await channel.send(`<@${(_a = names.find(x => x.str === name1)) === null || _a === void 0 ? void 0 : _a.id}> <@${(_b = names.find(x => x.str === name2)) === null || _b === void 0 ? void 0 : _b.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`);
                                         if (!category)
                                             throw new Error("Category channel does not exist");
@@ -72,7 +74,7 @@ exports.matchchannelcreate = {
                                         await channel.lockPermissions();
                                         await db_1.insertReminder({
                                             _id: channel.id,
-                                            mention: `<@${(_c = names.find(x => x.str === name1)) === null || _c === void 0 ? void 0 : _c.id}> <@${(_d = names.find(x => x.str === name2)) === null || _d === void 0 ? void 0 : _d.id}>`,
+                                            mention: `<@${names.find(x => x.str === name1).id}> <@${names.find(x => x.str === name2).id}>`,
                                             channel: channel.id,
                                             type: "match",
                                             time: 86400,

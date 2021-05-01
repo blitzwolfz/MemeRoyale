@@ -2,6 +2,7 @@ import { Client, Message, MessageEmbed } from "discord.js";
 import { getDoc, insertReminder, updateDoc } from "../../db";
 import { MatchList, QualList } from "../../types";
 import { Command } from "../../types";
+import { matchcard } from "../match/utils";
 const challonge = require("challonge-js")
 
 export const matchchannelcreate: Command = {
@@ -74,7 +75,7 @@ export const matchchannelcreate: Command = {
                                     await message.guild!.channels.create(channelstringname, { type: 'text', topic: `48h to complete` })
                                         .then(async channel => {
                                             let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "category");
-    
+                                            await matchcard(client, channel.id, [names.find(x => x.str === name1)!.id, names.find(x => x.str === name2)!.id])
                                             await channel.send(`<@${names.find(x => x.str === name1)?.id}> <@${names.find(x => x.str === name2)?.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`)
                                             if (!category) throw new Error("Category channel does not exist");
                                             await channel.setParent(category.id);
@@ -83,7 +84,7 @@ export const matchchannelcreate: Command = {
                                             await insertReminder(
                                                 {
                                                   _id:channel.id,
-                                                  mention:`<@${names.find(x => x.str === name1)?.id}> <@${names.find(x => x.str === name2)?.id}>`,
+                                                  mention:`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}>`,
                                                   channel:channel.id,
                                                   type:"match",
                                                   time:86400,
