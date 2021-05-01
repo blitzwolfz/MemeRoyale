@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getDoc, updateDoc } from "../../db";
+import { getDoc, insertReminder, updateDoc } from "../../db";
 import { MatchList, QualList } from "../../types";
 import { Command } from "../../types";
 const challonge = require("challonge-js")
@@ -79,6 +79,17 @@ export const matchchannelcreate: Command = {
                                             if (!category) throw new Error("Category channel does not exist");
                                             await channel.setParent(category.id);
                                             await channel.lockPermissions()
+
+                                            await insertReminder(
+                                                {
+                                                  _id:channel.id,
+                                                  mention:`<@${names.find(x => x.str === name1)?.id}> <@${names.find(x => x.str === name2)?.id}>`,
+                                                  channel:channel.id,
+                                                  type:"match",
+                                                  time:86400,
+                                                  timestamp:Math.round(message.createdTimestamp / 1000)
+                                                }
+                                            )
                                         });
                                 }
                             }
@@ -117,6 +128,17 @@ export const qualchannelcreate: Command = {
                         for (let u of qlist.users[i]) {
                             string += `<@${u}> `
                         }
+
+                        await insertReminder(
+                            {
+                              _id:channel.id,
+                              mention:string,
+                              channel:channel.id,
+                              type:"match",
+                              time:129600,
+                              timestamp:Math.round(message.createdTimestamp / 1000)-43200
+                            }
+                        )
     
                         await channel.send(`${string}, Portion ${args[0]} has begun, and you have ${time}h to complete it. Contact a ref to begin your portion!`)
                         

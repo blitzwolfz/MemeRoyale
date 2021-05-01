@@ -32,15 +32,15 @@ export const ping: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         message.channel.send("Pinging...").then(m =>{
             // The math thingy to calculate the user's ping
-              let ping = m.createdTimestamp - message.createdTimestamp;
+            let ping = m.createdTimestamp - message.createdTimestamp;
   
             // Basic embed
-              let embed = new MessageEmbed()
-              .setAuthor(`Your ping is ${ping}`)
-              .setColor("RANDOM")
+            let embed = new MessageEmbed()
+            .setAuthor(`Your ping is ${ping}`)
+            .setColor("RANDOM");
               
-              // Then It Edits the message with the ping variable embed that you created
-              m.edit(embed)
+            // Then It Edits the message with the ping variable embed that you created
+            m.edit(embed)
           });
     }
 }

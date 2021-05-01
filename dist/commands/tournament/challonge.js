@@ -63,13 +63,21 @@ exports.matchchannelcreate = {
                                     }
                                     await message.guild.channels.create(channelstringname, { type: 'text', topic: `48h to complete` })
                                         .then(async (channel) => {
-                                        var _a, _b;
+                                        var _a, _b, _c, _d;
                                         let category = await message.guild.channels.cache.find(c => c.name == "matches" && c.type == "category");
                                         await channel.send(`<@${(_a = names.find(x => x.str === name1)) === null || _a === void 0 ? void 0 : _a.id}> <@${(_b = names.find(x => x.str === name2)) === null || _b === void 0 ? void 0 : _b.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`);
                                         if (!category)
                                             throw new Error("Category channel does not exist");
                                         await channel.setParent(category.id);
                                         await channel.lockPermissions();
+                                        await db_1.insertReminder({
+                                            _id: channel.id,
+                                            mention: `<@${(_c = names.find(x => x.str === name1)) === null || _c === void 0 ? void 0 : _c.id}> <@${(_d = names.find(x => x.str === name2)) === null || _d === void 0 ? void 0 : _d.id}>`,
+                                            channel: channel.id,
+                                            type: "match",
+                                            time: 86400,
+                                            timestamp: Math.round(message.createdTimestamp / 1000)
+                                        });
                                     });
                                 }
                             });
@@ -100,6 +108,14 @@ exports.qualchannelcreate = {
                     for (let u of qlist.users[i]) {
                         string += `<@${u}> `;
                     }
+                    await db_1.insertReminder({
+                        _id: channel.id,
+                        mention: string,
+                        channel: channel.id,
+                        type: "match",
+                        time: 129600,
+                        timestamp: Math.round(message.createdTimestamp / 1000) - 43200
+                    });
                     await channel.send(`${string}, Portion ${args[0]} has begun, and you have ${time}h to complete it. Contact a ref to begin your portion!`);
                 });
             }

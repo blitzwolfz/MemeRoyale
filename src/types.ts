@@ -108,3 +108,12 @@ export interface cooldown{
     user:string,
     time:number,
 }
+
+export interface Reminder {
+    _id:string;
+    mention:string;
+    type: "meme" | "match";
+    channel:string;
+    time:number;
+    timestamp:number
+}

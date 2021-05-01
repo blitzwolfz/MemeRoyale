@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb"
-import { config, exhibition, Match, Qual } from "./types";
+import { config, exhibition, Match, Qual, Reminder } from "./types";
 //import { config } from "./types"
 require("dotenv").config();
 const url: string = process.env.dburl!;
@@ -25,9 +25,7 @@ export async function connectToDB(): Promise<void> {
     });
 }
 
-
 //General db commands
-
 //db.test.updateMany({foo: "bar"}, {$set: {test: "success!"}})
 //See this StackOverflow post https://stackoverflow.com/a/1740258
 export async function updater(coll:string, filter:object, update:object){
@@ -160,4 +158,28 @@ export async function insertExhibition(){
         activeoffers: []
     }
     await dB.collection("config").insertOne(e);        
+}
+
+//Reminder dB commands
+export async function insertReminder(r:Reminder) {
+    await dB.collection("reminders").insertOne(r) 
+}
+
+export async function getReminder(id:string): Promise<Reminder> {
+    return await dB.collection("reminders").findOne({_id:id})!
+}
+
+export async function getAllReminders(q?:object): Promise<Reminder[]> {
+    if(q){
+        return await dB.collection("reminders").find(q).toArray()
+    }
+    return await dB.collection("reminders").find({}).toArray()
+}
+
+export async function updateReminder(r:Reminder) {
+    await dB.collection("reminders").updateOne({_id:r._id}, {$set: r})    
+}
+
+export async function deleteReminder(r:Reminder) {
+    await dB.collection("reminders").deleteOne({_id:r._id})  
 }

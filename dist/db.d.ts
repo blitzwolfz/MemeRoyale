@@ -1,4 +1,4 @@
-import { config, exhibition, Match, Qual } from "./types";
+import { config, exhibition, Match, Qual, Reminder } from "./types";
 export declare function connectToDB(): Promise<void>;
 export declare function updater(coll: string, filter: object, update: object): Promise<void>;
 export declare function insertDoc(coll: string, upd: object): Promise<void>;
@@ -35,3 +35,8 @@ export declare function updateThemedb(st: {
 export declare function getExhibition(): Promise<exhibition>;
 export declare function updateExhibition(ex: exhibition): Promise<void>;
 export declare function insertExhibition(): Promise<void>;
+export declare function insertReminder(r: Reminder): Promise<void>;
+export declare function getReminder(id: string): Promise<Reminder>;
+export declare function getAllReminders(q?: object): Promise<Reminder[]>;
+export declare function updateReminder(r: Reminder): Promise<void>;
+export declare function deleteReminder(r: Reminder): Promise<void>;

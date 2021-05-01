@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
+exports.deleteReminder = exports.updateReminder = exports.getAllReminders = exports.getReminder = exports.insertReminder = exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
 const mongodb = __importStar(require("mongodb"));
 require("dotenv").config();
 const url = process.env.dburl;
@@ -166,3 +166,26 @@ async function insertExhibition() {
     await dB.collection("config").insertOne(e);
 }
 exports.insertExhibition = insertExhibition;
+async function insertReminder(r) {
+    await dB.collection("reminders").insertOne(r);
+}
+exports.insertReminder = insertReminder;
+async function getReminder(id) {
+    return await dB.collection("reminders").findOne({ _id: id });
+}
+exports.getReminder = getReminder;
+async function getAllReminders(q) {
+    if (q) {
+        return await dB.collection("reminders").find(q).toArray();
+    }
+    return await dB.collection("reminders").find({}).toArray();
+}
+exports.getAllReminders = getAllReminders;
+async function updateReminder(r) {
+    await dB.collection("reminders").updateOne({ _id: r._id }, { $set: r });
+}
+exports.updateReminder = updateReminder;
+async function deleteReminder(r) {
+    await dB.collection("reminders").deleteOne({ _id: r._id });
+}
+exports.deleteReminder = deleteReminder;

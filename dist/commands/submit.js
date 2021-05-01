@@ -51,10 +51,30 @@ exports.submit = {
                 }
             });
         }
-        if (m.p1.userid === e.userid)
+        if (m.p1.userid === e.userid) {
+            try {
+                await db_1.deleteReminder(await db_1.getReminder(m.p1.userid));
+                let r = await db_1.getReminder(m._id);
+                r.mention = `<@${m.p2.userid}>`;
+                await db_1.updateReminder(r);
+            }
+            catch (error) {
+                console.log("");
+            }
             m.p1 = e;
-        else
+        }
+        else {
+            try {
+                await db_1.deleteReminder(await db_1.getReminder(m.p2.userid));
+                let r = await db_1.getReminder(m._id);
+                r.mention = `<@${m.p1.userid}>`;
+                await db_1.updateReminder(r);
+            }
+            catch (error) {
+                console.log("");
+            }
             m.p2 = e;
+        }
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false;
             m.p1.time = Math.floor(Date.now() / 1000) - 3200;
@@ -104,7 +124,7 @@ exports.qualsubmit = {
             });
             await client.channels.cache.get("793242781892083742").send({
                 embed: {
-                    description: `<@${message.author.id}>  ${message.author.tag} has submitted their meme\nChannel: <#${match._id}>`,
+                    description: `<@${message.author.id}>\\${message.author.tag} has submitted their meme\nChannel: <#${match._id}>`,
                     color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
@@ -114,6 +134,20 @@ exports.qualsubmit = {
             });
             match.players[index] = u;
             await db_1.updateQual(match);
+            try {
+                let r = await db_1.getReminder(match._id);
+                r.mention = r.mention.replace(`<@${message.author.id}>`, "");
+                await db_1.updateReminder(r);
+            }
+            catch (error) {
+                console.log("");
+            }
+            try {
+                await db_1.deleteReminder(await db_1.getReminder(message.author.id));
+            }
+            catch (error) {
+                console.log("");
+            }
             return message.reply("Your meme for your qualifier has been attached.");
         }
     }

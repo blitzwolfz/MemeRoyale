@@ -1,5 +1,5 @@
 import { Message, Client, TextChannel } from "discord.js";
-import { getAllMatches, getAllQuals, updateMatch, updateQual } from "../db";
+import { deleteReminder, getAllMatches, getAllQuals, getReminder, updateMatch, updateQual, updateReminder } from "../db";
 import { Command } from "../types";
 
 
@@ -66,8 +66,34 @@ export const submit: Command = {
         }
 
 
-        if (m.p1.userid === e.userid) m.p1 = e;
-        else m.p2 = e;
+        if (m.p1.userid === e.userid){
+            try {
+                await deleteReminder(await getReminder(m.p1.userid))
+                let r = await getReminder(m._id)
+
+                r.mention = `<@${m.p2.userid}>`
+
+                await updateReminder(r)
+            } catch (error) {
+                console.log("")
+            }
+
+            m.p1 = e;
+        }
+
+        else{
+            try {
+                await deleteReminder(await getReminder(m.p2.userid))
+                let r = await getReminder(m._id)
+
+                r.mention = `<@${m.p1.userid}>`
+
+                await updateReminder(r)
+            } catch (error) {
+                console.log("")
+            }
+            m.p2 = e;
+        } 
 
         if(m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split){
             m.split = false
@@ -128,7 +154,7 @@ export const qualsubmit: Command = {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
                 
                 embed:{
-                    description: `<@${message.author.id}>  ${message.author.tag} has submitted their meme\nChannel: <#${match._id}>`,
+                    description: `<@${message.author.id}>\\${message.author.tag} has submitted their meme\nChannel: <#${match._id}>`,
                     color:"#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
@@ -140,6 +166,22 @@ export const qualsubmit: Command = {
             match.players[index] = u
 
             await updateQual(match)
+
+            try {
+                let r = await getReminder(match._id)
+
+                r.mention = r.mention.replace(`<@${message.author.id}>`, "")
+
+                await updateReminder(r)
+            } catch (error) {
+                console.log("")
+            }
+
+            try {
+                await deleteReminder(await getReminder(message.author.id))
+            } catch (error) {
+                console.log("")
+            }
             
             return message.reply("Your meme for your qualifier has been attached.")
         }
