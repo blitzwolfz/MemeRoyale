@@ -7,6 +7,7 @@ import { connectToDB, getMatch, getQual, updateMatch, updateQual } from "./db"
 import { backgroundMatchLoop } from "./commands/match/background"
 import { backgroundQualLoop } from "./commands/quals/background"
 import { backgroundExhibitionLoop } from "./commands/exhibition/background"
+import { backgroundReminderLoop } from "./commands/reminders"
 export const client = new Discord.Client({partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"]});
 
 export let prefix: string = process.env.prefix!
@@ -68,9 +69,19 @@ client.once("ready", async () => {
 
     setInterval(async function () {
         await backgroundMatchLoop(client)
+    }, 15000)
+
+    setInterval(async function () {
         await backgroundQualLoop(client)
+    }, 15000)
+
+    setInterval(async function () {
         await backgroundExhibitionLoop(client)
     }, 15000)
+
+    setInterval(async function () {
+        await backgroundReminderLoop(client)
+    }, 5000)
 
     console.log("\n")
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`)
@@ -235,30 +246,6 @@ client.on("message", async message => {
         if (message.author.id !== process.env.owner ) {
             return await message.reply("nah b")
         }
-
-        let q = await getQual(message.channel.id)
-
-        let one = q.players[1].userid
-        let two = q.players[2].userid
-
-        q.players[1] = q.players[0]
-        q.players[2] = q.players[0]
-
-        q.players[1].userid = one
-        q.players[2].userid = two
-
-        await updateQual(q)
-
-        // let em1 = (await (<Discord.TextChannel>await client.channels.fetch("722291182461386804")).messages.fetch("804987793611816991")).embeds[0]
-        // let em2 = (await (<Discord.TextChannel>await client.channels.fetch("722291182461386804")).messages.fetch("805654669107134505")).embeds[0]
-
-        // await message.channel.send(em1)
-        // await message.channel.send(em2)
-        // console.time("Run")
-        // let e = await QualifierResults((<Discord.TextChannel>await client.channels.fetch(message.channel.id)), client, ["807037315843227688", "807037316806737920"])
-        // console.timeEnd("Run")
-        // //@ts-ignore
-        // await message.channel.send({embed:e})
     }
 
     else if (command) {

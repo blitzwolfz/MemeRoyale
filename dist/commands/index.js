@@ -29,6 +29,7 @@ const util_1 = require("./quals/util");
 const submit_1 = require("./submit");
 const a = __importStar(require("./tournament/index"));
 const b = __importStar(require("./exhibition/index"));
+const reminders_1 = require("./reminders");
 exports.ping = {
     name: "ping",
     description: "ping",
@@ -48,6 +49,7 @@ exports.ping = {
 };
 exports.default = [
     match_1.startmatch,
+    reminders_1.delay,
     match_1.startsplit,
     match_1.endmatch,
     utils_1.reload_match,

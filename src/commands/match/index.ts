@@ -138,25 +138,32 @@ export const startmatch: Command = {
                 await message.mentions.users.array()[1].send("Your template is " + m.temp.link)
             }
 
+            let timeArr:number[] = []
+            timeArr.push(3300)
+            timeArr.push(2700)
+            timeArr.push(1800)
+
             await insertReminder(
                 {
-                    _id: message.mentions.users.array()[0].id,
+                    _id:message.mentions.users.array()[0].id,
                     mention: "",
                     channel: "",
                     type: "meme",
-                    time: 1800,
-                    timestamp: Math.floor(Date.now() / 1000)
+                    time:timeArr,
+                    timestamp:Math.floor(Date.now()/1000),
+                    basetime:3600
                 }
             )
 
             await insertReminder(
                 {
-                    _id: message.mentions.users.array()[1].id,
+                    _id:message.mentions.users.array()[1].id,
                     mention: "",
                     channel: "",
                     type: "meme",
-                    time: 1800,
-                    timestamp: Math.floor(Date.now() / 1000)
+                    time:timeArr,
+                    timestamp:Math.floor(Date.now()/1000),
+                    basetime:3600
                 }
             )
         });
@@ -344,14 +351,20 @@ export const startsplit: Command = {
                     )
             )
 
+            let timeArr:number[] = []
+            timeArr.push(3300)
+            timeArr.push(2700)
+            timeArr.push(1800)
+    
             await insertReminder(
                 {
-                    _id: e.userid,
+                    _id:message.author.id,
                     mention: "",
                     channel: "",
                     type: "meme",
-                    time: 1800,
-                    timestamp: Math.floor(Date.now() / 1000)
+                    time:timeArr,
+                    timestamp:Math.floor(Date.now()/1000),
+                    basetime:3600
                 }
             )
 

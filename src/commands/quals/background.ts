@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js"
-import { deleteQual, getAllQuals, getConfig, updateQual } from "../../db"
+import { deleteQual, getAllQuals, getConfig, insertReminder, updateQual } from "../../db"
 import { Qual } from "../../types"
 import { emojis, timeconsts } from "../util"
 import { QualifierResults } from "./util"
@@ -278,7 +278,41 @@ async function matchResults(client: Client, q: Qual) {
                 for(let p of q.players){
                     string += `<@${p.userid}>\n`
                 }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
+                let c = <TextChannel>client.channels.cache.get(channel.id)
+
+                let m = (await c.messages.fetch({limit:100})).last()!
+    
+                let time = Math.floor(((Math.floor(m.createdTimestamp/1000)+ 259200) - Math.floor(Date.now()/1000))/3600)
+    
+                if(time <= 72 && channel.topic?.split(" ").join("").toLowerCase() === "round1"){
+                    await channel.send(`${string} you have ${time}h left to complete Portion 2`)
+
+                    let timeArr:Array<number> = []
+                    timeArr.push(time*3600)
+                    if((time-2)*3600 > 0){
+                        timeArr.push((time-2)*3600)
+                    }
+            
+                    if((time-12)*3600 > 0){
+                        timeArr.push((time-12)*3600)
+                    }
+            
+                    if((time-24)*3600 > 0){
+                        timeArr.push((time-24)*3600)
+                    }
+            
+                    await insertReminder(
+                        {
+                            _id:channel.id,
+                            mention:`${string}`,
+                            channel:channel.id,
+                            type:"match",
+                            time:timeArr,
+                            timestamp:Math.floor(Date.now()/1000),
+                            basetime:time*3600
+                        }
+                    )
+                }
             }
     
             else if ((t!.concat([message.id])).length === timeconsts.qual.results && t !== undefined) {
@@ -292,19 +326,19 @@ async function matchResults(client: Client, q: Qual) {
                     .send({ embed:emm });
             }
             
-            else if(t!.concat([message.id]).length < timeconsts.qual.results){
+            // else if(t!.concat([message.id]).length < timeconsts.qual.results){
                 
-                if(t.includes(message.id) === false){
-                    await channel.setTopic(t!.concat([message.id]).join(" "))
-                }
+            //     if(t.includes(message.id) === false){
+            //         await channel.setTopic(t!.concat([message.id]).join(" "))
+            //     }
 
-                let string = "";
+            //     let string = "";
 
-                for(let p of q.players){
-                    string += `<@${p.userid}>\n`
-                }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
-            }
+            //     for(let p of q.players){
+            //         string += `<@${p.userid}>\n`
+            //     }
+            //     await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
+            // }
 
         });
 

@@ -28,6 +28,7 @@ const db_1 = require("./db");
 const background_1 = require("./commands/match/background");
 const background_2 = require("./commands/quals/background");
 const background_3 = require("./commands/exhibition/background");
+const reminders_1 = require("./commands/reminders");
 exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
 exports.prefix = process.env.prefix;
 require('dotenv').config();
@@ -51,9 +52,16 @@ exports.client.once("ready", async () => {
     await db_1.connectToDB();
     setInterval(async function () {
         await background_1.backgroundMatchLoop(exports.client);
+    }, 15000);
+    setInterval(async function () {
         await background_2.backgroundQualLoop(exports.client);
+    }, 15000);
+    setInterval(async function () {
         await background_3.backgroundExhibitionLoop(exports.client);
     }, 15000);
+    setInterval(async function () {
+        await reminders_1.backgroundReminderLoop(exports.client);
+    }, 5000);
     console.log("\n");
     console.log(`Logged in as ${(_a = exports.client.user) === null || _a === void 0 ? void 0 : _a.tag}\nPrefix is ${exports.prefix}`);
     console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}`);
@@ -197,14 +205,6 @@ exports.client.on("message", async (message) => {
         if (message.author.id !== process.env.owner) {
             return await message.reply("nah b");
         }
-        let q = await db_1.getQual(message.channel.id);
-        let one = q.players[1].userid;
-        let two = q.players[2].userid;
-        q.players[1] = q.players[0];
-        q.players[2] = q.players[0];
-        q.players[1].userid = one;
-        q.players[2].userid = two;
-        await db_1.updateQual(q);
     }
     else if (command) {
         if (command.owner || command.admins || command.mods) {

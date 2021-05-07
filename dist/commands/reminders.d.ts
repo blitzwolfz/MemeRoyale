@@ -1,2 +1,4 @@
 import { Client } from "discord.js";
-export declare function backgroundExhibitionLoop(client: Client): Promise<void>;
+import { Command } from "../types";
+export declare function backgroundReminderLoop(client: Client): Promise<void>;
+export declare const delay: Command;

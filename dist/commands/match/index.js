@@ -113,21 +113,27 @@ exports.startmatch = {
                 await message.mentions.users.array()[0].send("Your template is " + m.temp.link);
                 await message.mentions.users.array()[1].send("Your template is " + m.temp.link);
             }
+            let timeArr = [];
+            timeArr.push(3300);
+            timeArr.push(2700);
+            timeArr.push(1800);
             await db_1.insertReminder({
                 _id: message.mentions.users.array()[0].id,
                 mention: "",
                 channel: "",
                 type: "meme",
-                time: 1800,
-                timestamp: Math.floor(Date.now() / 1000)
+                time: timeArr,
+                timestamp: Math.floor(Date.now() / 1000),
+                basetime: 3600
             });
             await db_1.insertReminder({
                 _id: message.mentions.users.array()[1].id,
                 mention: "",
                 channel: "",
                 type: "meme",
-                time: 1800,
-                timestamp: Math.floor(Date.now() / 1000)
+                time: timeArr,
+                timestamp: Math.floor(Date.now() / 1000),
+                basetime: 3600
             });
         });
     }
@@ -275,13 +281,18 @@ exports.startsplit = {
                 .setDescription(`<@${e.userid}> your match has been split.\n` +
                 `You have 1 hours to complete your meme\n` +
                 `Use \`!submit\` to submit to submit each image seperately`));
+            let timeArr = [];
+            timeArr.push(3300);
+            timeArr.push(2700);
+            timeArr.push(1800);
             await db_1.insertReminder({
-                _id: e.userid,
+                _id: message.author.id,
                 mention: "",
                 channel: "",
                 type: "meme",
-                time: 1800,
-                timestamp: Math.floor(Date.now() / 1000)
+                time: timeArr,
+                timestamp: Math.floor(Date.now() / 1000),
+                basetime: 3600
             });
             if (m.p1.userid === e.userid)
                 m.p1 = e;

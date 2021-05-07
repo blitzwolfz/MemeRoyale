@@ -193,7 +193,7 @@ async function matchResults(client, q) {
                 timestamp: new Date()
             }
         }).then(async (message) => {
-            var _a;
+            var _a, _b;
             let t = (_a = channel.topic) === null || _a === void 0 ? void 0 : _a.split(" ");
             if (!t) {
                 await channel.setTopic(message.id);
@@ -202,7 +202,32 @@ async function matchResults(client, q) {
                 for (let p of q.players) {
                     string += `<@${p.userid}>\n`;
                 }
-                await channel.send(`Portion ${util_1.timeconsts.qual.results - t.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`);
+                let c = client.channels.cache.get(channel.id);
+                let m = (await c.messages.fetch({ limit: 100 })).last();
+                let time = Math.floor(((Math.floor(m.createdTimestamp / 1000) + 259200) - Math.floor(Date.now() / 1000)) / 3600);
+                if (time <= 72 && ((_b = channel.topic) === null || _b === void 0 ? void 0 : _b.split(" ").join("").toLowerCase()) === "round1") {
+                    await channel.send(`${string} you have ${time}h left to complete Portion 2`);
+                    let timeArr = [];
+                    timeArr.push(time * 3600);
+                    if ((time - 2) * 3600 > 0) {
+                        timeArr.push((time - 2) * 3600);
+                    }
+                    if ((time - 12) * 3600 > 0) {
+                        timeArr.push((time - 12) * 3600);
+                    }
+                    if ((time - 24) * 3600 > 0) {
+                        timeArr.push((time - 24) * 3600);
+                    }
+                    await db_1.insertReminder({
+                        _id: channel.id,
+                        mention: `${string}`,
+                        channel: channel.id,
+                        type: "match",
+                        time: timeArr,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        basetime: time * 3600
+                    });
+                }
             }
             else if ((t.concat([message.id])).length === util_1.timeconsts.qual.results && t !== undefined) {
                 t.push(message.id);
@@ -210,16 +235,6 @@ async function matchResults(client, q) {
                 await channel.send({ embed: emm });
                 await (await client.channels.cache.get("722291182461386804"))
                     .send({ embed: emm });
-            }
-            else if (t.concat([message.id]).length < util_1.timeconsts.qual.results) {
-                if (t.includes(message.id) === false) {
-                    await channel.setTopic(t.concat([message.id]).join(" "));
-                }
-                let string = "";
-                for (let p of q.players) {
-                    string += `<@${p.userid}>\n`;
-                }
-                await channel.send(`Portion ${util_1.timeconsts.qual.results - t.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`);
             }
         });
     }

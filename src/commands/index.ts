@@ -8,6 +8,7 @@ import { qual_stats, reload_qual } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as a from "./tournament/index"
 import * as b from "./exhibition/index"
+import { delay } from "./reminders";
 
 
 // export const example: Command = {
@@ -48,6 +49,7 @@ export const ping: Command = {
 
 export default [
     startmatch,
+    delay,
     startsplit,
     endmatch,
     reload_match,

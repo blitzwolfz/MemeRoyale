@@ -103,6 +103,7 @@ export interface Reminder {
     mention: string;
     type: "meme" | "match";
     channel: string;
-    time: number;
+    time: number[];
     timestamp: number;
+    basetime: number;
 }

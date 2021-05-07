@@ -64,21 +64,33 @@ exports.matchchannelcreate = {
                                     }
                                     await message.guild.channels.create(channelstringname, { type: 'text', topic: `48h to complete` })
                                         .then(async (channel) => {
-                                        var _a, _b;
-                                        let category = await message.guild.channels.cache.find(c => c.name == "matches" && c.type == "category");
-                                        await utils_1.matchcard(client, channel.id, [names.find(x => x.str === name1).id, names.find(x => x.str === name2).id]);
-                                        await channel.send(`<@${(_a = names.find(x => x.str === name1)) === null || _a === void 0 ? void 0 : _a.id}> <@${(_b = names.find(x => x.str === name2)) === null || _b === void 0 ? void 0 : _b.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`);
+                                        let category = await message.guild.channels.cache.find(c => c.name == "matchees" && c.type == "category");
                                         if (!category)
                                             throw new Error("Category channel does not exist");
                                         await channel.setParent(category.id);
                                         await channel.lockPermissions();
+                                        await utils_1.matchcard(client, channel.id, [names.find(x => x.str === name1).id, names.find(x => x.str === name2).id]);
+                                        await channel.send(`<@${names.find(x => x.str === name1).id} <@${names.find(x => x.str === name2).id} You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`);
+                                        let time = 48;
+                                        let timeArr = [];
+                                        timeArr.push(time * 3600);
+                                        if ((time - 2) * 3600 > 0) {
+                                            timeArr.push((time - 2) * 3600);
+                                        }
+                                        if ((time - 12) * 3600 > 0) {
+                                            timeArr.push((time - 12) * 3600);
+                                        }
+                                        if ((time - 24) * 3600 > 0) {
+                                            timeArr.push((time - 24) * 3600);
+                                        }
                                         await db_1.insertReminder({
                                             _id: channel.id,
                                             mention: `<@${names.find(x => x.str === name1).id}> <@${names.find(x => x.str === name2).id}>`,
                                             channel: channel.id,
                                             type: "match",
-                                            time: 86400,
-                                            timestamp: Math.round(message.createdTimestamp / 1000)
+                                            time: timeArr,
+                                            timestamp: Math.floor(Date.now() / 1000),
+                                            basetime: time * 3600
                                         });
                                     });
                                 }
@@ -99,7 +111,9 @@ exports.qualchannelcreate = {
     admins: false,
     mods: true,
     async execute(message, client, args) {
-        let time = args[1];
+        let time = parseInt(args[1]);
+        if (!time)
+            return message.channel.send("Please state how long this qualifier will be");
         let qlist = await db_1.getDoc("config", "quallist");
         for (let i = 0; i < qlist.users.length; i++) {
             if (qlist.users[i].length > 0) {
@@ -110,13 +124,21 @@ exports.qualchannelcreate = {
                     for (let u of qlist.users[i]) {
                         string += `<@${u}> `;
                     }
+                    let timeArr = [];
+                    if ((time - 2) * 3600 > 0) {
+                        timeArr.push((time - 2) * 3600);
+                    }
+                    if ((time - 12) * 3600 > 0) {
+                        timeArr.push((time - 12) * 3600);
+                    }
                     await db_1.insertReminder({
                         _id: channel.id,
                         mention: string,
                         channel: channel.id,
                         type: "match",
-                        time: 129600,
-                        timestamp: Math.round(message.createdTimestamp / 1000) - 43200
+                        time: timeArr,
+                        timestamp: Math.floor(Date.now() / 1000),
+                        basetime: time * 3600
                     });
                     await channel.send(`${string}, Portion ${args[0]} has begun, and you have ${time}h to complete it. Contact a ref to begin your portion!`);
                 });
@@ -190,7 +212,8 @@ exports.channeldelete = {
 exports.default = [
     exports.matchchannelcreate,
     exports.qualchannelcreate,
-    exports.matchbracket
+    exports.matchbracket,
+    exports.channeldelete
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name)
         return -1;

@@ -74,21 +74,41 @@ export const matchchannelcreate: Command = {
     
                                     await message.guild!.channels.create(channelstringname, { type: 'text', topic: `48h to complete` })
                                         .then(async channel => {
-                                            let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "category");
-                                            await matchcard(client, channel.id, [names.find(x => x.str === name1)!.id, names.find(x => x.str === name2)!.id])
-                                            await channel.send(`<@${names.find(x => x.str === name1)?.id}> <@${names.find(x => x.str === name2)?.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`)
+                                            let category = await message.guild!.channels.cache.find(c => c.name == "matchees" && c.type == "category");
                                             if (!category) throw new Error("Category channel does not exist");
                                             await channel.setParent(category.id);
                                             await channel.lockPermissions()
+                                            await matchcard(client, channel.id, [names.find(x => x.str === name1)!.id, names.find(x => x.str === name2)!.id])
+                                            await channel.send(`<@${names.find(x => x.str === name1)!.id} <@${names.find(x => x.str === name2)!.id} You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`)
 
+
+                                            let time = 48
+
+                                            let timeArr:Array<number> = []
+
+                                            timeArr.push(time*3600)
+                                    
+                                            if((time-2)*3600 > 0){
+                                                timeArr.push((time-2)*3600)
+                                            }
+                                    
+                                            if((time-12)*3600 > 0){
+                                                timeArr.push((time-12)*3600)
+                                            }
+                                    
+                                            if((time-24)*3600 > 0){
+                                                timeArr.push((time-24)*3600)
+                                            }
+                                    
                                             await insertReminder(
                                                 {
-                                                  _id:channel.id,
-                                                  mention:`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}>`,
-                                                  channel:channel.id,
-                                                  type:"match",
-                                                  time:86400,
-                                                  timestamp:Math.round(message.createdTimestamp / 1000)
+                                                    _id:channel.id,
+                                                    mention:`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}>`,
+                                                    channel:channel.id,
+                                                    type:"match",
+                                                    time:timeArr,
+                                                    timestamp:Math.floor(Date.now()/1000),
+                                                    basetime:time*3600
                                                 }
                                             )
                                         });
@@ -113,7 +133,8 @@ export const qualchannelcreate: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        let time = args[1]
+        let time = parseInt(args[1])
+        if(!time) return message.channel.send("Please state how long this qualifier will be")
         let qlist: QualList = await getDoc("config", "quallist")
     
         for (let i = 0; i < qlist.users.length; i++) {
@@ -130,14 +151,25 @@ export const qualchannelcreate: Command = {
                             string += `<@${u}> `
                         }
 
+                        let timeArr:Array<number> = []
+                
+                        if((time-2)*3600 > 0){
+                            timeArr.push((time-2)*3600)
+                        }
+                
+                        if((time-12)*3600 > 0){
+                            timeArr.push((time-12)*3600)
+                        }
+                
                         await insertReminder(
                             {
-                              _id:channel.id,
-                              mention:string,
-                              channel:channel.id,
-                              type:"match",
-                              time:129600,
-                              timestamp:Math.round(message.createdTimestamp / 1000)-43200
+                                _id:channel.id,
+                                mention:string,
+                                channel:channel.id,
+                                type:"match",
+                                time:timeArr,
+                                timestamp:Math.floor(Date.now()/1000),
+                                basetime:time*3600
                             }
                         )
     
@@ -233,7 +265,8 @@ export const channeldelete: Command = {
 export default[
     matchchannelcreate,
     qualchannelcreate,
-    matchbracket
+    matchbracket,
+    channeldelete
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1;
     else if (k1.name > k2.name) return 1;
