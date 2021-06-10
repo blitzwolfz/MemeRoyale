@@ -294,8 +294,9 @@ client.on("message", async message => {
 
             } catch (error) {
                 console.log(error)
+                let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size:512}))
                 await message.channel.send(new Discord.MessageEmbed()
-                    .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
+                    .setFooter("blitzwolfz#9338", `${imgurl}`)
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields(
@@ -308,6 +309,22 @@ client.on("message", async message => {
                 )
             }
         }
+    }
+
+    else if(!command) {
+        let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size:512}))
+        await message.channel.send(new Discord.MessageEmbed()
+        .setColor("RED")
+        .setTitle("ERROR")
+        .addFields(
+            { name: 'Channel Name', value: `${(<Discord.TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
+            { name: 'Channel Id', value: `${message.channel.id}`, inline: true },
+            { name: 'User', value: `${message.author.tag}`, inline: true },
+            { name: 'User Id', value: `${message.author.id}`, inline: true },
+        )
+        .setDescription("Command does not exist. If you think this is in error please contact <@239516219445608449>")
+        .setFooter("blitzwolfz#9338", `${imgurl}`)
+        );
     }
 })
 

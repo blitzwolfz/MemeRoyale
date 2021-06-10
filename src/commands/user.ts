@@ -1,5 +1,5 @@
 import { Message, Client, MessageEmbed } from "discord.js";
-import { addProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
+import { addDuelProfile, addProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
 import { Command, DuelProfile, Profile } from "../types";
 import { backwardsFilter, forwardsFilter } from "./util";
 
@@ -262,7 +262,7 @@ export const duel_stats: Command = {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()): message.author.displayAvatarURL()
         let name = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username): message.author.username
         if (!user){
-            return message.reply("That user profile does not exist! Please do `!duel create` to create your own user profile")
+            return message.reply("That user profile does not exist! Please do `!duel-create` to create your own user profile")
         }
     
         else if(user){
@@ -285,6 +285,65 @@ export const duel_stats: Command = {
             
             await message.channel.send(UserEmbed)
         }
+    }
+}
+
+export const duel_stats_create: Command = {
+    name: "duel-create",
+    description: "`!duel-create`. Create your duel profile.",
+    group: "duels",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()): message.author.displayAvatarURL()
+    
+        if(await getDuelProfile(message.author.id, message.guild!.id)){
+            return message.reply("That user profile does exist! Please do `!duel-stats` to check the user profile")
+        }
+    
+        else{
+    
+            await addDuelProfile({
+                _id: message.author.id,
+                votetally:0,
+                points:0,
+                wins: 0,
+                loss: 0,
+            }, message.guild!.id)
+    
+           
+            await message.channel.send(
+                new MessageEmbed()
+                    .setTitle(`Duelist: ${message.author.username}`)
+                    .setColor("RANDOM")
+                    .setThumbnail(`${imgurl}`)
+                    .addFields(
+                    { name: 'Total points', value: `${0}` },
+                    { name: 'Total wins', value: `${0}` },
+                    { name: 'Total loss', value: `${0}`  },
+                    { name: 'Total matches', value: `${0}` },
+                    { name: 'Win Rate', value: `${0}%` },
+                )
+            )
+        }
+    }
+}
+
+export async function createDuelProfileatMatch(userId:string, guildid:string) {
+   
+    if(await getDuelProfile(userId, guildid)){
+        return;
+    }
+
+    else {
+        await addDuelProfile({
+            _id: userId,
+            votetally:0,
+            points:0,
+            wins: 0,
+            loss: 0,
+        }, guildid)
     }
 }
 
@@ -454,7 +513,8 @@ export default[
     profile_stats,
     profile_lb,
     duel_stats,
-    duel_lb
+    duel_lb,
+    duel_stats_create
 ]
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1;

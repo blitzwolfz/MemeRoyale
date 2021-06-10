@@ -4,6 +4,8 @@ export declare const profile_stats: Command;
 export declare function createProfileatMatch(userId: string): Promise<void>;
 export declare const profile_lb: Command;
 export declare const duel_stats: Command;
+export declare const duel_stats_create: Command;
+export declare function createDuelProfileatMatch(userId: string, guildid: string): Promise<void>;
 export declare const duel_lb: Command;
 declare const _default: Command[];
 export default _default;

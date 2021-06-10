@@ -101,16 +101,19 @@ export const signup_manager: Command = {
         if(args[0] === "reopen"){
             signup.open = true;
 
-            await updateDoc("config", "signups", signup)
-
-            return await c.send(new MessageEmbed()
+            await c.send(new MessageEmbed()
             .setDescription("Match signups have reopened!"
             +"\nIf you wish to signup use `!signup`"
             +"\nYou can also use 🗳️ to signup"
             +"\nIf you wish to remove your signup use `!removesignup`"
             +"\nOf course if you have problems contact mods!")
             .setColor("#d7be26")
-            .setTimestamp())
+            .setTimestamp()).then(async msg =>{
+                msg.react('🗳️')
+                signup.msgID = msg.id
+            })
+
+            return await updateDoc("config", "signups", signup)
         }
 
         if(args[0] === "remove"){

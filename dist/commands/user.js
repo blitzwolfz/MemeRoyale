@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.duel_lb = exports.duel_stats = exports.profile_lb = exports.createProfileatMatch = exports.profile_stats = exports.create_profile = void 0;
+exports.duel_lb = exports.createDuelProfileatMatch = exports.duel_stats_create = exports.duel_stats = exports.profile_lb = exports.createProfileatMatch = exports.profile_stats = exports.create_profile = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../db");
 const util_1 = require("./util");
@@ -200,7 +200,7 @@ exports.duel_stats = {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first().id).displayAvatarURL()) : message.author.displayAvatarURL();
         let name = args[1] ? (client.users.cache.get(message.mentions.users.first().id).username) : message.author.username;
         if (!user) {
-            return message.reply("That user profile does not exist! Please do `!duel create` to create your own user profile");
+            return message.reply("That user profile does not exist! Please do `!duel-create` to create your own user profile");
         }
         else if (user) {
             let wr = Math.floor(user.wins / (user.wins + user.loss) * 100);
@@ -215,6 +215,49 @@ exports.duel_stats = {
         }
     }
 };
+exports.duel_stats_create = {
+    name: "duel-create",
+    description: "`!duel-create`. Create your duel profile.",
+    group: "duels",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message, client, args) {
+        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first().id).displayAvatarURL()) : message.author.displayAvatarURL();
+        if (await db_1.getDuelProfile(message.author.id, message.guild.id)) {
+            return message.reply("That user profile does exist! Please do `!duel-stats` to check the user profile");
+        }
+        else {
+            await db_1.addDuelProfile({
+                _id: message.author.id,
+                votetally: 0,
+                points: 0,
+                wins: 0,
+                loss: 0,
+            }, message.guild.id);
+            await message.channel.send(new discord_js_1.MessageEmbed()
+                .setTitle(`Duelist: ${message.author.username}`)
+                .setColor("RANDOM")
+                .setThumbnail(`${imgurl}`)
+                .addFields({ name: 'Total points', value: `${0}` }, { name: 'Total wins', value: `${0}` }, { name: 'Total loss', value: `${0}` }, { name: 'Total matches', value: `${0}` }, { name: 'Win Rate', value: `${0}%` }));
+        }
+    }
+};
+async function createDuelProfileatMatch(userId, guildid) {
+    if (await db_1.getDuelProfile(userId, guildid)) {
+        return;
+    }
+    else {
+        await db_1.addDuelProfile({
+            _id: userId,
+            votetally: 0,
+            points: 0,
+            wins: 0,
+            loss: 0,
+        }, guildid);
+    }
+}
+exports.createDuelProfileatMatch = createDuelProfileatMatch;
 exports.duel_lb = {
     name: "duel-lb",
     description: "`!duel lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your server. If no flag is passed, the lb sorts by wins.",
@@ -354,7 +397,8 @@ exports.default = [
     exports.profile_stats,
     exports.profile_lb,
     exports.duel_stats,
-    exports.duel_lb
+    exports.duel_lb,
+    exports.duel_stats_create
 ]
     .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name)
