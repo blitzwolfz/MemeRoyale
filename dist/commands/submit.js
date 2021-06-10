@@ -24,14 +24,24 @@ exports.submit = {
             return message.reply("Your image was not submitted properly. Contact a mod");
         }
         ;
-        let duels = false;
-        if (args.length > 0 && args[0].toLowerCase() === "-duel") {
-            duels = true;
+        let q = function (x) {
+            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id)
+                && (x.p1.memedone === false || x.p2.memedone === false)
+                && x.votingperiod === false);
+        };
+        let allmatches = await (await db_1.getAllMatches()).filter(q);
+        if (allmatches.length > 1 && !args[0]) {
+            message.channel.send("You are in multiply matches. Please mention the corresponding number to submit. For example `!submit 1`");
+            let i = 0;
+            for (let m of allmatches) {
+                await message.channel.send(`${i + 1}) <#${m._id}>`);
+                i += 1;
+            }
+            return;
         }
-        let m = (await (await db_1.getAllMatches())).find(x => (x.p1.userid === message.author.id && x.p1.memedone === false && x.exhibition === duels
-            || x.p2.userid === message.author.id && x.p2.memedone === false && x.exhibition === duels));
+        let m = args[0] ? allmatches[parseInt(args[0]) - 1] : allmatches[0];
         if (!m) {
-            return await message.author.send("You are not in any match. If you are trying to submit for a duel use `!submit -duel` to submit.");
+            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
         }
         let arr = [m.p1, m.p2];
         let e = arr.find(x => x.userid === message.author.id);
@@ -52,29 +62,14 @@ exports.submit = {
                 }
             });
         }
-        if (m.p1.userid === e.userid) {
-            try {
-                await db_1.deleteReminder(await db_1.getReminder(m.p1.userid));
-                let r = await db_1.getReminder(m._id);
-                r.mention = `<@${m.p2.userid}>`;
-                await db_1.updateReminder(r);
-            }
-            catch (error) {
-                console.log("");
-            }
-            m.p1 = e;
+        try {
+            await db_1.deleteReminder(await db_1.getReminder(e.userid));
+            let r = await db_1.getReminder(m._id);
+            r.mention = r.mention.replace(`<@${e.userid}>`, "");
+            await db_1.updateReminder(r);
         }
-        else {
-            try {
-                await db_1.deleteReminder(await db_1.getReminder(m.p2.userid));
-                let r = await db_1.getReminder(m._id);
-                r.mention = `<@${m.p1.userid}>`;
-                await db_1.updateReminder(r);
-            }
-            catch (error) {
-                console.log("");
-            }
-            m.p2 = e;
+        catch (error) {
+            console.log("");
         }
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false;
