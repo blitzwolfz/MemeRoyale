@@ -22,6 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.duel = void 0;
 const discord_js_1 = require("discord.js");
 const db_1 = require("../../db");
+const user_1 = require("../user");
 const s = __importStar(require("./utils"));
 exports.duel = {
     name: "duel",
@@ -32,13 +33,6 @@ exports.duel = {
     mods: false,
     async execute(message, client, args) {
         var _a, _b, _c;
-        let ex = await db_1.getExhibition();
-        if (ex.cooldowns.some(x => x.user === message.author.id)) {
-            return message.reply("It hasn't been 1h yet");
-        }
-        if (ex.cooldowns.some(x => x.user === message.mentions.users.first().id)) {
-            return message.reply(`It hasn't been 1h for <@${message.mentions.users.first().id}`);
-        }
         if (!message.mentions.users.array()) {
             return message.reply("Please mention someone");
         }
@@ -46,13 +40,20 @@ exports.duel = {
             return message.reply("You can't duel yourself.");
         }
         if (args.length < 2) {
-            return message.reply("Please use flag theme or template");
+            return message.reply("Please use theme flag or template flag");
         }
-        if (args.length >= 3) {
-            return message.reply("No too many arguments. Use either theme or template");
+        else if (args.length >= 3) {
+            return message.reply("No too many arguments. Use only the theme flag or template flag");
         }
         else if (!["template", "theme"].includes(args[1].toLowerCase())) {
-            return message.reply("Please use flag theme or template");
+            return message.reply("Please use theme flag or template flag");
+        }
+        let ex = await db_1.getExhibition();
+        if (ex.cooldowns.some(x => x.user === message.author.id)) {
+            return message.reply("It hasn't been 5 mins yet");
+        }
+        if (ex.cooldowns.some(x => x.user === message.mentions.users.first().id)) {
+            return message.reply(`It hasn't been 5 mins for <@${message.mentions.users.first().id}`);
         }
         let m = message;
         const filter = (response) => {
@@ -88,10 +89,16 @@ exports.duel = {
         if (res === true) {
             await db_1.updateExhibition(ex);
             ex = await db_1.getExhibition();
-            let guild = client.guilds.cache.find(x => x.name.toLowerCase() === "MemeRoyale".toLowerCase());
-            let category = await guild.channels.cache.find(c => c.name == "duels" && c.type == "category");
+            let guild = client.guilds.cache.get(message.guild.id);
+            let category = await guild.channels.cache.find(c => c.name.toLowerCase() == "duels" && c.type == "category");
             await (guild === null || guild === void 0 ? void 0 : guild.channels.create(`${message.author.username}-vs-${(_c = message.mentions.users.first()) === null || _c === void 0 ? void 0 : _c.username}`, { type: 'text', topic: `Exhibition Match`, parent: category.id }).then(async (channel) => {
-                await channel.lockPermissions();
+                try {
+                    await channel.lockPermissions();
+                }
+                catch (error) {
+                    console.log(error);
+                    console.log("Can't lock channel");
+                }
                 let m = {
                     _id: channel.id,
                     split: false,
@@ -159,11 +166,17 @@ exports.duel = {
                         .setColor("#d7be26")
                         .setTimestamp());
                 }
-                await user1.send(`You have 30 mins to complete your meme\nUse \`!submit\` to submit your image`);
-                await user2.send(`You have 30 mins to complete your meme\nUse \`!submit\` to submit your image`);
+                await user1.send(`You have 30 mins to complete your meme\nUse \`!submit\` to submit each image. If you have an active match in MemeRoyale, you will have to submit based on channel`);
+                await user2.send(`You have 30 mins to complete your meme\nUse \`!submit\` to submit each image. If you have an active match in MemeRoyale, you will have to submit based on channel`);
+                if (m.temp.link) {
+                    await user1.send(`Image link if embed doesn't show:\`${m.temp.link}\``);
+                    await user2.send(`Image link if embed doesn't show:\`${m.temp.link}\``);
+                }
                 await db_1.insertMatch(m);
                 ex.activematches.push(channel.id);
                 await db_1.updateExhibition(ex);
+                await user_1.createDuelProfileatMatch(user1.id, guild.id);
+                return await user_1.createDuelProfileatMatch(user2.id, guild.id);
             }));
         }
     }
