@@ -1,6 +1,6 @@
 import { Message, Client, TextChannel, MessageEmbed, MessageAttachment } from "discord.js";
 import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedb, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedb } from "../db";
-import { Command } from "../types";
+import { Command, Match } from "../types";
 
 
 export const submit: Command = {
@@ -28,17 +28,29 @@ export const submit: Command = {
             return message.reply("Your image was not submitted properly. Contact a mod")
         };
 
-        let duels = false;
-
-        if(args.length > 0 && args[0].toLowerCase() === "-duel"){
-            duels = true
+        let q = function (x: Match) {
+            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id) 
+            && (x.p1.memedone === false || x.p2.memedone === false) 
+            && x.votingperiod === false 
+            )
         }
 
-        let m = (await (await getAllMatches())).find(x => (x.p1.userid === message.author.id && x.p1.memedone === false && x.exhibition === duels
-            || x.p2.userid === message.author.id && x.p2.memedone === false && x.exhibition === duels))!
+        let allmatches = await (await getAllMatches()).filter(q)
+
+        if(allmatches.length > 1 && !args[0]){
+            message.channel.send("You are in multiply matches. Please mention the corresponding number to submit. For example `!submit 1`")
+            let i = 0
+            for(let m of allmatches){
+                await message.channel.send(`${i+1}) <#${m._id}>`)
+                i+= 1
+            }
+            return;
+        }
+
+        let m = args[0] ? allmatches[parseInt(args[0])-1] : allmatches[0];
         
         if(!m) {
-            return await message.author.send("You are not in any match. If you are trying to submit for a duel use `!submit -duel` to submit.")
+            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.")
         }
 
         let arr = [m.p1, m.p2]
@@ -65,35 +77,16 @@ export const submit: Command = {
             });
         }
 
+        try {
+            await deleteReminder(await getReminder(e.userid))
+            let r = await getReminder(m._id)
 
-        if (m.p1.userid === e.userid){
-            try {
-                await deleteReminder(await getReminder(m.p1.userid))
-                let r = await getReminder(m._id)
+            r.mention = r.mention.replace(`<@${e.userid}>`, "")
 
-                r.mention = `<@${m.p2.userid}>`
-
-                await updateReminder(r)
-            } catch (error) {
-                console.log("")
-            }
-
-            m.p1 = e;
+            await updateReminder(r)
+        } catch (error) {
+            console.log("")
         }
-
-        else{
-            try {
-                await deleteReminder(await getReminder(m.p2.userid))
-                let r = await getReminder(m._id)
-
-                r.mention = `<@${m.p1.userid}>`
-
-                await updateReminder(r)
-            } catch (error) {
-                console.log("")
-            }
-            m.p2 = e;
-        } 
 
         if(m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split){
             m.split = false

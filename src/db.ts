@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb"
-import { config, exhibition, Match, Profile, Qual, Reminder } from "./types";
+import { config, DuelProfile, exhibition, Match, Profile, Qual, Reminder } from "./types";
 //import { config } from "./types"
 require("dotenv").config();
 const url: string = process.env.dburl!;
@@ -200,4 +200,21 @@ export async function updateProfile(u: Profile): Promise<void> {
 
 export async function getAllProfiles(): Promise<Profile[]> {
     return dB.collection("users").find({}).toArray()
+}
+
+//Duel Profile dB commands
+export async function addDuelProfile(User:DuelProfile, guild:string): Promise<void> {
+    await dB.collection(guild).insertOne(User)!;
+}
+
+export async function getAllDuelProfiles(guild:string): Promise<DuelProfile[]> {
+    return dB.collection(guild).find({}).toArray()
+}
+
+export async function getDuelProfile(_id: string, guild:string): Promise<DuelProfile> {
+    return dB!.collection(guild)!.findOne({_id:_id})!;
+}
+
+export async function updateDuelProfile(_id:string, u:DuelProfile, guild:string): Promise<void> {
+    await dB.collection(guild).updateOne({_id:_id}, {$set: u})!;
 }

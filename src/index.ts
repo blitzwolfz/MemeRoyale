@@ -1,20 +1,16 @@
-const glob = require("glob") // included by discord.js allow this import
-import { promisify } from "util" // Included by default
 import { Command } from "./types"
-import * as Discord from "discord.js"
+import { Client, MessageEmbed, TextChannel } from "discord.js"
 import * as c from "./commands/index"
 import { connectToDB, getMatch, getQual, updateMatch, updateQual } from "./db"
 import { backgroundMatchLoop } from "./commands/match/background"
 import { backgroundQualLoop } from "./commands/quals/background"
 import { backgroundExhibitionLoop } from "./commands/exhibition/background"
 import { backgroundReminderLoop } from "./commands/reminders"
-export const client = new Discord.Client({partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"]});
+export const client = new Client({partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"]});
 
 export let prefix: string = process.env.prefix!
 require('dotenv').config()
 
-//@ts-ignore
-const globPromise = promisify(glob)
 var commands: Command[] = c.default
 
 //Express for hosting
@@ -27,7 +23,7 @@ var _server = http.createServer(app);
 
 app.get('/', (_request: any, response: any) => {
     response.sendFile(__dirname + "/index.html");
-    console.log(Date.now() + " Ping Received");
+    //console.log(Date.now() + " Ping Received");
     response.sendStatus(200);
 });
 
@@ -85,7 +81,7 @@ client.once("ready", async () => {
 
     console.log("\n")
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`)
-    console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}`)
+    console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}\n\n`)
 
 })
 
@@ -273,11 +269,11 @@ client.on("message", async message => {
                 }
 
             } catch (error) {
-                await message.channel.send(new Discord.MessageEmbed()
+                await message.channel.send(new MessageEmbed()
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields(
-                        { name: 'Channel Name', value: `${(<Discord.TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
+                        { name: 'Channel Name', value: `${(<TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
                         { name: 'Channel Id', value: `${message.channel.id}`, inline: true },
                         { name: 'User', value: `${message.author.tag}`, inline: true },
                         { name: 'User Id', value: `${message.author.id}`, inline: true },
@@ -294,12 +290,13 @@ client.on("message", async message => {
 
             } catch (error) {
                 console.log(error)
-                await message.channel.send(new Discord.MessageEmbed()
-                    .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
+                let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size:512}))
+                await message.channel.send(new MessageEmbed()
+                    .setFooter("blitzwolfz#9338", `${imgurl}`)
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields(
-                        { name: 'Channel Name', value: `${(<Discord.TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
+                        { name: 'Channel Name', value: `${(<TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
                         { name: 'Channel Id', value: `${message.channel.id}`, inline: true },
                         { name: 'User', value: `${message.author.tag}`, inline: true },
                         { name: 'User Id', value: `${message.author.id}`, inline: true },
@@ -308,6 +305,22 @@ client.on("message", async message => {
                 )
             }
         }
+    }
+
+    else if(!command) {
+        let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size:512}))
+        await message.channel.send(new MessageEmbed()
+        .setColor("RED")
+        .setTitle("ERROR")
+        .addFields(
+            { name: 'Channel Name', value: `${(<TextChannel>await client.channels.fetch(message.channel.id)).name}`, inline: true },
+            { name: 'Channel Id', value: `${message.channel.id}`, inline: true },
+            { name: 'User', value: `${message.author.tag}`, inline: true },
+            { name: 'User Id', value: `${message.author.id}`, inline: true },
+        )
+        .setDescription("Command does not exist. If you think this is in error please contact <@239516219445608449>")
+        .setFooter("blitzwolfz#9338", `${imgurl}`)
+        );
     }
 })
 

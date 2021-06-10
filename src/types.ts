@@ -126,3 +126,11 @@ export interface Profile{
     wins: number;
     loss: number;
 }
+
+export interface DuelProfile{
+    _id:string;
+    votetally:number;
+    points:number;
+    wins: number;
+    loss: number;
+}
