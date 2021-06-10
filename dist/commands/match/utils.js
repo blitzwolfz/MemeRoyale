@@ -19,7 +19,12 @@ exports.reload_match = {
         let match = await db_1.getMatch(message.channel.id);
         let channel = await client.channels.cache.get(message.channel.id);
         for (let ms of match.messageID) {
-            (await channel.messages.fetch(ms)).delete();
+            try {
+                (await channel.messages.fetch(ms)).delete();
+            }
+            catch (error) {
+                console.log(error.message);
+            }
         }
         match.votingperiod = false;
         match.votetime = (Math.floor(Date.now() / 1000));
@@ -27,6 +32,7 @@ exports.reload_match = {
         match.p2.voters = [];
         match.p1.votes = 0;
         match.p2.votes = 0;
+        match.messageID = [];
         await db_1.updateMatch(match);
         return message.reply("Reloading").then(m => {
             m.delete({ timeout: 1500 });

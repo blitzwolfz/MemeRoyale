@@ -34,6 +34,7 @@ async function backgroundExhibitionLoop(client) {
         }
         catch (error) {
             console.log(error.message);
+            console.log(error.stack);
         }
     }
     let i = ex.activematches.length;
@@ -245,7 +246,7 @@ async function exhibitionResults(client, m) {
             "in the Meme Royale Server.\n" +
             "You can play more duels, and participate in our tournament\n" +
             "with a chance of winning our Cash Prizes.\nClick on the link in the title to join.")
-            .setURL("https://gg/GK3R5Vt3tz")
+            .setURL("https://discord.gg/GK3R5Vt3tz")
             .setColor(await (await db_1.getConfig()).colour);
         await channel.send(e);
     }

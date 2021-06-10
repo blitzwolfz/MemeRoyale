@@ -37,6 +37,7 @@ export async function backgroundExhibitionLoop(client: Client) {
             
         } catch (error) {
             console.log(error.message)
+            console.log(error.stack)
         }
     }
 
@@ -337,7 +338,7 @@ async function exhibitionResults(client: Client, m: Match) {
           "You can play more duels, and participate in our tournament\n"+
           "with a chance of winning our Cash Prizes.\nClick on the link in the title to join."
         )
-        .setURL("https://gg/GK3R5Vt3tz")
+        .setURL("https://discord.gg/GK3R5Vt3tz")
         .setColor(await (await getConfig()).colour)
     
     

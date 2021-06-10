@@ -16,7 +16,12 @@ export const reload_match: Command = {
         let match = await getMatch(message.channel.id)
         let channel = <TextChannel>await client.channels.cache.get(message.channel.id)!
         for (let ms of match.messageID) {
-            (await channel.messages.fetch(ms)).delete()
+            try {
+                (await channel.messages.fetch(ms)).delete()
+            } catch (error) {
+                console.log(error.message)
+            }
+            
         }
 
         match.votingperiod = false
@@ -25,6 +30,7 @@ export const reload_match: Command = {
         match.p2.voters = []
         match.p1.votes = 0
         match.p2.votes = 0
+        match.messageID = []
 
         await updateMatch(match)
         return message.reply("Reloading").then(m =>{

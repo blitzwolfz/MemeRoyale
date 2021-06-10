@@ -20,19 +20,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prefix = exports.client = void 0;
-const glob = require("glob");
-const util_1 = require("util");
-const Discord = __importStar(require("discord.js"));
+const discord_js_1 = require("discord.js");
 const c = __importStar(require("./commands/index"));
 const db_1 = require("./db");
 const background_1 = require("./commands/match/background");
 const background_2 = require("./commands/quals/background");
 const background_3 = require("./commands/exhibition/background");
 const reminders_1 = require("./commands/reminders");
-exports.client = new Discord.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
+exports.client = new discord_js_1.Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
 exports.prefix = process.env.prefix;
 require('dotenv').config();
-const globPromise = util_1.promisify(glob);
 var commands = c.default;
 const express = require('express');
 const app = express();
@@ -41,7 +38,6 @@ const http = require('http');
 var _server = http.createServer(app);
 app.get('/', (_request, response) => {
     response.sendFile(__dirname + "/index.html");
-    console.log(Date.now() + " Ping Received");
     response.sendStatus(200);
 });
 const listener = app.listen(process.env.PORT, () => {
@@ -64,7 +60,7 @@ exports.client.once("ready", async () => {
     }, 5000);
     console.log("\n");
     console.log(`Logged in as ${(_a = exports.client.user) === null || _a === void 0 ? void 0 : _a.tag}\nPrefix is ${exports.prefix}`);
-    console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}`);
+    console.log(`In ${exports.client.guilds.cache.size} servers\nTotal users is ${exports.client.users.cache.size}\n\n`);
 });
 exports.client.on("messageReactionAdd", async (messageReaction, user) => {
     var _a, _b, _c, _d;
@@ -227,7 +223,7 @@ exports.client.on("message", async (message) => {
                 }
             }
             catch (error) {
-                await message.channel.send(new Discord.MessageEmbed()
+                await message.channel.send(new discord_js_1.MessageEmbed()
                     .setColor("RED")
                     .setTitle("ERROR")
                     .addFields({ name: 'Channel Name', value: `${(await exports.client.channels.fetch(message.channel.id)).name}`, inline: true }, { name: 'Channel Id', value: `${message.channel.id}`, inline: true }, { name: 'User', value: `${message.author.tag}`, inline: true }, { name: 'User Id', value: `${message.author.id}`, inline: true })
@@ -242,7 +238,7 @@ exports.client.on("message", async (message) => {
             catch (error) {
                 console.log(error);
                 let imgurl = (exports.client.users.cache.get("239516219445608449").displayAvatarURL({ format: "webp", size: 512 }));
-                await message.channel.send(new Discord.MessageEmbed()
+                await message.channel.send(new discord_js_1.MessageEmbed()
                     .setFooter("blitzwolfz#9338", `${imgurl}`)
                     .setColor("RED")
                     .setTitle("ERROR")
@@ -253,7 +249,7 @@ exports.client.on("message", async (message) => {
     }
     else if (!command) {
         let imgurl = (exports.client.users.cache.get("239516219445608449").displayAvatarURL({ format: "webp", size: 512 }));
-        await message.channel.send(new Discord.MessageEmbed()
+        await message.channel.send(new discord_js_1.MessageEmbed()
             .setColor("RED")
             .setTitle("ERROR")
             .addFields({ name: 'Channel Name', value: `${(await exports.client.channels.fetch(message.channel.id)).name}`, inline: true }, { name: 'Channel Id', value: `${message.channel.id}`, inline: true }, { name: 'User', value: `${message.author.tag}`, inline: true }, { name: 'User Id', value: `${message.author.id}`, inline: true })
