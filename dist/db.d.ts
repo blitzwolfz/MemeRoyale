@@ -1,4 +1,4 @@
-import { config, exhibition, Match, Profile, Qual, Reminder } from "./types";
+import { config, DuelProfile, exhibition, Match, Profile, Qual, Reminder } from "./types";
 export declare function connectToDB(): Promise<void>;
 export declare function updater(coll: string, filter: object, update: object): Promise<void>;
 export declare function insertDoc(coll: string, upd: object): Promise<void>;
@@ -44,3 +44,7 @@ export declare function addProfile(u: Profile): Promise<void>;
 export declare function getProfile(_id: string): Promise<Profile>;
 export declare function updateProfile(u: Profile): Promise<void>;
 export declare function getAllProfiles(): Promise<Profile[]>;
+export declare function addDuelProfile(User: DuelProfile, guild: string): Promise<void>;
+export declare function getAllDuelProfiles(guild: string): Promise<DuelProfile[]>;
+export declare function getDuelProfile(_id: string, guild: string): Promise<DuelProfile>;
+export declare function updateDuelProfile(_id: string, u: DuelProfile, guild: string): Promise<void>;

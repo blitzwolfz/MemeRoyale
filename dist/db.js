@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProfiles = exports.updateProfile = exports.getProfile = exports.addProfile = exports.deleteReminder = exports.updateReminder = exports.getAllReminders = exports.getReminder = exports.insertReminder = exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
+exports.updateDuelProfile = exports.getDuelProfile = exports.getAllDuelProfiles = exports.addDuelProfile = exports.getAllProfiles = exports.updateProfile = exports.getProfile = exports.addProfile = exports.deleteReminder = exports.updateReminder = exports.getAllReminders = exports.getReminder = exports.insertReminder = exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
 const mongodb = __importStar(require("mongodb"));
 require("dotenv").config();
 const url = process.env.dburl;
@@ -205,3 +205,19 @@ async function getAllProfiles() {
     return dB.collection("users").find({}).toArray();
 }
 exports.getAllProfiles = getAllProfiles;
+async function addDuelProfile(User, guild) {
+    await dB.collection(guild).insertOne(User);
+}
+exports.addDuelProfile = addDuelProfile;
+async function getAllDuelProfiles(guild) {
+    return dB.collection(guild).find({}).toArray();
+}
+exports.getAllDuelProfiles = getAllDuelProfiles;
+async function getDuelProfile(_id, guild) {
+    return dB.collection(guild).findOne({ _id: _id });
+}
+exports.getDuelProfile = getDuelProfile;
+async function updateDuelProfile(_id, u, guild) {
+    await dB.collection(guild).updateOne({ _id: _id }, { $set: u });
+}
+exports.updateDuelProfile = updateDuelProfile;
