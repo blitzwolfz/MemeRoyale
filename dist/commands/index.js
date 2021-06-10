@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ping = void 0;
+exports.ping = exports.example = void 0;
 const discord_js_1 = require("discord.js");
 const help_1 = require("./help");
 const match_1 = require("./match");
@@ -29,7 +29,18 @@ const util_1 = require("./quals/util");
 const submit_1 = require("./submit");
 const a = __importStar(require("./tournament/index"));
 const b = __importStar(require("./exhibition/index"));
+const c = __importStar(require("./user"));
 const reminders_1 = require("./reminders");
+exports.example = {
+    name: "EXAMPLE",
+    description: "EXAMPLE",
+    group: "EXAMPLE",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message, client, args) {
+    }
+};
 exports.ping = {
     name: "ping",
     description: "ping",
@@ -72,6 +83,7 @@ exports.default = [
 ]
     .concat(a.default)
     .concat(b.default)
+    .concat(c.default)
     .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name)
         return -1;

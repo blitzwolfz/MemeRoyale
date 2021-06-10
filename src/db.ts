@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb"
-import { config, exhibition, Match, Qual, Reminder } from "./types";
+import { config, exhibition, Match, Profile, Qual, Reminder } from "./types";
 //import { config } from "./types"
 require("dotenv").config();
 const url: string = process.env.dburl!;
@@ -182,4 +182,22 @@ export async function updateReminder(r:Reminder) {
 
 export async function deleteReminder(r:Reminder) {
     await dB.collection("reminders").deleteOne({_id:r._id})  
+}
+
+//Profile dB commands
+export async function addProfile(u:Profile): Promise<void> {
+    await dB.collection("users").insertOne(u)!;
+}
+
+export async function getProfile(_id: string): Promise<Profile> {
+    return dB.collection("users").findOne({_id:_id})!;
+}
+
+export async function updateProfile(u: Profile): Promise<void> {
+    //await dB.collection("modprofiles").updateOne({_id:_id}, {$inc:{[field]:num}})!
+    await dB.collection("users").updateOne({_id:u._id}, {$set: u})!;
+}
+
+export async function getAllProfiles(): Promise<Profile[]> {
+    return dB.collection("users").find({}).toArray()
 }

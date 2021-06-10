@@ -1,5 +1,5 @@
-import { Message, Client, TextChannel } from "discord.js";
-import { deleteReminder, getAllMatches, getAllQuals, getMatch, getQual, getReminder, updateMatch, updateQual, updateReminder } from "../db";
+import { Message, Client, TextChannel, MessageEmbed, MessageAttachment } from "discord.js";
+import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedb, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedb } from "../db";
 import { Command } from "../types";
 
 
@@ -337,5 +337,121 @@ export const modqualsubmit: Command = {
             
             return message.reply("Your meme for your qualifier has been attached.")
         }
+    }
+}
+
+export const templateSubmission: Command = {
+    name: "template",
+    description: " `!template` with an image in the message. You gain 2 points for each template",
+    group: "tourny",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let channel = <TextChannel>client.channels.cache.get("722291683030466621")
+
+        if (message.attachments.size > 10 ) {//&& !args.includes("-mod")
+            return message.reply("You can't submit more than ten images due to Discord limit.")
+        }
+    
+        if (message.attachments.size > 1 && !args.includes("-mod")) {
+            return message.reply("You can't submit more than ten images")
+        }
+    
+        else if (message.attachments.size <= 0) {
+            return message.reply("Your image was not submitted properly. Contact a mod")
+        }
+
+        else {
+
+            if(args.includes("-mod")){
+                //let id = await getUser(await message.author.id)
+                let e = await getTemplatedb()
+    
+                for (let i = 0; i < message.attachments.array().length; i++){
+                    e.list.push(message.attachments.array()[i].url)
+                    // if(id){
+                    //     await updateProfile(id, "points", 2)
+                    // } 
+    
+                    let attach = new MessageAttachment(message.attachments.array()[i].url);
+                
+                    (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach)
+                }
+    
+                await updateTemplatedb(e.list)
+    
+                return message.reply(`You gained ${message.attachments.array().length*2} points for submitting ${message.attachments.array().length} templates.`)
+            }
+
+            else{
+                for (let i = 0; i < message.attachments.array().length; i++) {
+                    //await channel.send(`${message.attachments.array()[i].url}`)
+        
+                    await channel.send(
+                        new MessageEmbed()
+                            .setTitle(`${message.author.username} has submitted a new template(s)`)
+                            .setDescription(`<@${message.author.id}>`)
+                            .setImage(message.attachments.array()[i].url)
+                    ).then(async message => {
+                        await message.react('🏁')
+                        await message.react('🗡️')
+                    }
+                    )
+                }
+
+                await getProfile(message.author.id).then(async p => {
+                    p.points += (message.attachments.array().length * 2)  
+                    await updateProfile(p)
+                })
+                
+                await message.reply(`Thank you for submitting templates. You will gain a maximum of ${message.attachments.array().length * 2} points if they are approved. You currently have ${(await getProfile(message.author.id)).points} points`)
+            }
+        }
+    }
+}
+
+export const themeSubmission: Command = {
+    name: "themesubmit",
+    description: " You gain 2 points for each theme",
+    group: "tourny",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let channel = <TextChannel>client.channels.cache.get("722291683030466621")
+
+        if(message.channel.type !== "dm"){
+            message.reply("Please dm bot theme")
+            return message.delete()
+          }
+          
+          //var args: Array<string> = message.content.slice(process.env.PREFIX!.length).trim().split(/ +/g);
+          let targs = args.join(" ").split(",")
+          console.log(targs)
+      
+          if(args.length === 0) return message.reply("Please enter a theme")
+      
+          if(targs.length > 1) return message.reply("Can only enter one theme at a time")
+      
+          let em = new MessageEmbed()
+            .setTitle(`${message.author.username} has submitted a new Theme(s)`)
+            .setDescription(`<@${message.author.id}>`)
+      
+          for (let i = 0; i < targs.length; i++) {
+            em.addField(`Theme: ${i + 1}`, targs[i])
+          }
+      
+          await channel.send(em).then(async message => {
+            await message.react('🏁')
+            await message.react('🗡️')
+          })
+      
+        await getProfile(message.author.id).then(async p => {
+            p.points += targs.length  
+            await updateProfile(p)
+        })
+        
+        await message.reply(`Thank you for submitting themes. You will gain a maximum of ${targs.length} points if they are approved. You currently have ${(await getProfile(message.author.id)).points} points`)
     }
 }

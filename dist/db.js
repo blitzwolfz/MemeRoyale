@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteReminder = exports.updateReminder = exports.getAllReminders = exports.getReminder = exports.insertReminder = exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
+exports.getAllProfiles = exports.updateProfile = exports.getProfile = exports.addProfile = exports.deleteReminder = exports.updateReminder = exports.getAllReminders = exports.getReminder = exports.insertReminder = exports.insertExhibition = exports.updateExhibition = exports.getExhibition = exports.updateThemedb = exports.getThemes = exports.updateTemplatedb = exports.getTemplatedb = exports.insertTemplate = exports.updateQual = exports.deleteQual = exports.getAllQuals = exports.getQual = exports.insertQual = exports.updateMatch = exports.deleteMatch = exports.getAllMatches = exports.getMatch = exports.insertMatch = exports.updateConfig = exports.deleteConfig = exports.getConfig = exports.insertConfig = exports.updateDoc = exports.getDoc = exports.insertDoc = exports.updater = exports.connectToDB = void 0;
 const mongodb = __importStar(require("mongodb"));
 require("dotenv").config();
 const url = process.env.dburl;
@@ -189,3 +189,19 @@ async function deleteReminder(r) {
     await dB.collection("reminders").deleteOne({ _id: r._id });
 }
 exports.deleteReminder = deleteReminder;
+async function addProfile(u) {
+    await dB.collection("users").insertOne(u);
+}
+exports.addProfile = addProfile;
+async function getProfile(_id) {
+    return dB.collection("users").findOne({ _id: _id });
+}
+exports.getProfile = getProfile;
+async function updateProfile(u) {
+    await dB.collection("users").updateOne({ _id: u._id }, { $set: u });
+}
+exports.updateProfile = updateProfile;
+async function getAllProfiles() {
+    return dB.collection("users").find({}).toArray();
+}
+exports.getAllProfiles = getAllProfiles;

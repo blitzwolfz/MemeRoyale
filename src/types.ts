@@ -118,3 +118,11 @@ export interface Reminder {
     timestamp:number,
     basetime:number,
 }
+
+export interface Profile{
+    _id:string;
+    votetally:number;
+    points:number;
+    wins: number;
+    loss: number;
+}

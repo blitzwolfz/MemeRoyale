@@ -246,6 +246,13 @@ client.on("message", async message => {
         if (message.author.id !== process.env.owner ) {
             return await message.reply("nah b")
         }
+
+        message.channel.messages.fetch(args[0])
+        .then(message => {
+            console.log(message)
+            console.log(`Message Content: ${message.content}`)
+        })
+        .catch(console.error);
     }
 
     else if (command) {

@@ -8,20 +8,21 @@ import { qual_stats, reload_qual } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as a from "./tournament/index"
 import * as b from "./exhibition/index"
+import * as c from "./user"
 import { delay } from "./reminders";
 
+//@ts-ignore
+export const example: Command = {
+    name: "EXAMPLE",
+    description: "EXAMPLE",
+    group: "EXAMPLE",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
 
-// export const example: Command = {
-//     name: "",
-//     description: "",
-//     group: "",
-//     owner: false,
-//     admins: false,
-//     mods: true,
-//     async execute(message: Message, client: Client, args: string[]) {
-
-//     }
-// }
+    }
+}
 
 export const ping: Command = {
     name: "ping",
@@ -72,6 +73,7 @@ export default [
 ]
 .concat(a.default)
 .concat(b.default)
+.concat(c.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1;
     else if (k1.name > k2.name) return 1;

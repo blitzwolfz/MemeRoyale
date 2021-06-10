@@ -1,4 +1,4 @@
-import { config, exhibition, Match, Qual, Reminder } from "./types";
+import { config, exhibition, Match, Profile, Qual, Reminder } from "./types";
 export declare function connectToDB(): Promise<void>;
 export declare function updater(coll: string, filter: object, update: object): Promise<void>;
 export declare function insertDoc(coll: string, upd: object): Promise<void>;
@@ -40,3 +40,7 @@ export declare function getReminder(id: string): Promise<Reminder>;
 export declare function getAllReminders(q?: object): Promise<Reminder[]>;
 export declare function updateReminder(r: Reminder): Promise<void>;
 export declare function deleteReminder(r: Reminder): Promise<void>;
+export declare function addProfile(u: Profile): Promise<void>;
+export declare function getProfile(_id: string): Promise<Profile>;
+export declare function updateProfile(u: Profile): Promise<void>;
+export declare function getAllProfiles(): Promise<Profile[]>;
