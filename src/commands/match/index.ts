@@ -1,6 +1,7 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js"
 import { deleteMatch, getConfig, getMatch, getTemplatedb, getThemes, insertMatch, insertReminder, updateMatch } from "../../db"
 import { Command, Match } from "../../types"
+import { createProfileatMatch } from "../user"
 
 export const startmatch: Command = {
     name: "start",
@@ -127,6 +128,8 @@ export const startmatch: Command = {
             else m.temp.link = msg.embeds[0].image?.url!
 
             await insertMatch(m)
+            await createProfileatMatch(message.mentions.users.array()[0].id)
+            await createProfileatMatch(message.mentions.users.array()[1].id)
 
             if (m.temp.istheme) {
                 await message.mentions.users.array()[0].send("Your theme is " + m.temp.link)
@@ -165,6 +168,14 @@ export const startmatch: Command = {
                     timestamp:Math.floor(Date.now()/1000),
                     basetime:3600
                 }
+            )
+
+            return await message.channel.send(
+                new MessageEmbed()
+                    .setTitle(`Match between ${message.mentions.users.array()[0].username} & ${message.mentions.users.array()[1].username}`)
+                    .setColor("#d7be26")
+                    .setDescription(`<@${message.mentions.users.array()[0].id}> and <@${message.mentions.users.array()[1].id}>, you have 1 hour to submit your memes\n Contact admins if you have an issue.`)
+                    .setTimestamp()
             )
         });
     }
@@ -295,6 +306,8 @@ export const splitmatch: Command = {
             else m.temp.link = msg.embeds[0].image?.url!
 
             await insertMatch(m)
+            await createProfileatMatch(message.mentions.users.array()[0].id)
+            await createProfileatMatch(message.mentions.users.array()[1].id)
 
             return await message.channel.send(
                 new MessageEmbed()

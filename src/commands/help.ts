@@ -55,21 +55,32 @@ export const help: Command = {
 
                 .setDescription(c.default.map(cmd => {
                     if (g === cmd.group) {
-                        if (cmd.owner) {
+                        if (cmd.owner && message.author.id === "239516219445608449") {
                             return "`"+"§§§" + cmd.name + "`" + "\n"
                         }
 
-                        if (cmd.admins) {
+                        else if(cmd.owner && message.author.id !== "239516219445608449"){
+                            return ""
+                        }
+
+                        if (cmd.admins && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner") === true) {
                             return "`"+"§§" + cmd.name + "`" + "\n"
                         }
 
-                        if (cmd.mods) {
+                        else if(cmd.admins && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner") === false) {
+                            return ""
+                        }
+
+                        if (cmd.mods && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee") === true) {
                             return "`"+"§" + cmd.name + "`" + "\n"
+                        }
+
+                        else if (cmd.mods && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee") === false){
+                            return ""
                         }
 
                         return "`" + cmd.name + "`" + "\n"
                     }
-
                 }
                 ).join(""))
                 .setColor(await (await getConfig()).colour)
