@@ -4,9 +4,10 @@ import { Command } from "../../types"
 import { toHHMMSS } from "../util"
 
 export const duelcheck: Command = {
-    name: "duelcheck",
+    name: "duel check",
     description: "",
     group: "duels",
+    groupCommand:true,
     owner: false,
     admins: false,
     mods: false,
@@ -26,9 +27,10 @@ export const duelcheck: Command = {
 }
 
 export const duelreload: Command = {
-    name: "duelreload",
+    name: "duel reload",
     description: "",
     group: "duels",
+    groupCommand:true,
     owner: false,
     admins: false,
     mods: true,

@@ -11,45 +11,45 @@ export const submit: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        
-        if(message.channel.type !== "dm"){
+
+        if (message.channel.type !== "dm") {
             return message.reply("You didn't not submit this in the DM with the bot.\nPlease delete and try again.")
         }
 
-        if(message.attachments.array()[0].url.includes("imgur")){
+        if (message.attachments.array()[0].url.includes("imgur")) {
             return message.reply("You can't submit imgur links")
         }
-    
-        else if (message.attachments.size > 1){
+
+        else if (message.attachments.size > 1) {
             return message.reply("You can't submit more than one image")
         }
-        
-        else if(message.attachments.size <= 0){
+
+        else if (message.attachments.size <= 0) {
             return message.reply("Your image was not submitted properly. Contact a mod")
         };
 
         let q = function (x: Match) {
-            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id) 
-            && (x.p1.memedone === false || x.p2.memedone === false) 
-            && x.votingperiod === false 
+            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id)
+                && (x.p1.memedone === false || x.p2.memedone === false)
+                && x.votingperiod === false
             )
         }
 
         let allmatches = await (await getAllMatches()).filter(q)
 
-        if(allmatches.length > 1 && !args[0]){
+        if (allmatches.length > 1 && !args[0]) {
             message.channel.send("You are in multiply matches. Please mention the corresponding number to submit. For example `!submit 1`")
             let i = 0
-            for(let m of allmatches){
-                await message.channel.send(`${i+1}) <#${m._id}>`)
-                i+= 1
+            for (let m of allmatches) {
+                await message.channel.send(`${i + 1}) <#${m._id}>`)
+                i += 1
             }
             return;
         }
 
-        let m = args[0] ? allmatches[parseInt(args[0])-1] : allmatches[0];
-        
-        if(!m) {
+        let m = args[0] ? allmatches[parseInt(args[0]) - 1] : allmatches[0];
+
+        if (!m) {
             return await message.author.send("You are not in any match. If you think this is an error, please contact mods.")
         }
 
@@ -57,18 +57,18 @@ export const submit: Command = {
 
         let e = arr.find(x => x.userid === message.author.id)!
 
-        if(e.donesplit === false) return message.reply("You can't submit until your portion starts");
+        if (e.donesplit === false) return message.reply("You can't submit until your portion starts");
 
         e.memelink = message.attachments.array()[0].url
         e.memedone = true
         e.donesplit = true
-        
-        if(m.exhibition === false){
+
+        if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
-                                
-                embed:{
+
+                embed: {
                     description: `<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`,
-                    color:"#d7be26",
+                    color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
                     },
@@ -88,14 +88,14 @@ export const submit: Command = {
             console.log("")
         }
 
-        if(m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split){
+        if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false
             m.p1.time = Math.floor(Date.now() / 1000) - 3200
             m.p2.time = Math.floor(Date.now() / 1000) - 3200
         }
 
         await updateMatch(m)
-        return await message.channel.send("Your meme has been attached!") 
+        return await message.channel.send("Your meme has been attached!")
     }
 }
 
@@ -107,48 +107,48 @@ export const qualsubmit: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        if(message.content.includes("imgur")){
+        if (message.content.includes("imgur")) {
             return message.reply("You can't submit imgur links")
         }
-    
-        if (message.attachments.size > 1){
+
+        if (message.attachments.size > 1) {
             return message.reply("You can't submit more than one image")
         }
-        
-        else if(message.attachments.size <= 0){
+
+        else if (message.attachments.size <= 0) {
             return message.reply("Your image was not submitted properly. Contact a mod")
         }
-    
-        else if(message.channel.type !== "dm"){
+
+        else if (message.channel.type !== "dm") {
             return message.reply("You didn't not submit this in the DM with the bot.\nPlease delete and try again.")
         }
-        
-        else if(message.attachments.array()[0].url.toString().includes("mp4")) return message.reply("Video submissions aren't allowed")
-    
-        else{
+
+        else if (message.attachments.array()[0].url.toString().includes("mp4")) return message.reply("Video submissions aren't allowed")
+
+        else {
             let match = await (await getAllQuals()).find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!
             let index = match.players.findIndex(x => x.userid === message.author.id)
             let u = match.players[index]
 
-            if(u.split === false) return message.reply("Can't submit when you haven't started your portion");
+            if (u.split === false) return message.reply("Can't submit when you haven't started your portion");
 
             u.split = true
             u.memedone = true
             u.memelink = message.attachments.array()[0].url
 
             await (<TextChannel>client.channels.cache.get("722616679280148504")).send({
-                embed:{
+                embed: {
                     description: `<@${message.author.id}> has submitted their meme\nChannel: <#${match._id}>`,
-                    color:"#d7be26",
+                    color: "#d7be26",
                     timestamp: new Date()
                 }
             });
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
-                
-                embed:{
+
+                embed: {
                     description: `<@${message.author.id}>\\${message.author.tag} has submitted their meme\nChannel: <#${match._id}>`,
-                    color:"#d7be26",
+                    color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
                     },
@@ -175,7 +175,7 @@ export const qualsubmit: Command = {
             } catch (error) {
                 console.log("")
             }
-            
+
             return message.reply("Your meme for your qualifier has been attached.")
         }
     }
@@ -189,16 +189,16 @@ export const modsubmit: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        
+
         let m = await getMatch(message.mentions.channels.first()!.id)
-        
-        if(!m) {
+
+        if (!m) {
             return await message.author.send("Match doesn't exist.")
         }
 
         let arr = [m.p1, m.p2]
 
-        let e = arr[parseInt(args[0])-1]
+        let e = arr[parseInt(args[0]) - 1]
 
         //Modsubmit so their portion started already, unless bug from other area
         //if(e.donesplit === false) return message.reply("You can't submit until your portion starts");
@@ -206,13 +206,13 @@ export const modsubmit: Command = {
         e.memelink = message.attachments.array()[0].url
         e.memedone = true
         e.donesplit = true
-        
-        if(m.exhibition === false){
+
+        if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
-                                
-                embed:{
+
+                embed: {
                     description: `<@${e.userid}>/${(await client.users.cache.get(e.userid))!.tag} has submitted their meme\nChannel: <#${m._id}>`,
-                    color:"#d7be26",
+                    color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
                     },
@@ -222,7 +222,7 @@ export const modsubmit: Command = {
         }
 
 
-        if (m.p1.userid === e.userid){
+        if (m.p1.userid === e.userid) {
             try {
                 await deleteReminder(await getReminder(m.p1.userid))
                 let r = await getReminder(m._id)
@@ -237,7 +237,7 @@ export const modsubmit: Command = {
             m.p1 = e;
         }
 
-        else{
+        else {
             try {
                 await deleteReminder(await getReminder(m.p2.userid))
                 let r = await getReminder(m._id)
@@ -249,16 +249,16 @@ export const modsubmit: Command = {
                 console.log("")
             }
             m.p2 = e;
-        } 
+        }
 
-        if(m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split){
+        if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false
             m.p1.time = Math.floor(Date.now() / 1000) - 3200
             m.p2.time = Math.floor(Date.now() / 1000) - 3200
         }
 
         await updateMatch(m)
-        return await message.channel.send("Your meme has been attached!") 
+        return await message.channel.send("Your meme has been attached!")
     }
 }
 
@@ -270,23 +270,23 @@ export const modqualsubmit: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        if(message.content.includes("imgur")){
+        if (message.content.includes("imgur")) {
             return message.reply("You can't submit imgur links")
         }
-    
-        if (message.attachments.size > 1){
+
+        if (message.attachments.size > 1) {
             return message.reply("You can't submit more than one image")
         }
-        
-        else if(message.attachments.size <= 0){
+
+        else if (message.attachments.size <= 0) {
             return message.reply("Your image was not submitted properly. Contact a mod")
         }
-           
-        else if(message.attachments.array()[0].url.toString().includes("mp4")) return message.reply("Video submissions aren't allowed")
-    
-        else{
+
+        else if (message.attachments.array()[0].url.toString().includes("mp4")) return message.reply("Video submissions aren't allowed")
+
+        else {
             let match = await getQual(message.mentions.channels.first()!.id)
-            let index = parseInt(args[0]) - 1 
+            let index = parseInt(args[0]) - 1
             let u = match.players[index]
 
             //Modsubmit so their portion started already, unless bug from other area
@@ -297,10 +297,10 @@ export const modqualsubmit: Command = {
             u.memelink = message.attachments.array()[0].url
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
-                
-                embed:{
+
+                embed: {
                     description: `<@${u.userid}>\\${client.users.cache.get(u.userid)?.tag} has submitted their meme\nChannel: <#${match._id}>`,
-                    color:"#d7be26",
+                    color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url,
                     },
@@ -327,7 +327,7 @@ export const modqualsubmit: Command = {
             } catch (error) {
                 console.log("")
             }
-            
+
             return message.reply("Your meme for your qualifier has been attached.")
         }
     }
@@ -343,44 +343,49 @@ export const templateSubmission: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let channel = <TextChannel>client.channels.cache.get("722291683030466621")
 
-        if (message.attachments.size > 10 ) {//&& !args.includes("-mod")
+        if (message.attachments.size > 10) {//&& !args.includes("-mod")
             return message.reply("You can't submit more than ten images due to Discord limit.")
         }
-    
+
         if (message.attachments.size > 1 && !args.includes("-mod")) {
             return message.reply("You can't submit more than ten images")
         }
-    
+
         else if (message.attachments.size <= 0) {
             return message.reply("Your image was not submitted properly. Contact a mod")
         }
 
         else {
 
-            if(args.includes("-mod")){
+            if (args.includes("-mod")) {
                 //let id = await getUser(await message.author.id)
                 let e = await getTemplatedb()
-    
-                for (let i = 0; i < message.attachments.array().length; i++){
+
+                for (let i = 0; i < message.attachments.array().length; i++) {
                     e.list.push(message.attachments.array()[i].url)
                     // if(id){
                     //     await updateProfile(id, "points", 2)
                     // } 
-    
+
                     let attach = new MessageAttachment(message.attachments.array()[i].url);
-                
+
                     (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach)
                 }
-    
+
                 await updateTemplatedb(e.list)
-    
-                return message.reply(`You gained ${message.attachments.array().length*2} points for submitting ${message.attachments.array().length} templates.`)
+
+                await getProfile(message.author.id).then(async p => {
+                    p.points += (message.attachments.array().length * 2)
+                    await updateProfile(p)
+                })
+
+                return message.reply(`You gained ${message.attachments.array().length * 2} points for submitting ${message.attachments.array().length} templates.`)
             }
 
-            else{
+            else {
                 for (let i = 0; i < message.attachments.array().length; i++) {
                     //await channel.send(`${message.attachments.array()[i].url}`)
-        
+
                     await channel.send(
                         new MessageEmbed()
                             .setTitle(`${message.author.username} has submitted a new template(s)`)
@@ -393,11 +398,6 @@ export const templateSubmission: Command = {
                     )
                 }
 
-                await getProfile(message.author.id).then(async p => {
-                    p.points += (message.attachments.array().length * 2)  
-                    await updateProfile(p)
-                })
-                
                 await message.reply(`Thank you for submitting templates. You will gain a maximum of ${message.attachments.array().length * 2} points if they are approved. You currently have ${(await getProfile(message.author.id)).points} points`)
             }
         }
@@ -414,37 +414,32 @@ export const themeSubmission: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let channel = <TextChannel>client.channels.cache.get("722291683030466621")
 
-        if(message.channel.type !== "dm"){
+        if (message.channel.type !== "dm") {
             message.reply("Please dm bot theme")
             return message.delete()
-          }
-          
-          //var args: Array<string> = message.content.slice(process.env.PREFIX!.length).trim().split(/ +/g);
-          let targs = args.join(" ").split(",")
-          console.log(targs)
-      
-          if(args.length === 0) return message.reply("Please enter a theme")
-      
-          if(targs.length > 1) return message.reply("Can only enter one theme at a time")
-      
-          let em = new MessageEmbed()
+        }
+
+        //var args: Array<string> = message.content.slice(process.env.PREFIX!.length).trim().split(/ +/g);
+        let targs = args.join(" ").split(",")
+        console.log(targs)
+
+        if (args.length === 0) return message.reply("Please enter a theme")
+
+        if (targs.length > 1) return message.reply("Can only enter one theme at a time")
+
+        let em = new MessageEmbed()
             .setTitle(`${message.author.username} has submitted a new Theme(s)`)
             .setDescription(`<@${message.author.id}>`)
-      
-          for (let i = 0; i < targs.length; i++) {
+
+        for (let i = 0; i < targs.length; i++) {
             em.addField(`Theme: ${i + 1}`, targs[i])
-          }
-      
-          await channel.send(em).then(async message => {
+        }
+
+        await channel.send(em).then(async message => {
             await message.react('🏁')
             await message.react('🗡️')
-          })
-      
-        await getProfile(message.author.id).then(async p => {
-            p.points += targs.length  
-            await updateProfile(p)
         })
-        
+
         await message.reply(`Thank you for submitting themes. You will gain a maximum of ${targs.length} points if they are approved. You currently have ${(await getProfile(message.author.id)).points} points`)
     }
 }

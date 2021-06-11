@@ -8,6 +8,7 @@ export const duel: Command = {
     name: "duel",
     description: "",
     group: "duels",
+    groupCommand:true,
     owner: false,
     admins: false,
     mods: false,

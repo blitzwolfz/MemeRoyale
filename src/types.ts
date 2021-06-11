@@ -4,11 +4,12 @@ export interface Command {
     name: string
     description: string
     group:string;
+    groupCommand?:boolean;
     owner:boolean;
     admins:boolean;
     mods:boolean;
     // Making `args` optional
-    execute(message: Message, client:Client, args?: string[], ownerID?:string): Promise<any>;
+    execute(message: Message, client:Client, args?: string[], ownerID?:string, silentargs?:string[]): Promise<any>;
 }
 
 export interface config{

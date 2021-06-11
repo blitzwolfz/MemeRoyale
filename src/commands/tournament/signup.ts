@@ -12,7 +12,7 @@ export const signup: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let signup:Signups = await getDoc("config", "signups")
 
-        if(message.channel.type !== "dm" && message.id !== signup.msgID) {
+        if(message.channel.type !== "dm" && message.id !== signup.msgID && message.author.id === client.user?.id) {
             return await message.reply("You have to signup in bot dm if they are open").then(async m =>{
                 message.delete()
                 m.delete({timeout:1600})
