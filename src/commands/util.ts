@@ -1,4 +1,4 @@
-import { User } from "discord.js";
+import { Collection, Message, Snowflake, TextChannel, User } from "discord.js";
 
 export const backwardsFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '⬅' && !user.bot;
 export const forwardsFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '➡' && !user.bot;
@@ -44,4 +44,42 @@ export let timeconsts = {
 export async function toHHMMSS(timestamp: number, howlong: number) {
 
   return new Date((howlong - (Math.floor(Date.now() / 1000) - timestamp)) * 1000).toISOString().substr(11, 8)
+}
+
+export async function fetchManyMessages(channel: TextChannel, limit = 200) {
+  if (!channel) {
+    throw new Error(`Expected channel, got ${typeof channel}.`);
+  }
+  if (limit <= 100) {
+    return await channel.messages.fetch({ limit });
+  }
+
+  let collection:Collection<string, Message> = new Collection();
+  let lastId = null;
+  let options:{
+    limit?: number;
+    before?: Snowflake;
+  } = {};
+  let remaining = limit;
+
+  while (remaining > 0) {
+    options.limit = remaining > 100 ? 100 : remaining;
+    remaining = remaining > 100 ? remaining - 100 : 0;
+
+    if (lastId) {
+      options.before = lastId;
+    }
+
+    let messages = await channel.messages.fetch(options);
+
+    if (!messages.last()) {
+      break;
+    }
+
+    collection = collection.concat(messages);
+    lastId = messages.last()!.id;
+    console.log(options.limit)
+  }
+
+  return collection;
 }
