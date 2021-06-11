@@ -1,11 +1,11 @@
 # MemeRoyale Bot
 
-[![Maintenance](https://img.shields.io/maintenance/yes/2020?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/graphs/commit-activity) [![GitHub issues](https://img.shields.io/github/issues/blitzwolfz/MM?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/issues/)
+[![Maintenance](https://img.shields.io/maintenance/yes/2021?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/graphs/commit-activity) [![GitHub issues](https://img.shields.io/github/issues/blitzwolfz/MM?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/issues/)
 
   
   
 
-Hi! If you are reading this, then you found my a discord bot that I am working on. It's called Meme Mania.
+Hi! If you are reading this, then you found my a discord bot that I am working on. It's called MemeRoyale.
 
 
 # Table of Contents
@@ -22,7 +22,7 @@ Hi! If you are reading this, then you found my a discord bot that I am working o
 
   
 # General
-The bot is as of now actively maintained and well be done till all edge cases are worked out. Once we reach this point and no new features are being worked on, the bot will not see active maintenance on the codebase but more so on the server side. Of course you can always suggest new features and have your own implementation of how you think these features can be made. In terms of technology that's used, please look at the list below:
+The bot is as of now actively maintained and well be done till all edge cases are worked out. Once we reach this point and no new features are being worked on, the bot will not see active maintenance on the codebase. Of course you can always suggest new features and have your own implementation of how you think these features can be made. In terms of technology that's used, please look at the list below:
 
   
 
@@ -30,15 +30,15 @@ Requirements:
 
   
 
-- Typescript @3.9.5
+- Typescript @4.1.3
 
-- NodeJS @ 13.6
+- NodeJS @ 13.6.0
 
-- NodeJS MongoDB Driver @3.5.9
+- NodeJS MongoDB Driver @3.6.3
 
-- Discord.JS v12.2
+- Discord.JS v12.5.1
 
-- Node Canvas @ 2.6
+- Node Canvas @ 2.6.1
 
   
 
@@ -51,17 +51,17 @@ A more detailed version of this can be found in the package.json file. To get a 
 
   
 
-## Firecard, .env file, and all non code files
+## Match card, .env file, and all non code files
 
   
 
-As of now, I don't have a public env example file but however, this is where all the sensitive data is being stored. This includes the [discord bot token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) and [MongoDB url](https://docs.mongodb.com/guides/server/drivers/) needed to access the server. An .env file is not required to make this bot work. .env file is secure for me as I can contain my production info on my Laptop and dist info on a server, as such I purposefully did not include the dependencies needed to run this bot with .env in the requirements tab. [This is a good read on what to do and not to do.](https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/other-guides/env-files.md)
+As of now, I don't have a public env example file but however, this is where all the sensitive data is being stored. This includes the [discord bot token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) and [MongoDB url](https://docs.mongodb.com/guides/server/drivers/) needed to access the database. An .env file is not required to make this bot work, the file is secure for me as I can contain my development variables on my PC and production variables on a server, as such I purposefully did not include the dependencies needed to run this bot with .env in the requirements tab. [This is a good read on what to do and not to do.](https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/other-guides/env-files.md)
 
   
 
-- [ ] example env available
+- [NO] example env available
 
-The firecard is used to show a Player vs Player card before their regular matches. You can use any other image just note that there are image requirements that need to be followed. I can provide the image requirements but they are also in the code. You can do trial and error if you use.
+The match card is used to show a Player vs Player card before their regular matches. You can use any other image just note that there are image requirements that need to be followed. I can provide the image requirements but they are also in the code. You can do trial and error if you use.
 
   
 
@@ -98,11 +98,11 @@ For both local and hosted steps, you will need a copy of the bot. Do this by goi
 ## Locally
 You can run this bot in two ways, locally or on the web. To run this bot locally you have to have the NodeJS Runtime on your PC, and have some basic knowledge on using the command prompt/terminal. If you are using the bot as is then follow these instructions, if you are modifying the bot, then follow these instructions but I can't promise anything from working properly.
 
-First make sure you downloaded either the latest version of [Node or the version](https://nodejs.org/en/download/) or the one specified by this document. As long as the version is equal to or greater than the one I stated, you shall be fine.
+First make sure you downloaded either the latest version of [Node or the version](https://nodejs.org/en/download/) or the one specified by this document. As long as the version is equal to or greater than the one I stated, you should be fine.
 
 To check if you have Node running, open a command line or command prompt and run 
 ` 
-$ node dist/index.js
+$ node -v
 `
 The out should the version number that is either equal to or greater than this.
 ![](https://i.imgur.com/F7opU7f.png)
@@ -111,7 +111,7 @@ Next you are going to need a MongoDB server. Now I'll leave this up to you on ho
 
  - [They give 500mb for free, more than enough to run this tournament](https://www.mongodb.com)
  - [How to make a local database](https://www.freecodecamp.org/news/learn-mongodb-a4ce205e7739/)
- - AWS, Google Cloud, I believe also provide MongoDB servers at a price
+ - AWS, Google Cloud, and few others I believe also provide MongoDB servers at a cost.
 
 After this step, you are going to need to create a .env file. The .env file should contain these variables, which are important for running the bot.
 Should look this
@@ -123,17 +123,17 @@ Should look this
  - Prefix is for the bot prefix, and status is for the bot status.
  - Challonge is your challonge API key. Now you don't need this, but it some features of the bot will break without it.
 
-Now once you have all these files set up, it's a good idea to recompile the TS code but you don't have to as I provide a compiled folder of the code.
-Now all you have to do to run the bot is open a terminal in the folder. For Windows users, right-click and it should say open command prompt. 
+Now once you have all these files set up, it's time compile the TS code.
+Now all you have to do to run the bot is open a terminal in the folder. For Windows users, right-click and it should say open command prompt.
+
+Now you can use the NPM scripts or compile the TS code your own way. I'd recommend using the NPM scripts, but you are free to choose. 
 
 First command you need to run is `$ npm i`. What this command will do is install all the libraries needed to run this bot. Now this step may take some time, so be patient.
 
-Once the previous command is done, in the terminal type in this command `
-$ node dist/index.js
-`
+Using this command: `$ npm test`, this will build/compile the TS code and run the bot if everything has been correctly placed. If you want to change the code, and have this compiled on save, run `$ npm cibuild`.
 
 And you are done! The bot should be working perfectly, and will run as so long as you don't do Crtl+C in the terminal or close the terminal.
 
 
 ## Cloud
-To host the bot on a server, you can use services such as Heroku. As there many forms of these services, find the best one for you and use their installation guide. The steps that are is the dB steps, which you will need regardless of how you host the bot.
+To host the bot on a server, you can use services such as Heroku. As there many forms of these services, find the best one for you and use their installation guide. The steps that are is the dB steps, which you will need regardless of how you host the bot. The compiled Typescript files are not included as there is an NPM script called postinstall. Using postinstall, the server you are hosting on should be able to compile your Typescript code.
