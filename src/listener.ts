@@ -4,7 +4,7 @@ import { backgroundMatchLoop } from "./commands/match/background"
 import { backgroundQualLoop } from "./commands/quals/background"
 import { backgroundReminderLoop } from "./commands/reminders"
 import { connectToDB, getMatch, updateMatch, getQual, updateQual, getProfile, getTemplatedb, updateTemplatedb, updateProfile, getThemes, updateThemedb } from "./db"
-import { c, prefix } from "./index"
+import { cmd, prefix } from "./index"
 import { Profile } from "./types"
 export const client:Client = new Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
 
@@ -163,7 +163,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             .find(x => x.name.toLowerCase() === "referee") && m.p1.userid !== user.id) {
             return user.send("No.")
         }
-        return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
+        return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid])
     }
 
     if (messageReaction.emoji.name === '🅱️') {
@@ -175,7 +175,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             .find(x => x.name.toLowerCase() === "referee") && m.p2.userid !== user.id) {
             return user.send("No.")
         }
-        return c.default.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
+        return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid])
     }
 
     if (['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].includes(messageReaction.emoji.name)) {
@@ -189,11 +189,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         let m = await getQual(messageReaction.message.channel.id)
         if (!m) return;
         let pos = ['🇦', '🇧', '🇨', '🇩', '🇪', '🇫'].indexOf(messageReaction.emoji.name)
-        c.default.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid])
+        cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid])
     }
 
     if (messageReaction.emoji.name === '🗳️') {
-        c.default.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id])
+        cmd.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id])
     }
 
     if (messageReaction.emoji.name === '👌') {
@@ -216,7 +216,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                 return;
             }
         }
-        c.default.find(c => c.name.toLowerCase() === "dqw")?.execute(messageReaction.message, client, key, "2", [user.id])
+        cmd.find(c => c.name.toLowerCase() === "dqw")?.execute(messageReaction.message, client, key, "2", [user.id])
     }
 
     if (messageReaction.emoji.name === '🏁') {

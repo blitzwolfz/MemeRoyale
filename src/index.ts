@@ -6,10 +6,12 @@ import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-export const c = allCommands
+import { getConfig } from "./db";
+export const cmd = allCommands.default
 export let prefix: string = process.env.prefix!
 require('dotenv').config()
-var commands: Command[] = c.default
+
+var commands: Command[] = cmd
 
 //Express for hosting
 app.use(express.static('public'));
@@ -88,6 +90,9 @@ client.on("message", async message => {
 process.env.dev! ? client.login(process.env.devtoken!) : client.login(process.env.token!)
 
 async function runCommand(command:Command, message: Message, client:Client, args: string[]) {
+    if(await (await getConfig()).disabledcommands.includes(command.name)) return message.reply(`${command.name} is currently disabled`);
+
+
     if (command.owner || command.admins || command.mods) {
         try {
             if (command.admins || message.author.id === process.env.owner && message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) {
