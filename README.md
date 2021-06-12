@@ -1,6 +1,6 @@
 # MemeRoyale Bot
 
-[![Maintenance](https://img.shields.io/maintenance/yes/2021?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/graphs/commit-activity) [![GitHub issues](https://img.shields.io/github/issues/blitzwolfz/MM?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/issues/)
+[![Maintenance](https://img.shields.io/maintenance/yes/2021?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/graphs/commit-activity) [![GitHub issues](https://img.shields.io/github/issues/blitzwolfz/MemeRoyale?style=for-the-badge)](https://github.com/blitzwolfz/MemeRoyale/issues/)
 
   
   
