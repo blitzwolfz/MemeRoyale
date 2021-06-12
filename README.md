@@ -5,7 +5,7 @@
   
   
 
-Hi! If you are reading this, then you found my a discord bot that I am working on. It's called MemeRoyale.
+Hi! If you are reading this, then you found my a discord bot that I work on. It's called MemeRoyale. This bot is used to run a meme tournament on a server called MemeRoyale. You can join [here.](https://discord.gg/GK3R5Vt3tz")
 
 
 # Table of Contents
@@ -22,7 +22,7 @@ Hi! If you are reading this, then you found my a discord bot that I am working o
 
   
 # General
-The bot is as of now actively maintained and well be done till all edge cases are worked out. Once we reach this point and no new features are being worked on, the bot will not see active maintenance on the codebase. Of course you can always suggest new features and have your own implementation of how you think these features can be made. In terms of technology that's used, please look at the list below:
+The bot is as of now actively maintained and well be done till all edge cases are worked out. Once we reach this point and no new features are being worked on, the bot will not see active maintenance on the codebase. However, this does not apply to the API which has it's own docs [here.](https://github.com/blitzwolfz/MemeRoyale/blob/master/src/api/README.md). Of course you can always suggest new features and show your own implementation of how you think these features can be made. In terms of technology that's used, please look at the list below:
 
   
 
@@ -51,11 +51,11 @@ A more detailed version of this can be found in the package.json file. To get a 
 
   
 
-## Match card, .env file, and all non code files
+## Match card, .env file, and all non-code files
 
   
 
-As of now, I don't have a public env example file but however, this is where all the sensitive data is being stored. This includes the [discord bot token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) and [MongoDB url](https://docs.mongodb.com/guides/server/drivers/) needed to access the database. An .env file is not required to make this bot work, the file is secure for me as I can contain my development variables on my PC and production variables on a server, as such I purposefully did not include the dependencies needed to run this bot with .env in the requirements tab. [This is a good read on what to do and not to do.](https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/other-guides/env-files.md)
+As of now, I don't have a public env example file but however, this is where all the sensitive data is being stored. This includes the [discord bot token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) and [MongoDB url](https://docs.mongodb.com/guides/server/drivers/) needed to access the database. An .env file is required to make this bot work. [This is a good read on what to do and not to do.](https://github.com/AnIdiotsGuide/discordjs-bot-guide/blob/master/other-guides/env-files.md)
 
   
 
@@ -63,7 +63,8 @@ As of now, I don't have a public env example file but however, this is where all
 
 The match card is used to show a Player vs Player card before their regular matches. You can use any other image just note that there are image requirements that need to be followed. I can provide the image requirements but they are also in the code. You can do trial and error if you use.
 
-  
+Additionally, since this is a rewrite of another repo, one would expect to the old repo's non-code files. I have decided to not copy over these code files since that old repo still has them. In addition, the old repo will not be deleted, allowing for future access of those files.
+
 
 ## JSON Files
 
@@ -75,7 +76,7 @@ There are three very important JSON Files. Of which you need to have 2 of them, 
 
   
 
-You can rename files as you see fit, just note that you will be responsible for changing all the equivalent references of the file's name you just changed.
+You can rename files as you see fit, just note that you will be responsible for changing all the equivalent references of the file's name. This may lead to code breakage.
 
   
 
@@ -83,17 +84,17 @@ You can rename files as you see fit, just note that you will be responsible for 
 
   
 
-Don't delete any files unless I do it myself. Of course you are allowed to modify this program as you see fit just note, that if you do, I am not responsible for anything that happens.
+Unless it is a file I deleted, please do not delete any files without some thought. Of course you are allowed to modify this program as you see fit just note, that if you do, I am not responsible for anything that happens.
 
   
 
 # Synchronization
 
-If you wish to run this bot with any features I make, then you should on the regular push all changes from [this branch](https://github.com/blitzwolfz/MemeRoyale/tree/master) to your code. This branch will hold all the stable features of the bot. Of course if you want to try out new branches and their code, you are free to do so at your own risk. I will not provide any installation instructions on these branches unless stated otherwise.
+If you wish to run this bot with any features I make, then you should on the regular push all changes from [the Master branch](https://github.com/blitzwolfz/MemeRoyale/tree/master) to your code. This branch will hold all the stable features of the bot. Of course if you want to try out new branches and their code, you are free to do so at your own risk. I will not provide any installation instructions on these branches unless stated otherwise.
 
 # Installation
 
-For both local and hosted steps, you will need a copy of the bot. Do this by going [to this link](https://github.com/blitzwolfz/MemeRoyale/tree/master) and downloading a copy.
+For both local and hosted steps, you will need a copy of the bot. Do this by going [to this link](https://github.com/blitzwolfz/MemeRoyale/archive/refs/heads/master.zip) and downloading a zip copy. You can also go to the repo, and dowload it in another manner.
 
 ## Locally
 You can run this bot in two ways, locally or on the web. To run this bot locally you have to have the NodeJS Runtime on your PC, and have some basic knowledge on using the command prompt/terminal. If you are using the bot as is then follow these instructions, if you are modifying the bot, then follow these instructions but I can't promise anything from working properly.
@@ -130,9 +131,11 @@ Now you can use the NPM scripts or compile the TS code your own way. I'd recomme
 
 First command you need to run is `$ npm i`. What this command will do is install all the libraries needed to run this bot. Now this step may take some time, so be patient.
 
-Using this command: `$ npm test`, this will build/compile the TS code and run the bot if everything has been correctly placed. If you want to change the code, and have this compiled on save, run `$ npm cibuild`.
+Using this command: `$ npm test`, this will build/compile the TS code and run the bot if everything has been correctly placed.
 
 And you are done! The bot should be working perfectly, and will run as so long as you don't do Crtl+C in the terminal or close the terminal.
+
+Everytime you make a change, you can use `$ npm build` to build those changes. If you want to have the code rebuilt after every time you save, you can use `$ npm cibuild` To run this code there after, you can use `$ npm start`. `$ npm test` basically runs `$ npm build` and then `$ npm start`.
 
 
 ## Cloud
