@@ -5,13 +5,13 @@ import { client } from "./listener"
 import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
+import { app } from "./api/router";
 export const c = allCommands
 export let prefix: string = process.env.prefix!
 require('dotenv').config()
 var commands: Command[] = c.default
 
 //Express for hosting
-export const app = express();
 app.use(express.static('public'));
 
 //@ts-ignore
