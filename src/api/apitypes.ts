@@ -1,4 +1,4 @@
-export interface Match{
+export interface APIMatch{
     _id:string,
     messageID:Array<string>;
     split:boolean;
@@ -23,10 +23,10 @@ export interface Match{
     votingperiod: boolean;
 }
 
-export interface Qual{
+export interface APIQual{
     _id:string;
     messageID:Array<string>;
-    players: Array<QualPlayer>;
+    players: Array<APIQualPlayer>;
     temp:{
         istheme:boolean;
         link:string
@@ -35,7 +35,7 @@ export interface Qual{
     votetime: number;
 }
 
-export interface QualPlayer{
+export interface APIQualPlayer{
     userid: string;
     memedone: boolean;
     time:number;
@@ -43,15 +43,16 @@ export interface QualPlayer{
     failed:boolean;
 }
 
-export interface Profile{
+export interface APIProfile{
     _id:string;
     votetally:number;
     points:number;
     wins: number;
     loss: number;
+    profile?:string;
 }
 
-export interface DuelProfile{
+export interface APIDuelProfile{
     _id:string;
     votetally:number;
     points:number;

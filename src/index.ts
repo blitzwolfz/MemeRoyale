@@ -5,24 +5,25 @@ import { client } from "./listener"
 import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
+import { app } from "./api/router";
 export const c = allCommands
 export let prefix: string = process.env.prefix!
 require('dotenv').config()
 var commands: Command[] = c.default
 
 //Express for hosting
-const app = express();
 app.use(express.static('public'));
 
 //@ts-ignore
 var _server = http.createServer(app);
+let Port = process.env.PORT || 100
 
 app.get('/', (request, response) => {
     response.sendFile(__dirname + "/index.html");
     response.sendStatus(200);
 });
 
-const listener = app.listen(process.env.PORT, () => {
+const listener = app.listen(Port, () => {
     //@ts-ignore
     console.log(`Your app is listening on port ${listener.address().port}`);
 });
@@ -45,7 +46,6 @@ client.on("message", async message => {
 
     if (commandName === "test") {
         if (message.author.id !== process.env.owner) return await message.reply("nah b");
-        console.log(commands.map(cmd => cmd.name))
     }
 
     else if (command) {

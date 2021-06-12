@@ -208,7 +208,7 @@ export async function addDuelProfile(User:DuelProfile, guild:string): Promise<vo
 }
 
 export async function getAllDuelProfiles(guild:string): Promise<DuelProfile[]> {
-    return dB.collection(guild).find({}).toArray()
+    return await dB.collection(guild).find({}).toArray()
 }
 
 export async function getDuelProfile(_id: string, guild:string): Promise<DuelProfile> {
