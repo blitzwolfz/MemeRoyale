@@ -10,7 +10,6 @@ export async function backgroundQualLoop(client: Client) {
 
     for(let q of quals){
         try {
-
             if(q.players.find(x => Math.floor(Date.now()/1000) - x.time >= 3600 && x.split === true && x.failed === false && x.memedone === false)){
                 q.players.forEach(async x => {
                     if (Math.floor(Date.now()/1000) - x.time >= 3600 && x.split === true && x.failed === false && x.memedone === false){
@@ -284,9 +283,9 @@ async function matchResults(client: Client, q: Qual) {
 
                 let m = (await c.messages.fetch({limit:100})).last()!
     
-                let time = Math.floor(((Math.floor(m.createdTimestamp/1000)+ 259200) - Math.floor(Date.now()/1000))/3600)
+                let time = Math.floor(((Math.floor(m.createdTimestamp/1000)+ 345600) - Math.floor(Date.now()/1000))/3600)
     
-                if(time <= 72 && channel.topic?.split(" ").join("").toLowerCase() === "round1"){
+                if(time <= 96 && channel.topic?.split(" ").join("").toLowerCase() === "round1"){
                     await channel.send(`${string} you have ${time}h left to complete Portion 2`)
 
                     let timeArr:Array<number> = []
