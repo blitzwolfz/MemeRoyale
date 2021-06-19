@@ -184,7 +184,7 @@ async function matchResults(client: Client, q: Qual) {
                 for(let p of q.players){
                     string += `<@${p.userid}>\n`
                 }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
+                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 48h to complete your portion. ${string}`)
             }
     
             else if ((t!.concat([message.id])).length === timeconsts.qual.results && t !== undefined) {
@@ -209,7 +209,7 @@ async function matchResults(client: Client, q: Qual) {
                 for(let p of q.players){
                     string += `<@${p.userid}>\n`
                 }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 36h to complete your portion. ${string}`)
+                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 48h to complete your portion. ${string}`)
             }
 
         });

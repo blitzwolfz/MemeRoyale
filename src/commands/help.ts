@@ -5,7 +5,8 @@ import * as c from "./index"
 
 export const help: Command = {
     name: "help",
-    group:"help",
+    aliases: ["helpmenu", "menu"],
+    group:"helpmenu",
     description: "Access the help menu",
     owner:false,
     admins: false,
@@ -42,8 +43,14 @@ export const help: Command = {
                     }
                 ))
                 .setColor(await (await getConfig()).colour)
-                .setFooter(`You can send \`!help <command name>\` to get info on a specific command!`);
-
+            ;
+            
+            if(c.default.find(c => c.name === args[0])?.aliases){
+                embed.addField("Also known as:", "\u200B")
+                for(let g of c.default.find(c => c.name === args[0])!.aliases!){
+                    embed.addField( `!${g}`, `\u200B`, true)
+                }
+            }
             await message.channel.send(embed)
         }
 

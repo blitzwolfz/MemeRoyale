@@ -1,10 +1,10 @@
-import { Message, Client, MessageEmbed } from "discord.js";
+import { Message, Client, MessageEmbed, User } from "discord.js";
 import { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./match";
 import { forcevote, match_stats, reload_match } from "./match/utils";
 import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
-import { qual_stats, reload_qual } from "./quals/util";
+import { qual_result_sum, qual_stats, reload_qual } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as b from "./tournament/index"
 import * as c from "./exhibition/index"
@@ -34,18 +34,22 @@ export const ping: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        message.channel.send("Pinging...").then(m =>{
-            // The math thingy to calculate the user's ping
-            let ping = m.createdTimestamp - message.createdTimestamp;
-  
-            // Basic embed
-            let embed = new MessageEmbed()
-            .setAuthor(`Your ping is ${ping}`)
-            .setColor("RANDOM");
-              
-            // Then It Edits the message with the ping variable embed that you created
-            m.edit(embed)
-          });
+        message.channel.send(new MessageEmbed()
+            .setAuthor(`Pinging`)
+            .setColor("RANDOM")).then(m => {
+                // The math thingy to calculate the user's ping
+                let ping = m.createdTimestamp - message.createdTimestamp;
+
+                // Basic embed
+                let embed = new MessageEmbed()
+                    .setAuthor(`Your ping is ${ping}`)
+                    .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+                    .setColor("RANDOM");
+
+                // Then It Edits the message with the ping variable embed that you created
+                m.edit(embed)
+            }
+        );
     }
 }
 
@@ -68,6 +72,7 @@ export const disableCommands: Command = {
         }
 
         else{
+            if(args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to disable all of them, do `!enable all`.")
             config.disabledcommands.push(args[0])
             config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1)
             config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1)
@@ -94,6 +99,7 @@ export const enableCommands: Command = {
         }
 
         else{
+            if(args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to enable all of them, do `!enable all`.")
             config.disabledcommands.splice(config.disabledcommands.indexOf(args[0]), 1)
             console.log(config)
             await updateConfig(config)
@@ -102,9 +108,91 @@ export const enableCommands: Command = {
     }
 }
 
+export const editConfig: Command = {
+    name: "edit",
+    description: "owner",
+    group: "owner",
+    owner: true,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let config = await getConfig()
 
+        if(args.length === 0){
+
+            if(config.disabledcommands.length > 0){
+                config.disabledcommands = []
+            }
+
+            let s = JSON.stringify(config, null, 4);
+            let arr = s.match(/"\w+":*/g)!
+            arr.splice(0, 2)
+            await message.channel.send(`The edit options are ${arr.join(", ").replace(/:/gi, "").replace(/"/gi, "")}`)
+            await message.channel.send("For disabling and enabling commands, there are seperate commands called `!disable` and `!enable`.")
+        }
+
+        else{
+            let symbol: "colour" | "status" | "isfinale"  = "status"
+
+            switch (args[0]?.[0]) {
+                case "c": symbol = "colour"; break;
+                case "s": symbol = "status"; break;
+                default: symbol = "isfinale";
+            }
+
+            switch (symbol) {
+                case "colour":
+                    if(typeof args[1] !== 'string'){
+                        return message.reply("Colour requires the hex code as a string")
+                    }
+
+                    config.colour = args[1]
+                    await updateConfig(config)
+                break;
+
+                case "status":
+                    if(typeof args.slice(1).join(" ") !== 'string'){
+                        return message.reply("Status requires the hex code as a string")
+                    }
+
+                    config.status = args.slice(1).join(" ")
+                    await client.user!.setActivity(`${args.slice(1).join(" ")}`);
+                    await updateConfig(config)
+                break;
+
+                case "isfinale":
+
+                    await message.channel.send("No type check. Click emote to continue").then(async msg => {
+            
+                        await msg.react(`✔️`)
+                        let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✔️' && !user.bot;
+                        const approve = msg.createReactionCollector(emoteFilter, { time: 50000 });
+            
+                        approve.on('collect', async () => {
+                            if(args[1] === "true"){
+                                config.isfinale = true
+                            }
+
+                            if(args[1] === "false"){
+                                config.isfinale = false
+                            }
+                            
+                            await updateConfig(config)
+                        })
+            
+                    });
+                break;
+
+                default:
+                    await message.channel.send("Not available yet")
+                    break;
+            }
+        }
+    }
+}
 
 export default [
+    editConfig,
     enableCommands,
     disableCommands,
     startmatch,
@@ -113,6 +201,7 @@ export default [
     endmatch,
     reload_match,
     reload_qual,
+    qual_result_sum,
     ping,
     forcevote,
     splitmatch,

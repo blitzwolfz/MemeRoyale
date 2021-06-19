@@ -66,6 +66,30 @@ export const qual_stats: Command = {
     }
 }
 
+export const qual_result_sum: Command = {
+    name: "qra",
+    description: "`!qra <msg id> <msg id>`",
+    group: "qual",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+
+        if(args.length <= 1 && args.length >= 2) return message.reply("Please supply two msg ids.")
+
+        let channel = <TextChannel>await client.channels.cache.get(message.channel.id)
+
+        let emm = await QualifierResults(channel, client, [args[0], args[1]])
+    
+        await message.channel.send({ embed:emm }).then(async m => m.react('👌'))
+
+        await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
+        .send({ embed:emm });
+    }
+}
+
+
+
 export async function QualifierResults(channel: TextChannel, client: Client, ids:string[]){
     let msgArr:Message[] = [];
 

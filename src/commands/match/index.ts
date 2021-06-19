@@ -5,7 +5,7 @@ import { createProfileatMatch } from "../user"
 
 export const startmatch: Command = {
     name: "start",
-    description: "",
+    description: "To use the command: `!start @mention @mention`",
     group: "match",
     owner: false,
     admins: false,
@@ -127,7 +127,11 @@ export const startmatch: Command = {
 
             else m.temp.link = msg.embeds[0].image?.url!
 
-            await insertMatch(m)
+            await insertMatch(m).then(async a => {
+                let c = await (<TextChannel>client.channels.cache.get("854930976974700554"))
+                let cc = await (<TextChannel>client.channels.cache.get(m._id))
+                c.send(`<#${m._id}>/${cc.name} template is ${m.temp.link}`)
+            })
             await createProfileatMatch(message.mentions.users.array()[0].id)
             await createProfileatMatch(message.mentions.users.array()[1].id)
 
@@ -141,34 +145,20 @@ export const startmatch: Command = {
                 await message.mentions.users.array()[1].send("Your template is " + m.temp.link)
             }
 
-            let timeArr:number[] = []
-            timeArr.push(3300)
-            timeArr.push(2700)
-            timeArr.push(1800)
 
-            await insertReminder(
-                {
-                    _id:message.mentions.users.array()[0].id,
-                    mention: "",
-                    channel: "",
-                    type: "meme",
-                    time:timeArr,
-                    timestamp:Math.floor(Date.now()/1000),
-                    basetime:3600
-                }
-            )
-
-            await insertReminder(
-                {
-                    _id:message.mentions.users.array()[1].id,
-                    mention: "",
-                    channel: "",
-                    type: "meme",
-                    time:timeArr,
-                    timestamp:Math.floor(Date.now()/1000),
-                    basetime:3600
-                }
-            )
+            for(let us of message.mentions.users.array()){
+                await insertReminder(
+                    {
+                        _id:us.id,
+                        mention: "",
+                        channel: "",
+                        type: "meme",
+                        time:[ 3300, 2700, 1800 ],
+                        timestamp:Math.floor(Date.now()/1000),
+                        basetime:3600
+                    }
+                )
+            }
 
             return await message.channel.send(
                 new MessageEmbed()
@@ -305,7 +295,11 @@ export const splitmatch: Command = {
 
             else m.temp.link = msg.embeds[0].image?.url!
 
-            await insertMatch(m)
+            await insertMatch(m).then(async a => {
+                let c = await (<TextChannel>client.channels.cache.get("854930976974700554"))
+                let cc = await (<TextChannel>client.channels.cache.get(m._id))
+                c.send(`<#${m._id}>/${cc.name} template is ${m.temp.link}`)
+            })
             await createProfileatMatch(message.mentions.users.array()[0].id)
             await createProfileatMatch(message.mentions.users.array()[1].id)
 
@@ -363,11 +357,6 @@ export const startsplit: Command = {
                         `Use \`!submit\` to submit to submit each image seperately`
                     )
             )
-
-            let timeArr:number[] = []
-            timeArr.push(3300)
-            timeArr.push(2700)
-            timeArr.push(1800)
     
             await insertReminder(
                 {
@@ -375,7 +364,7 @@ export const startsplit: Command = {
                     mention: "",
                     channel: "",
                     type: "meme",
-                    time:timeArr,
+                    time:[ 3300, 2700, 1800 ],
                     timestamp:Math.floor(Date.now()/1000),
                     basetime:3600
                 }
@@ -383,6 +372,8 @@ export const startsplit: Command = {
 
             if (m.p1.userid === e.userid) m.p1 = e;
             else m.p2 = e;
+
+            m.p1.userid === e.userid ? m.p1 = e : m.p2 = e;
 
             await updateMatch(m);
 
@@ -414,7 +405,7 @@ export const cancelmatch: Command = {
     async execute(message: Message, client: Client, args: string[]) {
 
         if (message.mentions.channels.array().length === 1) {
-            if (!await getMatch(message.mentions.channels.array()[0].id)) return message.reply("There is no active match here");
+            if (!await getMatch(message.mentions.channels.array()[0].id)) return message.reply("There is no active match there");
             await deleteMatch(message.mentions.channels.array()[0].id)
 
             return message.channel.send(
