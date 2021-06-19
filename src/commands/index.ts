@@ -2,9 +2,9 @@ import { Message, Client, MessageEmbed, User } from "discord.js";
 import { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./match";
-import { forcevote, match_stats, reload_match } from "./match/utils";
+import { forcevote, match_stats, reload_match, end_match } from "./match/utils";
 import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
-import { qual_result_sum, qual_stats, reload_qual } from "./quals/util";
+import { forcevote_qual, qual_result_sum, qual_stats, reload_qual, search } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as b from "./tournament/index"
 import * as c from "./exhibition/index"
@@ -42,7 +42,7 @@ export const ping: Command = {
 
                 // Basic embed
                 let embed = new MessageEmbed()
-                    .setAuthor(`Your ping is ${ping}`)
+                    .setTitle(`Your ping is ${ping}`)
                     .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
                     .setColor("RANDOM");
 
@@ -203,7 +203,10 @@ export default [
     reload_qual,
     qual_result_sum,
     ping,
+    end_match,
     forcevote,
+    forcevote_qual,
+    search,
     splitmatch,
     cancelmatch,
     submit,
