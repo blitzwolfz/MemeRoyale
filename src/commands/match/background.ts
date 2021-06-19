@@ -27,7 +27,7 @@ import { grandwinner, winner } from "./utils"
 //                 await matchVotingLogic(client, m)
 //             }
 
-//             if (m.votingperiod === true && (Math.floor(Date.now() / 1000) - m.votetime > 7200)) {
+//             if (m.votingperiod === true && (Math.floor(Math.floor(Date.now() / 1000)/60) * 60 - m.votetime > 7200)) {
 //                 await matchResults(client, m)
 //             }
 //         } catch (error) {
@@ -42,8 +42,8 @@ export async function backgroundMatchLoop(client: Client) {
     for (let m of matches) {
         try {
             if(m.exhibition === true) continue;
-            if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now())/1000 - m.p1.time > 3200) ||
-                m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now())/1000 - m.p2.time > 3200)){
+            if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now())/1000 - m.p1.time > 2700) ||
+                m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now())/1000 - m.p2.time > 2700)){
                     (<TextChannel>await client.channels.cache.get(m._id)).send(
                         new MessageEmbed()
                             .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
@@ -59,7 +59,7 @@ export async function backgroundMatchLoop(client: Client) {
                 await matchVotingLogic(client, m)
             }
 
-            if (m.votingperiod === true && (Math.floor(Date.now() / 1000) - m.votetime > 7200)) {
+            if (m.votingperiod === true && (Math.floor(Math.floor(Date.now() / 1000)/60) * 60 - m.votetime > 7200)) {
                 await matchResults(client, m)
             }
             

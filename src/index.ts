@@ -58,7 +58,7 @@ client.on("message", async message => {
         args.splice(0, 1)
     }
 
-    if (commandName === "test") {
+    if (commandName === "test2") {
         if (message.author.id !== process.env.owner) return await message.reply("nah b");
 
         const fileContents = readFileSync('oldIndex.ts', 'utf8')
@@ -108,8 +108,12 @@ client.on("message", async message => {
         await message.channel.send(strrrr)
     }
 
-    else if(commandName === "test2"){
-        console.log(args.slice(1).join(" "))
+    else if(commandName === "test"){
+        let time = Math.floor(((Math.floor(1624091312000/1000)+ 345600) - Math.floor(Date.now()/1000))/3600)
+
+
+        console.log(time)
+        message.channel.send(time)
     }
 
     else if (command) {

@@ -10,10 +10,9 @@ export async function backgroundQualLoop(client: Client) {
 
     for(let q of quals){
         try {
-
-            if(q.players.find(x => Math.floor(Date.now()/1000) - x.time >= 1800 && x.split === true && x.failed === false && x.memedone === false)){
+            if(q.players.find(x => Math.floor(Date.now()/1000) - x.time >= 3600 && x.split === true && x.failed === false && x.memedone === false)){
                 q.players.forEach(async x => {
-                    if (Math.floor(Date.now()/1000) - x.time >= 1800 && x.split === true && x.failed === false && x.memedone === false){
+                    if (Math.floor(Date.now()/1000) - x.time >= 3600 && x.split === true && x.failed === false && x.memedone === false){
                         await (await client.users.fetch(x.userid)).send("You failed to send your meme on time")
                         x.split = true
                         x.failed = true
@@ -284,23 +283,24 @@ async function matchResults(client: Client, q: Qual) {
 
                 let m = (await c.messages.fetch({limit:100})).last()!
     
-                let time = Math.floor(((Math.floor(m.createdTimestamp/1000)+ 259200) - Math.floor(Date.now()/1000))/3600)
+                let time = Math.floor(((Math.floor(m.createdTimestamp/1000)+ 345600) - Math.floor(Date.now()/1000))/3600)
     
-                if(time <= 72 && channel.topic?.split(" ").join("").toLowerCase() === "round1"){
+                if(time <= 96 && channel.topic?.split(" ").join("").toLowerCase() === "round1"){
                     await channel.send(`${string} you have ${time}h left to complete Portion 2`)
 
                     let timeArr:Array<number> = []
-                    timeArr.push(time*3600)
-                    if((time-2)*3600 > 0){
-                        timeArr.push((time-2)*3600)
+                    timeArr.push(172800)
+
+                    if ((time - 2) * 3600 > 0 && time - 2 > 0) {
+                        timeArr.push(165600)
                     }
-            
-                    if((time-12)*3600 > 0){
-                        timeArr.push((time-12)*3600)
+                    
+                    if ((time - 12) * 3600 > 0 && time - 12 > 0) {
+                        timeArr.push(129600)
                     }
-            
-                    if((time-24)*3600 > 0){
-                        timeArr.push((time-24)*3600)
+                    
+                    if ((time - 24) * 3600 > 0 && time-24 > 0) {
+                        timeArr.push(86400)
                     }
             
                     await insertReminder(
@@ -311,7 +311,7 @@ async function matchResults(client: Client, q: Qual) {
                             type:"match",
                             time:timeArr,
                             timestamp:Math.floor(Date.now()/1000),
-                            basetime:time*3600
+                            basetime:172800
                         }
                     )
                 }
