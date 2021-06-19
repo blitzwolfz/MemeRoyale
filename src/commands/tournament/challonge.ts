@@ -109,7 +109,7 @@ export const matchchannelcreate: Command = {
                                                     type: "match",
                                                     time: timeArr,
                                                     timestamp: Math.floor(Date.now() / 1000),
-                                                    basetime: time * 3600
+                                                    basetime: 172800
                                                 }
                                             )
                                         });
@@ -150,30 +150,18 @@ export const qualchannelcreate: Command = {
                             string += `<@${u}> `
                         }
 
-                        let timeArr: Array<number> = []
-
-                        if ((time - 2) * 3600 > 0) {
-                            timeArr.push((time - 2) * 3600)
-                        }
-
-                        if ((time - 12) * 3600 > 0) {
-                            timeArr.push((time - 12) * 3600)
-                        }
-
                         await insertReminder(
                             {
                                 _id: channel.id,
                                 mention: string,
                                 channel: channel.id,
                                 type: "match",
-                                time: timeArr,
+                                time: [ 172800, 165600, 129600, 86400 ],
                                 timestamp: Math.floor(Date.now() / 1000),
-                                basetime: time * 3600
+                                basetime: 172800
                             }
                         )
-
                         await channel.send(`${string}, Portion ${args[0]} has begun, and you have ${time}h to complete it. Contact a ref to begin your portion!`)
-
                     });
             }
 

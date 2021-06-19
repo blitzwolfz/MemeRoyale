@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js"
-import { deleteQual, getConfig, getQual, getTemplatedb, getThemes, insertQual, updateQual } from "../../db"
+import { deleteQual, getConfig, getQual, getTemplatedb, getThemes, insertQual, insertReminder, updateQual } from "../../db"
 import { Command, Qual } from "../../types"
 
 export const splitqual: Command = {
@@ -175,7 +175,7 @@ export const startsplitqual: Command = {
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 45 mins to complete your meme\n` +
+                        `You have 60 mins to complete your meme\n` +
                         `Use \`!qualsubmit\` to submit to submit each image seperately`
                     )
             )
@@ -189,12 +189,24 @@ export const startsplitqual: Command = {
 
             await updateQual(q)
 
+            await insertReminder(
+                {
+                    _id:e.userid,
+                    mention: "",
+                    channel: "",
+                    type: "meme",
+                    time:[ 3300, 2700, 1800 ],
+                    timestamp:Math.floor(Math.floor(Date.now() / 1000)/60) * 60,
+                    basetime:3600
+                }
+            )
+
             return (<TextChannel>await client.channels.cache.get(q._id)!).send(
                 new MessageEmbed()
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 45 mins to complete your meme\n` +
+                        `You have 60 mins to complete your meme\n` +
                         `Use \`!qualsubmit\` to submit to submit each image seperately`
                     )
             )
