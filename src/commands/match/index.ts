@@ -153,9 +153,9 @@ export const startmatch: Command = {
                         mention: "",
                         channel: "",
                         type: "meme",
-                        time:[ 3300, 2700, 1800 ],
-                        timestamp:Math.floor(Date.now()/1000),
-                        basetime:3600
+                        time:[ 2400, 2100, 1500 ],
+                        timestamp:Math.floor(Math.floor(Date.now() / 1000)/60) * 60,
+                        basetime:2700
                     }
                 )
             }
@@ -164,7 +164,7 @@ export const startmatch: Command = {
                 new MessageEmbed()
                     .setTitle(`Match between ${message.mentions.users.array()[0].username} & ${message.mentions.users.array()[1].username}`)
                     .setColor("#d7be26")
-                    .setDescription(`<@${message.mentions.users.array()[0].id}> and <@${message.mentions.users.array()[1].id}>, you have 1 hour to submit your memes\n Contact admins if you have an issue.`)
+                    .setDescription(`<@${message.mentions.users.array()[0].id}> and <@${message.mentions.users.array()[1].id}>, you have 45 mins to submit your memes\n Contact admins if you have an issue.`)
                     .setTimestamp()
             )
         });
@@ -353,20 +353,20 @@ export const startsplit: Command = {
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 1 hours to complete your meme\n` +
+                        `You have 45 mins to complete your meme\n` +
                         `Use \`!submit\` to submit to submit each image seperately`
                     )
             )
     
             await insertReminder(
                 {
-                    _id:message.author.id,
+                    _id:e.userid,
                     mention: "",
                     channel: "",
                     type: "meme",
-                    time:[ 3300, 2700, 1800 ],
-                    timestamp:Math.floor(Date.now()/1000),
-                    basetime:3600
+                    time:[ 2400, 2100, 1500 ],
+                    timestamp:Math.floor(Math.floor(Date.now() / 1000)/60) * 60,
+                    basetime:2700
                 }
             )
 
@@ -382,7 +382,7 @@ export const startsplit: Command = {
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 1 hours to complete your meme\n` +
+                        `You have 45 mins to complete your meme\n` +
                         `Use \`!submit\` to submit to submit each image seperately`
                     )
             )
@@ -438,7 +438,7 @@ export const endmatch: Command = {
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
         let m = await getMatch(message.channel.id)
-        m.votetime = Math.floor(Date.now()/1000) - 7200
+        m.votetime = (Math.floor(Math.floor(Date.now() / 1000)/60) * 60) - 7200
         await updateMatch(m)
 
         return message.reply("Match has ended").then(async m =>{
