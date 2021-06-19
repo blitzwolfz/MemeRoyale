@@ -64,7 +64,7 @@ export const signup_manager: Command = {
             .channels.cache
             .find(x => x.name.toLowerCase() === "announcements")!.id!)
 
-        if(args[0] === "open"){
+        if(args[0] === "-open"){
             signup.open = true;
 
             await c.send(new MessageEmbed()
@@ -83,7 +83,7 @@ export const signup_manager: Command = {
 
         }
 
-        if(args[0] === "close"){
+        if(args[0] === "-close"){
             signup.open = false;
 
             await updateDoc("config", "signups", signup)
@@ -98,7 +98,7 @@ export const signup_manager: Command = {
             .setTimestamp())
         }
 
-        if(args[0] === "reopen"){
+        if(args[0] === "-reopen"){
             signup.open = true;
 
             await c.send(new MessageEmbed()
@@ -116,7 +116,7 @@ export const signup_manager: Command = {
             return await updateDoc("config", "signups", signup)
         }
 
-        if(args[0] === "remove"){
+        if(args[0] === "-remove"){
 
             if(!args[1]) return message.reply("Please provide the User ID");
 

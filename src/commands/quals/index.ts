@@ -10,9 +10,10 @@ export const splitqual: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        if (message.mentions.users.array().length < 3 || message.mentions.users.array().length > 6) return message.reply("Please mention the users");
+        if (message.mentions.users.array().length > 6) return message.reply("Please mention no more than 6 users.");
+        if(message.mentions.users.array().length < 3) return message.reply("Please mention at least 3 users.");
 
-        if (await getQual(message.channel.id)) return message.reply("On going match.");
+        if (await getQual(message.channel.id)) return message.reply("On going match. Cancel that one to start a new one.");
 
 
         let q: Qual = {
@@ -174,7 +175,7 @@ export const startsplitqual: Command = {
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 30 mins to complete your meme\n` +
+                        `You have 45 mins to complete your meme\n` +
                         `Use \`!qualsubmit\` to submit to submit each image seperately`
                     )
             )
@@ -193,7 +194,7 @@ export const startsplitqual: Command = {
                     .setColor(await (await getConfig()).colour)
                     .setDescription(
                         `<@${e.userid}> your match has been split.\n` +
-                        `You have 30 mins to complete your meme\n` +
+                        `You have 45 mins to complete your meme\n` +
                         `Use \`!qualsubmit\` to submit to submit each image seperately`
                     )
             )
@@ -216,7 +217,7 @@ export const cancelqual: Command = {
     async execute(message: Message, client: Client, args: string[]) {
 
         if (message.mentions.channels.array().length === 1) {
-            if (!await getQual(message.mentions.channels.array()[0].id)) return message.reply("There is no active match here");
+            if (!await getQual(message.mentions.channels.array()[0].id)) return message.reply("There is no Qualifier match there");
             await deleteQual(message.mentions.channels.array()[0].id)
 
             return message.channel.send(
@@ -228,7 +229,7 @@ export const cancelqual: Command = {
         }
 
         else {
-            if (!await getQual(message.channel.id)) return message.reply("There is no active match here");
+            if (!await getQual(message.channel.id)) return message.reply("There is no Qualifier match here");
             await deleteQual(message.channel.id)
 
             return message.channel.send(
@@ -249,7 +250,7 @@ export const endqual: Command = {
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
         let m = await getQual(message.channel.id)
-        m.votetime = Math.floor(Date.now()/1000) - 7200
+        m.votetime = (Math.floor(Math.floor(Date.now() / 1000)/60) * 60) - 7200
         await updateQual(m)
 
         return message.reply("Qualifier has ended").then(async m =>{

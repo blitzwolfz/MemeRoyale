@@ -138,7 +138,7 @@ async function matchVotingLogic(client: Client, m: Match) {
     //await channel.send(`<@&719936221572235295>`)
 
     m.votingperiod = true
-    m.votetime = (Math.floor(Date.now() / 1000))
+    m.votetime = Math.floor(Math.floor(Date.now() / 1000)/60) * 60
 
     await updateMatch(m)
 }

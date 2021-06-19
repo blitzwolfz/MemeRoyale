@@ -251,7 +251,7 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
 }
 
 export const duel_stats: Command = {
-    name: "duel stats",
+    name: "duel -stats",
     description: "`!duel stats <@mention>`. Check out your duel statistics. Mention another user and you can see their stats.",
     group: "duels",
     groupCommand:true,
@@ -290,8 +290,8 @@ export const duel_stats: Command = {
 }
 
 export const duel_stats_create: Command = {
-    name: "duel create",
-    description: "`!duel-create`. Create your duel profile.",
+    name: "duel -create",
+    description: "`!duel -create`. Create your duel profile.",
     group: "duels",
     groupCommand:true,
     owner: false,
@@ -350,7 +350,7 @@ export async function createDuelProfileatMatch(userId:string, guildid:string) {
 }
 
 export const duel_lb: Command = {
-    name: "duel lb",
+    name: "duel -lb",
     description: "`!duel lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your server. If no flag is passed, the lb sorts by wins.",
     group: "duels",
     groupCommand:true,

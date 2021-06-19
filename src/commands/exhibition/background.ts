@@ -152,7 +152,7 @@ async function exhibitionVotingLogic(client: Client, m: Match) {
     if(id) await channel.send(`${id}`);
 
     m.votingperiod = true
-    m.votetime = ((Math.floor(Date.now() / 1000)) - 6300)
+    m.votetime = ((Math.floor(Math.floor(Date.now() / 1000)/60) * 60) - 6300)
 
     return await updateMatch(m)
 }

@@ -43,10 +43,19 @@ client.on("message", async message => {
 
     if (!commandName) return;
 
-    let command = commands.find(c => c.name.toLowerCase() === commandName)
-    if(command?.groupCommand === true){
-        command = commands.find( cmd => cmd.name.includes(args[0].toLowerCase()) )
-        args.slice(0, 2)
+    let command = commands.find(c => {
+        if(typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0){
+            return (c.aliases?.includes(commandName) || c.name.toLowerCase() === commandName)
+        }
+
+        else{
+            return c.name.toLowerCase() === commandName;
+        }
+    });
+
+    if(command?.groupCommand === true && args[0].includes("-")){
+        command = commands.find(cmd => cmd.name.toLowerCase() === (commandName + " " + args[0].toLowerCase()))
+        args.splice(0, 1)
     }
 
     if (commandName === "test") {
@@ -149,17 +158,14 @@ async function runCommand(command:Command, message: Message, client:Client, args
     if (command.owner || command.admins || command.mods) {
         try {
             if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
-                console.log("Admins")
                 await command.execute(message, client, args, process.env.owner)
             }
 
             else if (command.mods && (message.author.id === process.env.owner || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner") || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
-                console.log("Mods")
                 await command.execute(message, client, args, process.env.owner)
             }
 
             else if(command.owner && message.author.id === process.env.owner){
-                console.log("Owner")
                 await command.execute(message, client, args, process.env.owner)
             }
 

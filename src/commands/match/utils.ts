@@ -50,7 +50,7 @@ export const end_match: Command = {
 
         let match = await getMatch(message.channel.id)
         return message.reply("Ending").then(async m =>{
-            match.votetime += 7200
+            match.votetime -= 7200
             m.delete({timeout:1500})
             await updateMatch(match)
         })

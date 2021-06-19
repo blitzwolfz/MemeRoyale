@@ -124,7 +124,7 @@ async function matchVotingLogic(client: Client, m: Qual) {
     //await channel.send(`<@&719936221572235295>`)
 
     m.votingperiod = true
-    m.votetime = (Math.floor(Date.now() / 1000))
+    m.votetime = Math.floor(Math.floor(Date.now() / 1000)/60) * 60
 
     await updateQual(m)
 }
@@ -229,6 +229,8 @@ async function matchResults(client: Client, q: Qual) {
         q.players.forEach(function(v){
             totalvotes += v.votes.length
         })
+
+        console.log(totalvotes)
 
         for(let x = 0; x < q.players.length; x++){
 
