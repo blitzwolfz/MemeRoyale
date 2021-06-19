@@ -3,7 +3,8 @@ import { backgroundExhibitionLoop } from "./commands/exhibition/background"
 import { backgroundMatchLoop } from "./commands/match/background"
 import { backgroundQualLoop } from "./commands/quals/background"
 import { backgroundReminderLoop } from "./commands/reminders"
-import { connectToDB, getMatch, updateMatch, getQual, updateQual, getProfile, getTemplatedb, updateTemplatedb, updateProfile, getThemes, updateThemedb } from "./db"
+import { sleep } from "./commands/util"
+import { connectToDB, getMatch, updateMatch, getQual, updateQual, getProfile, getTemplatedb, updateTemplatedb, updateProfile, getThemes, updateThemedb, getConfig } from "./db"
 import { cmd, prefix } from "./index"
 import { Profile } from "./types"
 export const client:Client = new Client({ partials: ["CHANNEL", "CHANNEL", "MESSAGE", "REACTION", "USER"] });
@@ -60,6 +61,11 @@ client.once("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`)
     console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}\n\n`)
 
+    await client.user!.setActivity(`Building`); 
+    await sleep(2)
+    await client.user!.setActivity(`Warming up`);
+    await sleep(2)
+    await client.user!.setActivity(`${await (await getConfig()).status}`);
 })
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
@@ -157,6 +163,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     if (messageReaction.emoji.name === '🅰️') {
         await messageReaction.users.remove(user.id)
         let m = await getMatch(messageReaction.message.channel.id)
+        if (!m) return;
 
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
             .members.cache.get(user.id)!.roles.cache
@@ -169,6 +176,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     if (messageReaction.emoji.name === '🅱️') {
         await messageReaction.users.remove(user.id)
         let m = await getMatch(messageReaction.message.channel.id)
+        if (!m) return;
 
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
             .members.cache.get(user.id)!.roles.cache
@@ -204,6 +212,9 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             === false) {
             return;
         }
+
+        if(messageReaction.message.author.id === "722303830368190485") return;
+
         let channel = <TextChannel>await messageReaction.message.channel.fetch()
         let em = (await channel.messages.fetch(messageReaction.message.id)).embeds[0]!
         let iter = 0

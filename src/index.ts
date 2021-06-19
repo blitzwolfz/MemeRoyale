@@ -7,6 +7,9 @@ import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
 import { getConfig } from "./db";
+//@ts-ignore
+import { readFileSync, writeFile } from "fs"
+
 export const cmd = allCommands.default
 export let prefix: string = process.env.prefix!
 require('dotenv').config()
@@ -48,6 +51,56 @@ client.on("message", async message => {
 
     if (commandName === "test") {
         if (message.author.id !== process.env.owner) return await message.reply("nah b");
+
+        const fileContents = readFileSync('oldIndex.ts', 'utf8')
+
+        // writeFile('oldIndex.txt', fileContents, err => {
+        //     if (err) {
+        //       console.error(err)
+        //       return
+        //     }
+        // })
+
+        var str = fileContents
+        let arr = str.match(/(command === "\w+"*)/g)!
+        let arrr = str.match(/(command === "\w+" \|\| command === "\w+"*)/g)!
+        // console.log(arr)
+        // console.log(arrr)
+        await message.channel.send(`I found ${arr?.length} commands in MR`)
+        let strr = ""
+        let strrr = ""
+        let strrrr = ""
+        for(let a of arr){
+            strr += a.replace("command ===", "").replace('"', '').replace('"', '') + ", "
+        }
+
+        for(let a of arrr){
+            strrr += a
+            .replace("command ===", "")
+            .replace(" || ", ", ")
+            .replace("command ===", "")
+            .replace('"', '')
+            .replace('"', '')
+            .replace('"', '')
+            .replace('"', '') + ", "
+        }
+
+        await message.channel.send(`There are ${arrr?.length} repeats in MR`)
+        await message.channel.send(`Therefore there are ${arr?.length - arrr?.length} commands in MR`)
+        await message.channel.send(strr.split(", ").sort().join(", ")+"\n")
+        await message.channel.send(strrr.split(", ").sort().join(", "))
+
+        let all:string[] = [];
+        cmd.map(x => {
+            all.push(x.name)
+            strrrr += x.name + ", "
+        })
+        await message.channel.send(`Therefore there are ${all.length} commands in MR v2`)
+        await message.channel.send(strrrr)
+    }
+
+    else if(commandName === "test2"){
+        console.log(args.slice(1).join(" "))
     }
 
     else if (command) {
@@ -95,13 +148,18 @@ async function runCommand(command:Command, message: Message, client:Client, args
 
     if (command.owner || command.admins || command.mods) {
         try {
-            if (command.admins || message.author.id === process.env.owner && message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) {
+            if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
+                console.log("Admins")
                 await command.execute(message, client, args, process.env.owner)
             }
 
-            else if (command.admins || message.author.id === process.env.owner
-                && (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")
-                    || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee"))) {
+            else if (command.mods && (message.author.id === process.env.owner || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner") || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
+                console.log("Mods")
+                await command.execute(message, client, args, process.env.owner)
+            }
+
+            else if(command.owner && message.author.id === process.env.owner){
+                console.log("Owner")
                 await command.execute(message, client, args, process.env.owner)
             }
 

@@ -46,6 +46,13 @@ export async function toHHMMSS(timestamp: number, howlong: number) {
   return new Date((howlong - (Math.floor(Date.now() / 1000) - timestamp)) * 1000).toISOString().substr(11, 8)
 }
 
+export async function sleep(s:number) {
+
+  return new Promise((resolve) => {
+    setTimeout(resolve, (s*1000));
+  });
+}
+
 export async function fetchManyMessages(channel: TextChannel, limit = 200) {
   if (!channel) {
     throw new Error(`Expected channel, got ${typeof channel}.`);

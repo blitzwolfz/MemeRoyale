@@ -2,6 +2,7 @@ import { Client, Message } from "discord.js"
 
 export interface Command {
     name: string
+    aliases?:string[];
     description: string
     group:string;
     groupCommand?:boolean;

@@ -406,7 +406,7 @@ async function makeDuelProfileEmbed(page: number = 1, client: Client, profiles: 
 
     if (symbol === "ratio") {
 
-        function ratioCalc(x: DuelProfile) {
+        let ratioCalc = (x: DuelProfile) => {
             return Math.floor(x.wins / (x.wins + x.loss) * 100);
         }
 
