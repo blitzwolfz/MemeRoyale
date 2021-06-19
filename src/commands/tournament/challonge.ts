@@ -1,8 +1,9 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getDoc, getProfile, insertReminder, updateDoc, updateProfile } from "../../db";
+import { getDoc, insertReminder, updateDoc } from "../../db";
 import { MatchList, QualList } from "../../types";
 import { Command } from "../../types";
 import { matchcard } from "../match/utils";
+
 const challonge = require("challonge-js")
 
 export const matchchannelcreate: Command = {
@@ -260,80 +261,11 @@ export const channeldelete: Command = {
     }
 }
 
-export const qual_winner: Command = {
-    name: "dqw",
-    description: "!dqw <@mentions>",
-    group: "tournament-manager",
-    owner: false,
-    admins: false,
-    mods: true,
-    async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
-        let ids: string[] = (message.mentions?.users?.array().map(a => a.id) || args)
-        let list: MatchList = await getDoc('config', "matchlist")
-
-        if (list) {
-            for (let id of ids) {
-                if (list.users.includes(id)) {
-                    return message.reply("User has already been added.")
-                }
-
-                else {
-                    list.users.push(id)
-                    let u = await getProfile(id)
-                    u.wins += 1
-                    u.points += 25
-                    await updateProfile(u)
-                    await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion")
-                }
-            }
-
-            if (message.mentions.users) {
-                await updateDoc('config', list._id, list)
-                return message.reply("Added users.")
-            }
-
-            else {
-                message.channel.send(`<@${silentargs[0]}> Added users.`)
-                return await updateDoc('config', list._id, list)
-            }
-        }
-
-        else {
-
-            let list: MatchList = {
-                _id: "matchlist",
-                url: "",
-                users: [],
-            }
-
-            for (let id of ids) {
-                list.users.push(id)
-                let u = await getProfile(id)
-                u.wins += 1
-                u.points += 25
-                await updateProfile(u)
-                await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion")
-            }
-
-            if (message.mentions.users) {
-                await updateDoc('config', list._id, list)
-                return message.reply("Added users.")
-            }
-
-            else {
-                message.channel.send(`<@${silentargs[0]}> Added users.`)
-                return await updateDoc('config', list._id, list)
-            }
-        }
-    }
-}
-
 export default [
     matchchannelcreate,
     qualchannelcreate,
     matchbracket,
     channeldelete,
-    qual_winner
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1;
     else if (k1.name > k2.name) return 1;
