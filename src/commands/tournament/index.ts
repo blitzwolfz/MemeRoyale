@@ -1,5 +1,5 @@
-import { Message, Client } from "discord.js";
-import { getConfig, getDoc, updateConfig, updateDoc } from "../../db";
+import { Message, Client, MessageEmbed, User } from "discord.js";
+import { deleteDoc, getConfig, getDoc, getTemplatedb, insertDoc, updateConfig, updateDoc, updateTemplatedb } from "../../db";
 import { Command, config, Signups, QualList } from "../../types";
 import { signup, signup_manager, unsignup } from "./signup";
 import { backwardsFilter, forwardsFilter, shuffle } from "../util";
@@ -146,6 +146,132 @@ async function groupEmbed(page: number = 0, client: Client, signup: QualList){
     };
 }
 
+export const templatecheck: Command = {
+    name: "templatecheck",
+    aliases: ["tc"],
+    description: "!templatecheck",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let list = await (await getTemplatedb()).list
+        let emotes = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        const filter = (reaction: { emoji: { name: string; }; }, user: User) => {
+            return emotes.includes(reaction.emoji.name) && !user.bot;
+        };
+    
+        let struct:{
+            msg:Message,
+            tempstring:string,
+            remove:boolean,
+            position:number
+        }[] = []
+    
+        let removelinks:string[] = []
+    
+        let doc:{
+            _id:string,
+            pos:number
+        } = await getDoc("tempstruct", message.author.id)
+    
+        if(!doc){
+            await insertDoc("tempstruct", {
+                _id:message.author.id,
+                pos:0
+            })
+    
+            doc = {
+                _id:message.author.id,
+                pos:0
+            }
+        }
+    
+        if(doc.pos > list.length) doc.pos = 0;
+    
+        for(let i = doc.pos; i < doc.pos+10; i++){
+            await message.channel.send(list[i]).then(async m => {
+                struct.push({
+                    msg:m,
+                    tempstring:list[i], 
+                    remove:false,
+                    position:i,
+                })
+            })
+        }
+    
+        const m = <Message>(
+            await message.channel.send(
+                new MessageEmbed()
+                .setColor("RANDOM")
+                .setDescription("Click on the emotes 1 to 10 to select a template to remove.\nClick next arrow to go to the next 10 templates.")
+            )
+        );
+    
+        for(let l = 0; l < emotes.length; l++){
+            m.react(emotes[l])
+        }
+        await m.react("➡");
+        
+    
+        //const remove = m.createReactionCollector(((reaction: { emoji: { name: string; }; }, user: Discord.User) => reaction.emoji.name === '🗡️' && !user.bot), { time: 300000 });
+        const forwards = m.createReactionCollector(forwardsFilter, { time: 300000 });
+        const remove = m.createReactionCollector(filter, { time: 300000 });
+        
+        forwards.on('collect', async () => {
+            m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
+    
+            // for(let i = struct[struct.length-1].position; i < list.slice(i).length; i++){
+            //     struct
+            // }
+            for(let s of struct){
+                s.msg.edit(list[s.position+10])
+                s.tempstring = list[s.position+10]
+                s.position += 10
+            }
+    
+            doc.pos += 10
+    
+            await updateDoc("tempstruct", doc._id, doc)
+    
+        });
+    
+        remove.on('collect', async () => {
+            
+            m.reactions.cache.forEach(async reaction => {
+                reaction.users.remove(message.author.id)
+                
+                if(reaction.count! >= 2 ){
+                    let pos = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"].indexOf(reaction.emoji.name)
+                    
+                    if(pos >= 0){
+                        removelinks.push(struct[pos].tempstring)
+                        
+                    }
+                }
+            })
+        });
+    
+        remove.on("end", async () => {
+            let tempdb:Array<string> = []
+
+            tempdb = await (await getTemplatedb()).list
+            
+        
+            for(let x = 0; x < removelinks.length; x++){
+                let e = tempdb.findIndex(i => i === list[x])
+                tempdb.splice(e, 1)
+            }
+        
+            if(doc.pos > list.length){
+                await deleteDoc("tempstruct", doc._id)
+            }
+            await updateTemplatedb(tempdb)
+            await message.reply(`Finished. Removed ${removelinks.length} templates`)
+        })
+    
+    }
+}
 
 export default[
     signup,
@@ -153,7 +279,8 @@ export default[
     cycle_restart,
     view_groups,
     create_groups,
-    unsignup
+    unsignup,
+    templatecheck
 ]
 .concat(s.default)
 .sort(function keyOrder(k1, k2) {

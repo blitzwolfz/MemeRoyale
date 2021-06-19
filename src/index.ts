@@ -53,9 +53,21 @@ client.on("message", async message => {
         }
     });
 
-    if(command?.groupCommand === true && args[0].includes("-")){
-        command = commands.find(cmd => cmd.name.toLowerCase() === (commandName + " " + args[0].toLowerCase()))
-        args.splice(0, 1)
+    if(command?.groupCommand === true){
+        if(typeof args[0] !== "undefined"){
+            if(args[0]?.includes("-")){
+                command = commands.find(cmd => cmd.name.toLowerCase() === (commandName + " " + args[0].toLowerCase()))
+                args.splice(0, 1)
+            }
+
+            else{
+                command = commands.find(cmd => cmd.name.toLowerCase() === (commandName))
+            }
+        }
+
+        else{
+            command = commands.find(cmd => cmd.name.toLowerCase() === (commandName))
+        }
     }
 
     if (commandName === "test2") {
@@ -109,11 +121,11 @@ client.on("message", async message => {
     }
 
     else if(commandName === "test"){
-        let time = Math.floor(((Math.floor(1624091312000/1000)+ 345600) - Math.floor(Date.now()/1000))/3600)
+        let e = commands.filter(cmd => cmd.groupCommand === true)
 
-
-        console.log(time)
-        message.channel.send(time)
+        for(let i of e){
+            message.channel.send(i.name)
+        }
     }
 
     else if (command) {

@@ -44,6 +44,10 @@ export async function updateDoc(coll:string, id:string | number, upd:object) {
     return await dB.collection(coll).updateOne({_id:id}, {$set:upd})
 }
 
+export async function deleteDoc(coll:string, id:string | number) {
+    await dB.collection(coll).deleteOne({_id:id})
+}
+
 //Config db commands
 export async function insertConfig(c:config){
     await dB.collection("config").insertOne(c)
@@ -124,7 +128,6 @@ export async function updateTemplatedb(lists:string[]) {
         list:lists
     }
 
-    console.log(e)
     await dB.collection("config").updateOne({_id:"templatelist"}, {$set: e})    
 }
 
