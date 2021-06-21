@@ -10,7 +10,6 @@ import { getConfig } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
-import { transition } from "../src/convertMMtoMR";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -129,7 +128,7 @@ client.on("message", async message => {
         if(message.author.id !== process.env.owner){
             return;
         }
-        await transition.execute(message, client, args)
+        await commands.find(cmd => cmd.name.toLowerCase() === "transition")!.execute(message, client, args)
     }
 
     else if (command) {

@@ -1,6 +1,6 @@
-import type { Command, config, MatchList, Profile, QualList, Signups, VerificationForm } from "./types";
+import type { Command, config, MatchList, Profile, QualList, Signups, VerificationForm } from "../types";
 import type { Client, Message } from "discord.js";
-import { insertDuelProfile, insertProfile, getAllColl, getOneColl, insertDoc, insertExhibition } from "./db";
+import { insertDuelProfile, insertProfile, getAllColl, getOneColl, insertDoc, insertExhibition } from "../db";
 
 
 interface MMuser {

@@ -12,6 +12,7 @@ import * as d from "./user";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
+import {transition} from "./convertMMtoMR";
 
 //@ts-ignore
 export const example: Command = {
@@ -234,6 +235,7 @@ export const editConfig: Command = {
 
 export default [
     editConfig,
+    transition,
     enableCommands,
     disableCommands,
     startmatch,
