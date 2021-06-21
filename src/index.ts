@@ -10,6 +10,7 @@ import { getConfig } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
+import { transition } from "../src/convertMMtoMR";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -123,6 +124,14 @@ client.on("message", async message => {
     else if (commandName === "test") {
         console.log(path.join(__dirname, '../', 'index.html'));
     }
+
+    else if(commandName === "trans"){
+        if(message.author.id !== process.env.owner){
+            return;
+        }
+        await transition.execute(message, client, args)
+    }
+
     else if (command) {
         await runCommand(command, message, client, args);
     }

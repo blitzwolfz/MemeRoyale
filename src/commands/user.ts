@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { addDuelProfile, addProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
+import { insertDuelProfile, insertProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
 import type { Command, DuelProfile, Profile } from "../types";
 import { backwardsFilter, forwardsFilter } from "./util";
 
@@ -19,7 +19,7 @@ export const create_profile: Command = {
 
         else {
 
-            await addProfile({
+            await insertProfile({
                 _id: message.author.id, votetally: 0, points: 0, wins: 0, loss: 0
             });
 
@@ -82,7 +82,7 @@ export async function createProfileatMatch(userId: string) {
     }
 
     else {
-        await addProfile({
+        await insertProfile({
             _id: userId, votetally: 0, points: 0, wins: 0, loss: 0
         });
     }
@@ -298,7 +298,7 @@ export const duel_stats_create: Command = {
 
         else {
 
-            await addDuelProfile({
+            await insertDuelProfile({
                 _id: message.author.id, votetally: 0, points: 0, wins: 0, loss: 0
             }, message.guild!.id);
 
@@ -321,7 +321,7 @@ export async function createDuelProfileatMatch(userId: string, guildid: string) 
     }
 
     else {
-        await addDuelProfile({
+        await insertDuelProfile({
             _id: userId, votetally: 0, points: 0, wins: 0, loss: 0
         }, guildid);
     }

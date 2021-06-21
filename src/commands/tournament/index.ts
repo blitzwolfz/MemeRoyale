@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed, User } from "discord.js";
-import { deleteDoc, getConfig, getDoc, getTemplatedb, insertDoc, updateConfig, updateDoc, updateTemplatedb } from "../../db";
+import { deleteDoc, getConfig, getDoc, getTemplatedB, insertDoc, updateConfig, updateDoc, updateTemplatedB } from "../../db";
 import type { Command, config, QualList, Signups } from "../../types";
 import { signup, signup_manager, unsignup } from "./signup";
 import { backwardsFilter, forwardsFilter, shuffle } from "../util";
@@ -159,7 +159,7 @@ export const templatecheck: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        let list = await (await getTemplatedb()).list;
+        let list = await (await getTemplatedB()).list;
         let emotes = [
             "1️⃣",
             "2️⃣",
@@ -269,7 +269,7 @@ export const templatecheck: Command = {
         remove.on("end", async () => {
             let tempdb: Array<string> = [];
 
-            tempdb = await (await getTemplatedb()).list;
+            tempdb = await (await getTemplatedB()).list;
 
 
             for (let x = 0; x < removelinks.length; x++) {
@@ -280,7 +280,7 @@ export const templatecheck: Command = {
             if (doc.pos > list.length) {
                 await deleteDoc("tempstruct", doc._id);
             }
-            await updateTemplatedb(tempdb);
+            await updateTemplatedB(tempdb);
             await message.reply(`Finished. Removed ${removelinks.length} templates`);
         });
 

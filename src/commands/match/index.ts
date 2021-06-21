@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
-import { deleteMatch, getConfig, getMatch, getTemplatedb, getThemes, insertMatch, insertReminder, updateMatch } from "../../db";
+import { deleteMatch, getConfig, getMatch, getTemplatedB, getThemes, insertMatch, insertReminder, updateMatch } from "../../db";
 import type { Command, Match } from "../../types";
 import { createProfileatMatch } from "../user";
 
@@ -53,7 +53,7 @@ export const startmatch: Command = {
         }
 
         else {
-            temps = (await getTemplatedb()).list;
+            temps = (await getTemplatedB()).list;
 
             em.setTitle(`Template for ${c.name}`)
             .setImage(temps[Math.floor(Math.random() * temps.length)]);
@@ -88,7 +88,7 @@ export const startmatch: Command = {
             }
 
             else {
-                temps = (await getTemplatedb()).list;
+                temps = (await getTemplatedB()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)
@@ -210,7 +210,7 @@ export const splitmatch: Command = {
         }
 
         else {
-            temps = await (await getTemplatedb()).list;
+            temps = await (await getTemplatedB()).list;
 
             em.setTitle(`Template for ${c.name}`)
             .setImage(temps[Math.floor(Math.random() * temps.length)]);
@@ -245,7 +245,7 @@ export const splitmatch: Command = {
             }
 
             else {
-                temps = await (await getTemplatedb()).list;
+                temps = await (await getTemplatedB()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)

@@ -4,7 +4,7 @@ import { backgroundMatchLoop } from "./commands/match/background";
 import { backgroundQualLoop } from "./commands/quals/background";
 import { backgroundReminderLoop } from "./commands/reminders";
 import { sleep } from "./commands/util";
-import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedb, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedb, updateThemedb } from "./db";
+import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "./db";
 import { cmd, prefix } from "./index";
 import type { Profile } from "./types";
 
@@ -278,9 +278,9 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             id = await getProfile(await messageReaction.message.embeds[0].description!);
             //await tempccc.send(await messageReaction.message.embeds[0].image?.url)
             if (await messageReaction.message.embeds[0].image?.url) {
-                let e = await getTemplatedb();
+                let e = await getTemplatedB();
                 e.list.push(await messageReaction.message.embeds[0].image!.url);
-                await updateTemplatedb(e.list);
+                await updateTemplatedB(e.list);
 
                 if (id) {
                     id.points += 2;
@@ -297,7 +297,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
                 obj.list.push(messageReaction.message.embeds[0].fields[1].value);
 
-                await updateThemedb({
+                await updateThemedB({
                     _id: "themelist", list: obj.list
                 });
 

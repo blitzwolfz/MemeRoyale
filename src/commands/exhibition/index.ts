@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getExhibition, getTemplatedb, getThemes, insertMatch, updateExhibition } from "../../db";
+import { getExhibition, getTemplatedB, getThemes, insertMatch, updateExhibition } from "../../db";
 import type { Command, Match } from "../../types";
 import { createDuelProfileatMatch } from "../user";
 import * as s from "./utils";
@@ -151,7 +151,7 @@ export const duel: Command = {
                 }
 
                 else {
-                    temps = await (await getTemplatedb()).list;
+                    temps = await (await getTemplatedB()).list;
 
                     m.temp.link = temps[Math.floor(Math.random() * temps.length)];
                 }

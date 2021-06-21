@@ -112,28 +112,29 @@ async function exhibitionVotingLogic(client: Client, m: Match) {
     channel.send(new MessageEmbed()
     .setTitle("Player 1's Meme")
     .setImage(m.p1.memelink)
-    .setColor(await (await getConfig()).colour)).then(async msg => {
+    .setColor((await getConfig()).colour)).then(async msg => {
         m.messageID.push(msg.id);
     });
 
     channel.send(new MessageEmbed()
     .setTitle("Player 2's Meme")
     .setImage(m.p2.memelink)
-    .setColor(await (await getConfig()).colour)).then(async msg => {
+    .setColor((await getConfig()).colour)).then(async msg => {
         m.messageID.push(msg.id);
     });
 
     await channel.send(new MessageEmbed()
     .setTitle("Voting time")
-    .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **15 mins or first person to 5 votes** to vote`)
-    .setColor(await (await getConfig()).colour)).then(async (msg) => {
+    .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **15 mins or until a player gets 5 votes** to vote`)
+    .setColor((await getConfig()).colour)).then(async (msg) => {
         msg.react('1️⃣');
         msg.react('2️⃣');
         m.messageID.push(msg.id);
     });
 
     let id = guild.roles.cache.find(x => x.name.toLowerCase().includes("duel"));
-    if (id) await channel.send(`${id}`);
+    require('dotenv').config();
+    if (id && !process.env.dev) await channel.send(`${id}`);
 
     m.votingperiod = true;
     m.votetime = ((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - 6300);

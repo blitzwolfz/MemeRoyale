@@ -2,7 +2,7 @@ import { Client, MessageEmbed, TextChannel } from "discord.js";
 import { deleteMatch, getAllMatches, getConfig, updateMatch } from "../../db";
 import type { Match } from "../../types";
 import { grandwinner, winner } from "./utils";
-
+require('dotenv').config();
 // export async function backgroundMatchLoop(client: Client) {
 //     let matches = await getAllMatches()
 
@@ -38,10 +38,10 @@ export async function backgroundMatchLoop(client: Client) {
         try {
             if (m.exhibition === true) continue;
             if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
-                (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
+                await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
                 .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
                 .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won!`)
-                .setColor(await (await getConfig()).colour));
+                .setColor((await getConfig()).colour));
                 await deleteMatch(m._id);
             }
 
@@ -115,7 +115,9 @@ async function matchVotingLogic(client: Client, m: Match) {
     });
 
 
-    //await channel.send(`<@&719936221572235295>`)
+    if(!process.env.dev){
+        await channel.send(`<@&719936221572235295>`)
+    }
 
     m.votingperiod = true;
     m.votetime = Math.floor(Math.floor(Date.now() / 1000) / 60) * 60;

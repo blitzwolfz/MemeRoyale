@@ -1,5 +1,5 @@
 import { Client, Message, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
-import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedb, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedb } from "../db";
+import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedB, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedB } from "../db";
 import type { Command, Match } from "../types";
 
 
@@ -369,7 +369,7 @@ export const templateSubmission: Command = {
 
             if (args.includes("-mod")) {
                 //let id = await getUser(await message.author.id)
-                let e = await getTemplatedb();
+                let e = await getTemplatedB();
 
                 for (let i = 0; i < message.attachments.array().length; i++) {
                     e.list.push(message.attachments.array()[i].url);
@@ -382,7 +382,7 @@ export const templateSubmission: Command = {
                     (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
                 }
 
-                await updateTemplatedb(e.list);
+                await updateTemplatedB(e.list);
 
                 await getProfile(message.author.id).then(async p => {
                     p.points += (message.attachments.array().length * 2);

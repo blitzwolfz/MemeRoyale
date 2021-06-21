@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
-import { deleteQual, getConfig, getQual, getTemplatedb, getThemes, insertQual, insertReminder, updateQual } from "../../db";
+import { deleteQual, getConfig, getQual, getTemplatedB, getThemes, insertQual, insertReminder, updateQual } from "../../db";
 import type { Command, Qual } from "../../types";
 
 export const splitqual: Command = {
@@ -45,7 +45,7 @@ export const splitqual: Command = {
         }
 
         else {
-            temps = await (await getTemplatedb()).list;
+            temps = await (await getTemplatedB()).list;
 
             em.setTitle(`Template for ${c.name}`)
             .setImage(temps[Math.floor(Math.random() * temps.length)]);
@@ -80,7 +80,7 @@ export const splitqual: Command = {
             }
 
             else {
-                temps = await (await getTemplatedb()).list;
+                temps = await (await getTemplatedB()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)

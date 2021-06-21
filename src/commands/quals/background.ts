@@ -3,6 +3,7 @@ import { deleteQual, getAllQuals, getConfig, insertReminder, updateQual } from "
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
 import { QualifierResults } from "./util";
+require('dotenv').config();
 
 export async function backgroundQualLoop(client: Client) {
     let quals = await getAllQuals();
@@ -111,7 +112,9 @@ async function matchVotingLogic(client: Client, m: Qual) {
     });
 
 
-    //await channel.send(`<@&719936221572235295>`)
+    if(!process.env.dev){
+        await channel.send(`<@&719936221572235295>`)
+    }
 
     m.votingperiod = true;
     m.votetime = Math.floor(Math.floor(Date.now() / 1000) / 60) * 60;

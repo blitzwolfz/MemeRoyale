@@ -18,6 +18,7 @@ export async function connectToDB(): Promise<void> {
                 await client.db(dbn).createCollection("matches");
                 await client.db(dbn).createCollection("quals");
                 await client.db(dbn).createCollection("config");
+                await client.db(dbn).createCollection("reminders");
             } catch (error) {
 
             }
@@ -120,11 +121,11 @@ export async function insertTemplate(lists: any[]) {
     await dB.collection("config").insertOne(e);
 }
 
-export async function getTemplatedb(): Promise<{ _id: "templatelist", list: string[] }> {
+export async function getTemplatedB(): Promise<{ _id: "templatelist", list: string[] }> {
     return dB.collection("config").findOne({_id: "templatelist"})!;
 }
 
-export async function updateTemplatedb(lists: string[]) {
+export async function updateTemplatedB(lists: string[]) {
     let e = {
         _id: "templatelist", list: lists
     };
@@ -138,7 +139,7 @@ export async function getThemes(): Promise<{
     return dB.collection("config").findOne({_id: "themelist"})!;
 }
 
-export async function updateThemedb(st: { _id: "themelist", list: string[] }) {
+export async function updateThemedB(st: { _id: "themelist", list: string[] }) {
     await dB.collection("config").updateOne({_id: "themelist"}, {$set: st})!;
 }
 
@@ -185,12 +186,12 @@ export async function deleteReminder(r: Reminder) {
 }
 
 //Profile dB commands
-export async function addProfile(u: Profile): Promise<void> {
+export async function insertProfile(u: Profile): Promise<void> {
     await dB.collection("users").insertOne(u)!;
 }
 
 export async function getProfile(_id: string): Promise<Profile> {
-    return dB.collection("users").findOne({_id: _id})!;
+    return await dB.collection("users").findOne({_id: _id})!;
 }
 
 export async function updateProfile(u: Profile): Promise<void> {
@@ -203,8 +204,8 @@ export async function getAllProfiles(): Promise<Profile[]> {
 }
 
 //Duel Profile dB commands
-export async function addDuelProfile(User: DuelProfile, guild: string): Promise<void> {
-    await dB.collection(guild).insertOne(User)!;
+export async function insertDuelProfile(User: DuelProfile, guild: string): Promise<void> {
+    await await dB.collection(guild).insertOne(User)!;
 }
 
 export async function getAllDuelProfiles(guild: string): Promise<DuelProfile[]> {
@@ -212,9 +213,18 @@ export async function getAllDuelProfiles(guild: string): Promise<DuelProfile[]> 
 }
 
 export async function getDuelProfile(_id: string, guild: string): Promise<DuelProfile> {
-    return dB!.collection(guild)!.findOne({_id: _id})!;
+    return await dB!.collection(guild)!.findOne({_id: _id})!;
 }
 
 export async function updateDuelProfile(_id: string, u: DuelProfile, guild: string): Promise<void> {
-    await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
+    await await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
+}
+
+//Transition functions
+export async  function getAllColl(name: string): Promise<any> {
+    return client.db("mememania").collection(name).find({}).toArray();
+}
+
+export async  function getOneColl(name: string, id:string): Promise<any> {
+    return await ((client.db("mememania").collection(name).findOne({_id: id})).then(r => r))!
 }
