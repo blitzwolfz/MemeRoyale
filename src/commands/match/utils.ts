@@ -188,7 +188,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
 
         try {
             fields.push({
-                name: `${i + 1}) ${await (await client.users.fetch(list[i])).username}`, value: `UserID is: ${list[i]}`
+                name: `${i + 1}) ${((await client.users.fetch(list[i])).username)}`, value: `UserID is: ${list[i]}`
             });
         } catch {
 
