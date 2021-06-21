@@ -1,14 +1,14 @@
-import { Message, Client, MessageEmbed, User } from "discord.js";
-import { Command } from "../types";
+import { Client, Message, MessageEmbed, User } from "discord.js";
+import type { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./match";
-import { forcevote, match_stats, reload_match, end_match } from "./match/utils";
-import { cancelqual, splitqual, startsplitqual, endqual } from "./quals";
+import { end_match, forcevote, match_stats, reload_match } from "./match/utils";
+import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
 import { forcevote_qual, qual_result_sum, qual_stats, reload_qual, search } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
-import * as b from "./tournament/index"
-import * as c from "./exhibition/index"
-import * as d from "./user"
+import * as b from "./tournament/index";
+import * as c from "./exhibition/index";
+import * as d from "./user";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
@@ -24,7 +24,7 @@ export const example: Command = {
     async execute(message: Message, client: Client, args: string[]) {
 
     }
-}
+};
 
 export const ping: Command = {
     name: "ping",
@@ -35,23 +35,22 @@ export const ping: Command = {
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
         message.channel.send(new MessageEmbed()
-            .setAuthor(`Pinging`)
-            .setColor("RANDOM")).then(m => {
-                // The math thingy to calculate the user's ping
-                let ping = m.createdTimestamp - message.createdTimestamp;
+        .setAuthor(`Pinging`)
+        .setColor("RANDOM")).then(m => {
+            // The math thingy to calculate the user's ping
+            let ping = m.createdTimestamp - message.createdTimestamp;
 
-                // Basic embed
-                let embed = new MessageEmbed()
-                    .setTitle(`Your ping is ${ping}`)
-                    .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
-                    .setColor("RANDOM");
+            // Basic embed
 
-                // Then It Edits the message with the ping variable embed that you created
-                m.edit(embed)
-            }
-        );
+            let embed = new MessageEmbed()
+            .setTitle(`Your ping is ${ping} ms`)
+            .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+            .setColor(m.embeds![0]!.hexColor!);
+            // Then It Edits the message with the ping variable embed that you created
+            m.edit(embed);
+        });
     }
-}
+};
 
 export const disableCommands: Command = {
     name: "disable",
@@ -61,26 +60,26 @@ export const disableCommands: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        let config = await getConfig()
+        let config = await getConfig();
 
-        if(args[0] === "all"){
-            config.disabledcommands = cmd.map(x => x.name)
-            config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1)
-            config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1)
-            await updateConfig(config)
-            return message.reply(`${cmd.map(x => x.name).length - 2} commands disabled.`)
+        if (args[0] === "all") {
+            config.disabledcommands = cmd.map(x => x.name);
+            config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1);
+            config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1);
+            await updateConfig(config);
+            return message.reply(`${cmd.map(x => x.name).length - 2} commands disabled.`);
         }
 
-        else{
-            if(args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to disable all of them, do `!enable all`.")
-            config.disabledcommands.push(args[0])
-            config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1)
-            config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1)
-            await updateConfig(config)
-            return message.reply(`Disabled ${args[0]}.`)
+        else {
+            if (args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to disable all of them, do `!enable all`.");
+            config.disabledcommands.push(args[0]);
+            config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1);
+            config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1);
+            await updateConfig(config);
+            return message.reply(`Disabled ${args[0]}.`);
         }
     }
-}
+};
 
 export const enableCommands: Command = {
     name: "enable",
@@ -90,23 +89,23 @@ export const enableCommands: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        let config = await getConfig()
+        let config = await getConfig();
 
-        if(args[0] === "all"){
-            config.disabledcommands = []
-            await updateConfig(config)
-            return message.reply(`${cmd.map(x => x.name).length - 2} commands enabled.`)
+        if (args[0] === "all") {
+            config.disabledcommands = [];
+            await updateConfig(config);
+            return message.reply(`${cmd.map(x => x.name).length - 2} commands enabled.`);
         }
 
-        else{
-            if(args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to enable all of them, do `!enable all`.")
-            config.disabledcommands.splice(config.disabledcommands.indexOf(args[0]), 1)
-            console.log(config)
-            await updateConfig(config)
-            return message.reply(`Enabled ${args[0]}.`)
+        else {
+            if (args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to enable all of them, do `!enable all`.");
+            config.disabledcommands.splice(config.disabledcommands.indexOf(args[0]), 1);
+            console.log(config);
+            await updateConfig(config);
+            return message.reply(`Enabled ${args[0]}.`);
         }
     }
-}
+};
 
 export const editConfig: Command = {
     name: "edit",
@@ -116,80 +115,122 @@ export const editConfig: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        let config = await getConfig()
+        let config = await getConfig();
 
-        if(args.length === 0){
+        if (args.length === 0) {
 
-            if(config.disabledcommands.length > 0){
-                config.disabledcommands = []
+            if (config.disabledcommands.length > 0) {
+                config.disabledcommands = [];
             }
 
             let s = JSON.stringify(config, null, 4);
-            let arr = s.match(/"\w+":*/g)!
-            arr.splice(0, 2)
-            await message.channel.send(`The edit options are ${arr.join(", ").replace(/:/gi, "").replace(/"/gi, "")}`)
-            await message.channel.send("For disabling and enabling commands, there are seperate commands called `!disable` and `!enable`.")
+            console.log(s);
+            let arr = s.match(/"\w+":/g)!;
+            arr.splice(0, 2);
+            console.log(arr.join(", ").replace(/:/gi, "").replace(/"/gi, ""));
+            await message.channel.send(`The edit options are ${arr.join(", ")
+            .replace(/:/gi, "")
+            .replace(/"/gi, "")
+            .replace("servers", "disableserver, enableserver")}`);
+            await message.channel.send("For disabling and enabling commands, there are separate commands called `!disable` and `!enable`.");
         }
 
-        else{
-            let symbol: "colour" | "status" | "isfinale"  = "status"
+        else {
+            let symbol: "colour" | "status" | "isfinale" | "disableserver" | "enableserver" = "isfinale";
 
             switch (args[0]?.[0]) {
-                case "c": symbol = "colour"; break;
-                case "s": symbol = "status"; break;
-                default: symbol = "isfinale";
+                case "c":
+                    symbol = "colour";
+                    break;
+                case "s":
+                    symbol = "status";
+                    break;
+                case "d":
+                    symbol = "disableserver";
+                    break;
+                case "e":
+                    symbol = "enableserver";
+                    break;
+                default:
+                    symbol = "isfinale";
             }
 
             switch (symbol) {
                 case "colour":
-                    if(typeof args[1] !== 'string'){
-                        return message.reply("Colour requires the hex code as a string")
+                    if (typeof args[1] !== 'string') {
+                        return message.reply("Colour requires the hex code as a string");
                     }
 
-                    config.colour = args[1]
-                    await updateConfig(config)
-                break;
+                    config.colour = args[1];
+                    await updateConfig(config);
+                    break;
 
                 case "status":
-                    if(typeof args.slice(1).join(" ") !== 'string'){
-                        return message.reply("Status requires the hex code as a string")
+                    if (typeof args.slice(1).join(" ") !== 'string') {
+                        return message.reply("Status requires the hex code as a string");
                     }
 
-                    config.status = args.slice(1).join(" ")
+                    config.status = args.slice(1).join(" ");
                     await client.user!.setActivity(`${args.slice(1).join(" ")}`);
-                    await updateConfig(config)
-                break;
+                    await updateConfig(config);
+                    break;
+
+                case "disableserver":
+                    if (args[1]) {
+                        config.servers.push(args[1]);
+                    }
+
+                    else {
+                        config.servers.push(message.guild!.id!);
+                    }
+
+                    await message.reply(`Server is now blocked.`);
+                    await updateConfig(config);
+                    break;
+
+                case "enableserver":
+                    if (args[1]) {
+                        config.servers.push(args[1]);
+                    }
+
+                    else {
+                        config.servers.push(message.guild!.id!);
+                    }
+
+                    await message.reply(`Server is unblocked.`);
+                    await updateConfig(config);
+                    break;
 
                 case "isfinale":
 
                     await message.channel.send("No type check. Click emote to continue").then(async msg => {
-            
-                        await msg.react(`✔️`)
+
+                        await msg.react(`✔️`);
                         let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✔️' && !user.bot;
-                        const approve = msg.createReactionCollector(emoteFilter, { time: 50000 });
-            
+                        const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
+
                         approve.on('collect', async () => {
-                            if(args[1] === "true"){
-                                config.isfinale = true
+                            if (args[1] === "true") {
+                                config.isfinale = true;
                             }
 
-                            if(args[1] === "false"){
-                                config.isfinale = false
+                            if (args[1] === "false") {
+                                config.isfinale = false;
                             }
-                            
-                            await updateConfig(config)
-                        })
-            
+
+                            await updateConfig(config);
+                        });
+
                     });
-                break;
+                    break;
 
                 default:
-                    await message.channel.send("Not available yet")
+                    await message.channel.send("Not available yet");
                     break;
             }
         }
     }
-}
+};
 
 export default [
     editConfig,
@@ -224,7 +265,5 @@ export default [
 .concat(c.default)
 .concat(d.default)
 .sort(function keyOrder(k1, k2) {
-    if (k1.name < k2.name) return -1;
-    else if (k1.name > k2.name) return 1;
-    else return 0;
-})
+    if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
+});
