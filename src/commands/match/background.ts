@@ -37,11 +37,17 @@ export async function backgroundMatchLoop(client: Client) {
     for (let m of matches) {
         try {
             if (m.exhibition === true) continue;
-            if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
+            if (m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
                 await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
                 .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
                 .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won!`)
                 .setColor((await getConfig()).colour));
+
+                await (await client.users.fetch(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.id}` : `${client.users.cache.get(m.p2.userid)?.id}`}`)).send(new MessageEmbed()
+                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won! You failed to submit on time.`)
+                .setColor((await getConfig()).colour))
+
                 await deleteMatch(m._id);
             }
 
@@ -128,75 +134,76 @@ async function matchVotingLogic(client: Client, m: Match) {
 async function matchResults(client: Client, m: Match) {
     let channel = <TextChannel>await client.channels.cache.get(m._id);
 
-    if (m.p1.memedone === true && m.p2.memedone === false || m.p1.memedone === false && m.p2.memedone === true) {
-        console.log("M");
-        if (m.p1.memedone) {
-            channel.send(new MessageEmbed()
-            .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-            .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
-            .setColor(await (await getConfig()).colour));
-        }
-
-        if (m.p2.memedone) {
-            channel.send(new MessageEmbed()
-            .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-            .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
-            .setColor(await (await getConfig()).colour));
-        }
-        return;
-    }
+    // if (m.p1.memedone && !m.p2.memedone || !m.p1.memedone && m.p2.memedone) {
+    //     if (m.p1.memedone) {
+    //         await channel.send(new MessageEmbed()
+    //         .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+    //         .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
+    //         .setColor((await getConfig()).colour));
+    //     }
+    //
+    //     if (m.p2.memedone) {
+    //         await channel.send(new MessageEmbed()
+    //         .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+    //         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
+    //         .setColor((await getConfig()).colour));
+    //     }
+    //     return;
+    // }
 
     if (m.p1.votes > m.p2.votes) {
-        channel.send(new MessageEmbed()
+        await channel.send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
         .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-        .setColor(await (await getConfig()).colour));
+        .setColor((await getConfig()).colour));
 
-        (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
+        await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
         .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-        .setColor(await (await getConfig()).colour)
+        .setColor((await getConfig()).colour)
         .setImage(m.p1.memelink));
 
-        if (await (await getConfig()).isfinale === false) {
-            channel.send(await winner(client, m.p1.userid));
+        if (!(await getConfig()).isfinale) {
+            await channel.send(await winner(client, m.p1.userid));
         }
 
         else {
-            channel.send(await grandwinner(client, m.p1.userid));
+            await channel.send(await grandwinner(client, m.p1.userid));
+            await channel.send(`Congratulations on winning this Cycle <@${m.p1.userid}>`)
         }
 
     }
 
     else if (m.p1.votes < m.p2.votes) {
 
-        channel.send(new MessageEmbed()
+        await channel.send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-        .setColor(await (await getConfig()).colour));
+        .setColor((await getConfig()).colour));
 
-        (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
+        await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p2.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-        .setColor(await (await getConfig()).colour)
+        .setColor((await getConfig()).colour)
         .setImage(m.p2.memelink));
 
-        if (await (await getConfig()).isfinale === false) {
-            channel.send(await winner(client, m.p2.userid));
+        if (!(await getConfig()).isfinale) {
+            await channel.send(await winner(client, m.p2.userid));
         }
 
         else {
-            channel.send(await grandwinner(client, m.p2.userid));
+            await channel.send(await grandwinner(client, m.p2.userid));
+            await channel.send(`Congratulations on winning this Cycle <@${m.p2.userid}>`)
         }
     }
 
     else if (m.p1.votes === m.p2.votes) {
-        channel.send(new MessageEmbed()
+        await channel.send(new MessageEmbed()
         .setTitle(`Both users come to a draw`)
         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
-        .setColor(await (await getConfig()).colour));
+        .setColor((await getConfig()).colour));
 
-        channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
+        await channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
 
     }
 
