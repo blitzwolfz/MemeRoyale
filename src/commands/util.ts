@@ -17,84 +17,107 @@ export let emojis = [
 ];
 
 export function dateBuilder() {
-  let d = new Date();
-  let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  let day = days[d.getDay()];
-  let date = d.getDate();
-  console.log(d.getMonth())
-  let month = months[d.getMonth()];
-  let year = d.getFullYear();
-  return `${day}, ${month} ${date} ${year}`;
+    let d = new Date();
+    let months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ];
+    let days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    ];
+    let day = days[d.getDay()];
+    let date = d.getDate();
+    console.log(d.getMonth());
+    let month = months[d.getMonth()];
+    let year = d.getFullYear();
+    return `${day}, ${month} ${date} ${year}`;
 }
 
 export let timeconsts = {
-  match:{
-    votingtime: 7200,
-    memetime: 3200
-  },
+    match: {
+        votingtime: 7200, memetime: 3200
+    },
 
-  qual:{
-    votingtime: 7200,
-    memetime: 1800,
-    results:2
-  },
-}
+    qual: {
+        votingtime: 7200, memetime: 1800, results: 2
+    }
+};
 
 export async function toHHMMSS(timestamp: number, howlong: number) {
 
-  return new Date((howlong - (Math.floor(Date.now() / 1000) - timestamp)) * 1000).toISOString().substr(11, 8)
+    return new Date((howlong - (Math.floor(Date.now() / 1000) - timestamp)) * 1000).toISOString().substr(11, 8);
 }
 
-export async function sleep(s:number) {
+export async function sleep(s: number) {
 
-  return new Promise((resolve) => {
-    setTimeout(resolve, (s*1000));
-  });
+    return new Promise((resolve) => {
+        setTimeout(resolve, (s * 1000));
+    });
 }
 
 export async function fetchManyMessages(channel: TextChannel, limit = 200) {
-  if (!channel) {
-    throw new Error(`Expected channel, got ${typeof channel}.`);
-  }
-  if (limit <= 100) {
-    return await channel.messages.fetch({ limit });
-  }
-
-  let collection:Collection<string, Message> = new Collection();
-  let lastId = null;
-  let options:{
-    limit?: number;
-    before?: Snowflake;
-  } = {};
-  let remaining = limit;
-
-  while (remaining > 0) {
-    options.limit = remaining > 100 ? 100 : remaining;
-    remaining = remaining > 100 ? remaining - 100 : 0;
-
-    if (lastId) {
-      options.before = lastId;
+    if (!channel) {
+        throw new Error(`Expected channel, got ${typeof channel}.`);
+    }
+    if (limit <= 100) {
+        return await channel.messages.fetch({limit});
     }
 
-    let messages = await channel.messages.fetch(options);
+    let collection: Collection<string, Message> = new Collection();
+    let lastId = null;
+    let options: {
+        limit?: number; before?: Snowflake;
+    } = {};
+    let remaining = limit;
 
-    if (!messages.last()) {
-      break;
+    while (remaining > 0) {
+        options.limit = remaining > 100 ? 100 : remaining;
+        remaining = remaining > 100 ? remaining - 100 : 0;
+
+        if (lastId) {
+            options.before = lastId;
+        }
+
+        let messages = await channel.messages.fetch(options);
+
+        if (!messages.last()) {
+            break;
+        }
+
+        collection = collection.concat(messages);
+        lastId = messages.last()!.id;
+        console.log(options.limit);
     }
 
-    collection = collection.concat(messages);
-    lastId = messages.last()!.id;
-    console.log(options.limit)
-  }
-
-  return collection;
+    return collection;
 }
 
 export async function shuffle(a: any[]) {
-  for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [
+            a[i],
+            a[j]
+        ] = [
+            a[j],
+            a[i]
+        ];
+    }
+    return a;
 }
