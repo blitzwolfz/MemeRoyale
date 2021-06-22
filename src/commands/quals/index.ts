@@ -17,7 +17,7 @@ export const splitqual: Command = {
 
 
         let q: Qual = {
-            _id: message.channel.id, messageID: [], players: [], temp: {
+            _id: message.channel.id, pause:false, messageID: [], players: [], temp: {
                 istheme: true, link: ""
             }, votingperiod: false, votetime: 0
         };
@@ -219,7 +219,7 @@ export const cancelqual: Command = {
 
             return message.channel.send(new MessageEmbed()
             .setColor("RED")
-            .setDescription("Match has been canceled"));
+            .setDescription("Qualifier has been canceled"));
         }
     }
 };

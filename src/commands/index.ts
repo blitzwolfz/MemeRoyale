@@ -9,6 +9,7 @@ import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
 import * as b from "./tournament/index";
 import * as c from "./exhibition/index";
 import * as d from "./user";
+import * as e from "./jointcommands";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
@@ -266,6 +267,7 @@ export default [
 ].concat(b.default)
 .concat(c.default)
 .concat(d.default)
+.concat(e.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });

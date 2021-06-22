@@ -15,7 +15,7 @@ export const startmatch: Command = {
         if (await getMatch(message.channel.id)) return message.reply("On going match.");
 
         let m: Match = {
-            _id: message.channel.id, messageID: [], split: false, exhibition: false, temp: {
+            _id: message.channel.id, messageID: [], pause:false, split: false, exhibition: false, temp: {
                 istheme: false, link: ""
             }, p1: {
                 userid: message.mentions.users.array()[0].id,
@@ -172,7 +172,7 @@ export const splitmatch: Command = {
         if (await getMatch(message.channel.id)) return message.reply("On going match.");
 
         let m: Match = {
-            _id: message.channel.id, messageID: [], split: true, exhibition: false, temp: {
+            _id: message.channel.id, messageID: [], pause:false, split: true, exhibition: false, temp: {
                 istheme: false, link: ""
             }, p1: {
                 userid: message.mentions.users.array()[0].id,

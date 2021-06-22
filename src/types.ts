@@ -24,7 +24,8 @@ export interface config {
 }
 
 export interface Match {
-    _id: string,
+    _id: string;
+    pause:boolean;
     messageID: Array<string>;
     split: boolean;
     exhibition: boolean;
@@ -44,6 +45,7 @@ export interface Match {
 
 export interface Qual {
     _id: string;
+    pause:boolean;
     messageID: Array<string>;
     players: Array<QualPlayer>;
     temp: {

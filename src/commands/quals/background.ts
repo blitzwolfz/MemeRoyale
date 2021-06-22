@@ -8,9 +8,9 @@ require('dotenv').config();
 export async function backgroundQualLoop(client: Client) {
     let quals = await getAllQuals();
 
-
     for (let q of quals) {
         try {
+            if(q.pause) continue;
             if (q.players.find(x => Math.floor(Date.now() / 1000) - x.time >= 3600 && x.split && !x.failed && !x.memedone)) {
                 for (const x of q.players) {
                     if (Math.floor(Date.now() / 1000) - x.time >= 3600 && x.split && !x.failed && !x.memedone) {
@@ -140,7 +140,7 @@ async function matchResults(client: Client, q: Qual) {
 
             if (q.players[x].failed && !q.players[x].memedone) {
                 fields.push({
-                    name: `${await (await client.users.fetch(q.players[x].userid)).username} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
+                    name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
                     value: `${`Finished with 0 | Earned: 0% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }

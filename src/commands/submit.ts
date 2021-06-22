@@ -31,7 +31,7 @@ export const submit: Command = {
 
 
         let q = function (x: Match) {
-            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id) && (x.p1.memedone === false || x.p2.memedone === false) && x.votingperiod === false);
+            return ((x.p1.userid === message.author.id && !x.p1.memedone ) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
 
         let allmatches = await (await getAllMatches()).filter(q);
@@ -97,7 +97,7 @@ export const submit: Command = {
         }
 
         await updateMatch(m);
-        return await message.channel.send("Your meme has been attached!");
+        return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
     }
 };
 

@@ -36,7 +36,7 @@ export async function backgroundMatchLoop(client: Client) {
 
     for (let m of matches) {
         try {
-            if (m.exhibition === true) continue;
+            if (m.exhibition === true || m.pause) continue;
             if (m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
                 await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
                 .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
