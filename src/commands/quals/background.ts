@@ -21,7 +21,6 @@ export async function backgroundQualLoop(client: Client) {
                     }
                 }
                 await updateQual(q);
-                console.log("Updated.");
             }
 
             if ((q.players.filter(p => p.split && (p.memedone || p.failed)).length === q.players.length) && !q.votingperiod) {
@@ -40,11 +39,11 @@ export async function backgroundQualLoop(client: Client) {
 
 async function matchVotingLogic(client: Client, m: Qual) {
 
-    // if(m.players.filter(p => p.memedone === true).length <= 2){
-    //     m.votingperiod = true
-    //     m.votetime = Math.floor(Date.now()/1000) - 7200
-    //     return await updateQual(m)
-    // }
+    if(m.players.filter(p => p.memedone === true).length <= 2){
+        m.votingperiod = true
+        m.votetime = Math.floor(Date.now()/1000) - 7200
+        return await updateQual(m)
+    }
 
     let channel = <TextChannel>await client.channels.cache.get(m._id);
 
@@ -222,8 +221,6 @@ async function matchResults(client: Client, q: Qual) {
         q.players.forEach(function (v) {
             totalvotes += v.votes.length;
         });
-
-        console.log(totalvotes);
 
         for (let x = 0; x < q.players.length; x++) {
 

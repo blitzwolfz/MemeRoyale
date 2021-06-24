@@ -1,6 +1,7 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
 import { getDoc, updateDoc } from "../../db";
 import type { Command, Signups } from "../../types";
+import { backwardsFilter, forwardsFilter } from "../util";
 
 export const signup: Command = {
     name: "signup",
@@ -12,10 +13,10 @@ export const signup: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
 
-        if (message.channel.type !== "dm" && message.id !== signup.msgID && message.author.id === client.user?.id) {
+        if (message.channel.type !== "dm" && message.id !== signup.msgID && message.author.id !== client.user?.id) {
             return await message.reply("You have to signup in bot dm if they are open").then(async m => {
-                message.delete();
-                m.delete({timeout: 1600});
+                await message.delete();
+                await m.delete({timeout: 1600});
             });
         }
 
@@ -25,31 +26,33 @@ export const signup: Command = {
                 return message.reply("You can't signup as they are not open");
             }
             else {
-                return await client.users.cache.find(x => x.id === args[0])?.send("You can't signup as they are not open");
+                return client.users.cache.find(x => x.id === args[0])?.send("You can't signup as they are not open");
             }
         }
+
+        if(message.channel.type !== "dm" && signup.open && message.author.id !== client.user?.id) return message.reply("You have to signup in bot dm.")
 
         if (signup.users.includes(message.author.id) || signup.users.includes(args[0])) {
             if (message.id !== signup.msgID) {
                 return message.reply("You already signed up");
             }
             else {
-                return await client.users.cache.find(x => x.id === args[0])?.send("You already signed up");
+                return client.users.cache.find(x => x.id === args[0])?.send("You already signed up");
             }
         }
 
         else {
-            if (message.id !== signup.msgID) {
+            if (message.id !== signup.msgID && message.channel.type === "dm" ) {
                 await message.reply("You have been signed up!");
                 signup.users.push(message.author.id);
+                return await updateDoc("config", "signup", signup);
             }
 
             else {
                 await client.users.cache.find(x => x.id === args[0])?.send("You have been signed up!");
                 signup.users.push(args[0]);
+                return await updateDoc("config", "signups", signup);
             }
-
-            return await updateDoc("config", "signup", signup);
         }
     }
 };
@@ -63,7 +66,7 @@ export const signup_manager: Command = {
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
-        let c = <TextChannel>await client.channels.fetch(await message.guild!
+        let c = <TextChannel>await client.channels.fetch(message.guild!
         .channels.cache
         .find(x => x.name.toLowerCase() === "announcements")!.id!);
 
@@ -74,10 +77,17 @@ export const signup_manager: Command = {
             .setDescription("Match signups have started!" + "\nPlease use the command `!signup`" + "\nYou can also use 🗳️ to signup" + "\nIf you wish to remove your signup use `!unsignup`" + "\nOf course if you have problems contact mods!")
             .setColor("#d7be26")
             .setTimestamp()).then(async msg => {
-                msg.react('🗳️');
+                await msg.react('🗳️');
                 signup.msgID = msg.id;
             });
 
+            return await updateDoc("config", "signups", signup);
+
+        }
+
+        if (args[0] === "-delete") {
+            signup.users = []
+            await message.channel.send("Signups now deleted.")
             return await updateDoc("config", "signups", signup);
 
         }
@@ -100,7 +110,7 @@ export const signup_manager: Command = {
             .setDescription("Match signups have reopened!" + "\nIf you wish to signup use `!signup`" + "\nYou can also use 🗳️ to signup" + "\nIf you wish to remove your signup use `!removesignup`" + "\nOf course if you have problems contact mods!")
             .setColor("#d7be26")
             .setTimestamp()).then(async msg => {
-                msg.react('🗳️');
+                await msg.react('🗳️');
                 signup.msgID = msg.id;
             });
 
@@ -123,7 +133,7 @@ export const signup_manager: Command = {
 
 export const unsignup: Command = {
     name: "unsignup",
-    description: "Command to signup for tournament",
+    description: "Command to un-signup for tournament",
     group: "tourny",
     owner: false,
     admins: false,
@@ -132,24 +142,88 @@ export const unsignup: Command = {
         let signup: Signups = await getDoc("config", "signups");
 
         if (message.channel.type !== "dm") {
-            return await message.reply("You have to signup in bot dm if they are open").then(async m => {
-                message.delete();
-                m.delete({timeout: 3000});
+            return await message.reply("You have to un-signup in bot dm if they are open.").then(async m => {
+                await message.delete();
+                await m.delete({timeout: 3000});
             });
         }
 
 
-        if (signup.open === false) return message.reply("You can't signup as they are not open");
+        if (signup.open === false) return message.reply("You can't un-signup as they are not open");
 
-        if (signup.users.includes(message.author.id)) {
-            return message.reply("You already signed up");
-        }
-        else {
+        if (signup.users.includes(message.author.id) && message.channel.type === "dm") {
             signup.users = signup.users.splice(signup.users.findIndex(x => x === message.author.id), 1);
 
             await updateDoc("config", "signup", signup);
 
             return message.reply("You have been removed!");
+
+        }
+
+        else {
+            return message.reply("You already been removed");
         }
     }
 };
+
+export const view_signup: Command = {
+    name: "viewsignup",
+    aliases: [
+        "viewsignups",
+        "vs"
+    ],
+    description: "!viewsignup <Page Number>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let page: number = parseInt(args[0]) - 1 || 0;
+        let signup: Signups = await getDoc("config", "signups");
+
+        if (signup.users.length === 0) {
+            return message.reply("No signups.");
+        }
+
+        const m = <Message>(await message.channel.send({embed: await groupEmbed(page!, client, signup)}));
+        await m.react("⬅");
+        await m.react("➡");
+
+        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
+        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+
+        backwards.on('collect', async () => {
+            m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
+            await m.edit({embed: await groupEmbed(--page, client, signup)});
+        });
+        forwards.on('collect', async () => {
+            m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
+            await m.edit({embed: await groupEmbed(++page, client, signup)});
+        });
+    }
+};
+
+async function groupEmbed(page: number = 0, client: Client, signup: Signups) {
+
+    page = page < 1 ? 1 : page;
+    let index = (0 + page - 1) * 10
+    const fields = [];
+    for (let i = index; i < Math.min(index + 10, signup.users.length); ++i) {
+        try {
+            fields.push({
+                name: `${i + 1}) ${((await client.users.fetch(signup.users[i])).username)}`,
+                value: `Userid is: ${signup.users[i]}`
+            });
+        } catch {
+            console.log("heh.")
+        }
+    }
+
+    return {
+        title: `Signup list. You are on page ${page! + 1 || 1} of ${Math.floor(signup.users.length / 10) + 1}`,
+        description: fields.length === 0 ? `There are no signups` : `there are ${signup.users.length} signups`,
+        fields,
+        color: "#d7be26",
+        timestamp: new Date()
+    };
+}

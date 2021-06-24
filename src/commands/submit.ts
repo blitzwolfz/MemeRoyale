@@ -14,7 +14,13 @@ export const submit: Command = {
     async execute(message: Message, client: Client, args: string[]) {
 
         if (message.channel.type !== "dm") {
-            return message.reply("You didn't not submit this in the DM with the bot.\nPlease delete and try again.");
+            return message
+            .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+                " again in bot dm.")
+            .then(async m => {
+                await message.delete()
+                await m.delete({timeout:30000, reason: "Sent Match submission in server not bot dm."})
+            });
         }
 
         if (message.attachments.array()[0].url.includes("imgur")) {
@@ -29,41 +35,40 @@ export const submit: Command = {
             return message.reply("Your image was not submitted properly. Contact a mod");
         }
 
-
         let q = function (x: Match) {
-            return ((x.p1.userid === message.author.id && !x.p1.memedone ) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
+            return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
 
-        let allmatches = await (await getAllMatches()).filter(q);
+        let allPossibleMatches = await (await getAllMatches()).filter(q);
 
-        if (allmatches.length > 1 && !args[0]) {
-            message.channel.send("You are in multiply matches. Please mention the corresponding number to submit. For example `!submit 1`");
+        if (allPossibleMatches.length === 0) {
+            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
+        }
+
+        if (allPossibleMatches.length > 1 && !args[0]) {
+            message.channel.send("You are in multiple matches. Please mention the corresponding number to submit. For example `!submit 1`");
             let i = 0;
-            for (let m of allmatches) {
+            for (let m of allPossibleMatches) {
                 await message.channel.send(`${i + 1}) <#${m._id}>`);
                 i += 1;
             }
             return;
         }
 
-        let m = args[0] ? allmatches[parseInt(args[0]) - 1] : allmatches[0];
-
-        if (!m) {
-            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
-        }
+        let m = args[0] ? allPossibleMatches[parseInt(args[0]) - 1] : allPossibleMatches[0];
 
         let arr = [
             m.p1,
             m.p2
         ];
 
-        let e = arr.find(x => x.userid === message.author.id)!;
+        let player = arr.find(x => x.userid === message.author.id)!;
 
-        if (e.donesplit === false) return message.reply("You can't submit until your portion starts");
+        if (player.donesplit === false) return message.reply("You can't submit until your portion starts");
 
-        e.memelink = message.attachments.array()[0].url;
-        e.memedone = true;
-        e.donesplit = true;
+        player.memelink = message.attachments.array()[0].url;
+        player.memedone = true;
+        player.donesplit = true;
 
         if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
@@ -80,15 +85,17 @@ export const submit: Command = {
         }
 
         try {
-            await deleteReminder(await getReminder(e.userid));
+            await deleteReminder(await getReminder(player.userid));
             let r = await getReminder(m._id);
 
-            r.mention = r.mention.replace(`<@${e.userid}>`, "");
+            r.mention = r.mention.replace(`<@${player.userid}>`, "");
 
             await updateReminder(r);
         } catch (error) {
             console.log("");
         }
+
+        m.p1 === player ? m.p1 = player : m.p2 = player;
 
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false;
@@ -205,20 +212,20 @@ export const modsubmit: Command = {
             m.p2
         ];
 
-        let e = arr[parseInt(args[0]) - 1];
+        let player = arr[parseInt(args[0]) - 1];
 
-        //Modsubmit so their portion started already, unless bug from other area
-        //if(e.donesplit === false) return message.reply("You can't submit until your portion starts");
+        //Mod submit assumes their portion started already, unless bug from other area
+        //if(player.donesplit === false) return message.reply("You can't submit until your portion starts");
 
-        e.memelink = message.attachments.array()[0].url;
-        e.memedone = true;
-        e.donesplit = true;
+        player.memelink = message.attachments.array()[0].url;
+        player.memedone = true;
+        player.donesplit = true;
 
         if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
 
                 embed: {
-                    description: `<@${e.userid}>/${(await client.users.cache.get(e.userid))!.tag} has submitted their meme\nChannel: <#${m._id}>`,
+                    description: `<@${player.userid}>/${(await client.users.cache.get(player.userid))!.tag} has submitted their meme\nChannel: <#${m._id}>`,
                     color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url
@@ -228,34 +235,17 @@ export const modsubmit: Command = {
             });
         }
 
+        m.p1 === player ? m.p1 = player : m.p2 = player;
 
-        if (m.p1.userid === e.userid) {
-            try {
-                await deleteReminder(await getReminder(m.p1.userid));
-                let r = await getReminder(m._id);
+        try {
+            await deleteReminder(await getReminder(player.userid));
+            let r = await getReminder(m._id);
 
-                r.mention = `<@${m.p2.userid}>`;
+            r.mention = r.mention.replace(`<@${player.userid}>`, "");
 
-                await updateReminder(r);
-            } catch (error) {
-                console.log("");
-            }
-
-            m.p1 = e;
-        }
-
-        else {
-            try {
-                await deleteReminder(await getReminder(m.p2.userid));
-                let r = await getReminder(m._id);
-
-                r.mention = `<@${m.p1.userid}>`;
-
-                await updateReminder(r);
-            } catch (error) {
-                console.log("");
-            }
-            m.p2 = e;
+            await updateReminder(r);
+        } catch (error) {
+            console.log("");
         }
 
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
@@ -379,7 +369,7 @@ export const templateSubmission: Command = {
 
                     let attach = new MessageAttachment(message.attachments.array()[i].url);
 
-                    (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
+                    await (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
                 }
 
                 await updateTemplatedB(e.list);

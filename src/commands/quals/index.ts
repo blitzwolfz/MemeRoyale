@@ -119,7 +119,7 @@ export const splitqual: Command = {
             return await message.channel.send(new MessageEmbed()
             .setTitle(`Qualifier Match`)
             .setColor("#d7be26")
-            .setDescription(`Your qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
+            .setDescription(`${q.players.map(a => `<@${a.userid}>`).join(", ")} qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
             .setTimestamp()).then(async m => {
                 let emojis = [
                     '🇦',

@@ -2,6 +2,8 @@ import { Client, MessageEmbed, TextChannel } from "discord.js";
 import { deleteMatch, getAllMatches, getConfig, updateMatch } from "../../db";
 import type { Match } from "../../types";
 import { grandwinner, winner } from "./utils";
+
+
 require('dotenv').config();
 // export async function backgroundMatchLoop(client: Client) {
 //     let matches = await getAllMatches()
@@ -37,18 +39,42 @@ export async function backgroundMatchLoop(client: Client) {
     for (let m of matches) {
         try {
             if (m.exhibition === true || m.pause) continue;
+            if(m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) && m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)){
+                await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
+                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p2.userid)?.username}`)
+                .setDescription(`Both users have have failed!`)
+                .setColor((await getConfig()).colour));
+                for (const p of [
+                    m.p1,
+                    m.p2
+                ]) {
+                    (await (await client.users.fetch(p.userid)).send(new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p2.userid)?.username}`)
+                    .setDescription(`Both users have have failed!`)
+                    .setColor((await getConfig()).colour)));
+                }
+                await deleteMatch(m._id);
+                continue;
+            }
+
             if (m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
                 await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
                 .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
                 .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won!`)
                 .setColor((await getConfig()).colour));
 
-                await (await client.users.fetch(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.id}` : `${client.users.cache.get(m.p2.userid)?.id}`}`)).send(new MessageEmbed()
-                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
-                .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won! You failed to submit on time.`)
-                .setColor((await getConfig()).colour))
+                for (const p of [
+                    m.p1,
+                    m.p2
+                ]) {
+                    await (await client.users.fetch(p.userid)).send(new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                    .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won! ${!m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} failed to submit on time.`)
+                    .setColor((await getConfig()).colour));
+                }
 
                 await deleteMatch(m._id);
+                continue;
             }
 
             if (m.p1.donesplit && m.p1.memedone && m.p2.memedone && m.p2.donesplit && m.split === false && m.votingperiod === false) {

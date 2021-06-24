@@ -39,7 +39,7 @@ export const reload_match: Command = {
     }
 };
 
-export const end_match: Command = {
+export const endmatch: Command = {
     name: "end-match",
     description: "This will end the match.",
     group: "match",
@@ -205,7 +205,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
 }
 
 export async function matchcard(client: Client, channelid: string, users: string[]) {
-    let ch = <TextChannel>await client.channels.fetch(channelid);
+    //let ch = <TextChannel>await client.channels.fetch(channelid);
 
     const canvas = Canvas.createCanvas(1917, 1168);
     const ctx = canvas.getContext('2d');
@@ -223,10 +223,10 @@ export async function matchcard(client: Client, channelid: string, users: string
     //await ctx.drawImage(avatar2, (320), 300-26, 740, 636);
 
     await ctx.drawImage(await Canvas.loadImage("newbackground.png"), 0, 0, canvas.width, canvas.height);
-
-    const attachment = new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
+    return new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
+    //const attachment = new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
     //await message.channel.send({ files: [attachment]})
-    await ch.send(attachment);
+    // await ch.send(attachment);
 }
 
 export async function winner(client: Client, userid: string) {

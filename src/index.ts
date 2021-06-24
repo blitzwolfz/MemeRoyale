@@ -11,6 +11,7 @@ import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
 
+
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
 require('dotenv').config();
@@ -121,7 +122,16 @@ client.on("message", async message => {
         await message.channel.send(strrrr);
     }
     else if (commandName === "test") {
-        console.log(path.join(__dirname, '../', 'index.html'));
+        //await message.mentions.users.first()!.send("");
+
+        await message.channel.send(new MessageEmbed()
+        .setDescription(`Remember to check\n` + `⇒ [#info](https://discord.com/channels/719406444109103117/722284401920180234)\n` + `⇒ [#annoucements](https://discord.com/channels/719406444109103117/722284266108747880)\n` + `⇒ [#rules](https://discord.com/channels/719406444109103117/722284377609994281)\n` + `Also signup for both vote pings\nand signup pings in [#roles](https://discord.com/channels/719406444109103117/731568511138136094)! Enjoy your stay.`)
+        .setColor((await getConfig()).colour)
+        .setTitle("Welcome to Meme Royale!")
+        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            format: "webp",
+            size: 512
+        }))}`));
     }
 
     else if(commandName === "trans"){

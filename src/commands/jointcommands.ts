@@ -2,7 +2,8 @@ import type { Client, Message, TextChannel } from "discord.js";
 import type { Command } from "../types";
 import { getMatch, getQual, updateMatch, updateQual } from "../db";
 import { cancelmatch } from "./match";
-import { cancelqual } from "./quals";
+import { cancelqual, endqual } from "./quals/index";
+import { endmatch } from "./match/utils";
 
 export const pause: Command = {
     name: "pause",
@@ -37,7 +38,8 @@ export const pause: Command = {
 
 export const cancel: Command = {
     name: "cancel",
-    description: " `!cancel <@mention channel>`. Either mention the channel you wish to pause, or do it in the channel.",
+    description: " `!cancel <@mention channel>`. Either mention the channel you wish to cancel, or do it in the" +
+        " channel.",
     group: "tourny",
     groupCommand: false,
     owner: false,
@@ -60,7 +62,33 @@ export const cancel: Command = {
     }
 };
 
+export const end: Command = {
+    name: "end",
+    description: " `!end <@mention channel>`. Either mention the channel you wish to end, or do it in the channel.",
+    group: "tourny",
+    groupCommand: false,
+    owner: false,
+    admins: false,
+    mods: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
+        let m = await getMatch(id)
+        let q = await getQual(id)
+
+        if(m && !q){
+            return await endmatch.execute(message, client, args)
+        }
+
+        if(!m && q){
+            return await endqual.execute(message, client, args)
+        }
+
+        if(!m && !q) return message.reply(`No match or qualifier in <#${id}>`)
+    }
+};
+
 export default [
     pause,
-    cancel
+    cancel,
+    end
 ];

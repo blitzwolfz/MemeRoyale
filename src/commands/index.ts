@@ -1,19 +1,21 @@
 import { Client, Message, MessageEmbed, User } from "discord.js";
 import type { Command } from "../types";
 import { help } from "./help";
-import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./match";
-import { end_match, forcevote, match_stats, reload_match } from "./match/utils";
+import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
+import { endmatch, forcevote, match_stats, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
 import { forcevote_qual, qual_result_sum, qual_stats, reload_qual, search } from "./quals/util";
-import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
+import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
 import * as b from "./tournament/index";
 import * as c from "./exhibition/index";
 import * as d from "./user";
 import * as e from "./jointcommands";
+import * as f from "./verification";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
 import {transition} from "./convertMMtoMR";
+import { manualverify } from "./verification";
 
 //@ts-ignore
 export const example: Command = {
@@ -247,7 +249,7 @@ export default [
     reload_qual,
     qual_result_sum,
     ping,
-    end_match,
+    endmatch,
     forcevote,
     forcevote_qual,
     search,
@@ -263,11 +265,15 @@ export default [
     cancelqual,
     endqual,
     qual_stats,
-    match_stats
+    match_stats,
+    templateSubmission,
+    themeSubmission,
+    manualverify
 ].concat(b.default)
 .concat(c.default)
 .concat(d.default)
 .concat(e.default)
+.concat(f.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });

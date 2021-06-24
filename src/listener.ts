@@ -8,6 +8,7 @@ import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, g
 import { cmd, prefix } from "./index";
 import type { Profile } from "./types";
 
+//https://stackoverflow.com/questions/64814346/discord-js-httperror-aborterror-the-user-aborted-a-request
 export const client: Client = new Client({
     partials: [
         "CHANNEL",
@@ -15,7 +16,8 @@ export const client: Client = new Client({
         "MESSAGE",
         "REACTION",
         "USER"
-    ]
+    ],
+    restRequestTimeout:60000
 });
 
 client.once("ready", async () => {
@@ -88,7 +90,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
-        messageReaction.users.remove(user.id);
+        await messageReaction.users.remove(user.id);
         if (m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
         m.p1.voters.push(user.id);
         m.p1.votes += 1;
@@ -106,7 +108,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
-        messageReaction.users.remove(user.id);
+        await messageReaction.users.remove(user.id);
         if (m.p1.userid === user.id || m.p2.userid === user.id) return user.send("Can't vote in your own match");
         m.p2.voters.push(user.id);
         m.p2.votes += 1;
@@ -191,8 +193,10 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") && m.p1.userid !== user.id) {
+            await messageReaction.users.remove(user.id)
             return user.send("No.");
         }
+        await messageReaction.users.remove(user.id)
         return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid]);
     }
 
@@ -204,8 +208,10 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") && m.p2.userid !== user.id) {
+            await messageReaction.users.remove(user.id)
             return user.send("No.");
         }
+        await messageReaction.users.remove(user.id)
         return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid]);
     }
 
@@ -238,7 +244,8 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     }
 
     if (messageReaction.emoji.name === '🗳️') {
-        cmd.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id]);
+        await cmd.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id]);
+        await messageReaction.users.remove(user.id)
     }
 
     if (messageReaction.emoji.name === '👌') {
