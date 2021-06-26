@@ -45,7 +45,7 @@ export const signup: Command = {
             if (message.id !== signup.msgID && message.channel.type === "dm" ) {
                 await message.reply("You have been signed up!");
                 signup.users.push(message.author.id);
-                return await updateDoc("config", "signup", signup);
+                return await updateDoc("config", "signups", signup);
             }
 
             else {
