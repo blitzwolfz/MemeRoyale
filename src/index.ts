@@ -150,10 +150,10 @@ client.on("message", async message => {
             let probablyName = closest(commandName, commands.map(cmd => cmd.name).sort());
             let msg = await message
             .channel
-            .send(`Did you mean \`!${probablyName}\`? If so, click on the the ✔️ to continue.`);
+            .send(`Did you mean \`!${probablyName}\`? If so, click on the the ☑️ to continue.`);
 
             await msg.react(`✔️`);
-            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✔️' && !user.bot;
+            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '☑️' && !user.bot;
             const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
 
             approve.on('collect', async () => {
