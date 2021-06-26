@@ -205,7 +205,7 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
                     strr += `Losses: ${obj.loss}`;
                     break;
                 case "points":
-                    strr += `Points: ${obj.loss}`;
+                    strr += `Points: ${obj.points}`;
                     break;
                 case "votetally":
                     strr += `Total matches voted: ${obj.votetally}`;
