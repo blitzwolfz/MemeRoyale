@@ -1,7 +1,8 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { insertDuelProfile, insertProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
+import { getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile, insertDuelProfile, insertProfile } from "../db";
 import type { Command, DuelProfile, Profile } from "../types";
 import { backwardsFilter, forwardsFilter } from "./util";
+
 
 export const create_profile: Command = {
     name: "create",
@@ -203,6 +204,9 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
                 case "loss":
                     strr += `Losses: ${obj.loss}`;
                     break;
+                case "points":
+                    strr += `Points: ${obj.loss}`;
+                    break;
                 case "votetally":
                     strr += `Total matches voted: ${obj.votetally}`;
                     break;
@@ -231,12 +235,15 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
         case "votetally":
             strrr += `Total matches voted in.`;
             break;
+        case "points":
+            strrr += `Points.`;
+            break;
         default:
             strrr += `Wins.`;
     }
 
     return {
-        title: `Leaderboard sorted by ${strrr}. You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
+        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
         description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`,
         fields,
         color: "#d7be26",
