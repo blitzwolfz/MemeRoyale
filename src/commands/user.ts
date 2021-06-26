@@ -43,12 +43,12 @@ export const profile_stats: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        let user: Profile = await getProfile(args[1] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
+        let user: Profile = await getProfile(args[0] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
         // ||
         // args[0]
         // ||
-        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
-        let name = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
+        let imgurl = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
+        let name = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
         if (!user) {
             return message.reply("That user profile does not exist! Please do `!create` to create your own user profile");
         }

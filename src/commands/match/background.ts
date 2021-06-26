@@ -141,8 +141,8 @@ async function matchVotingLogic(client: Client, m: Match) {
     .setTitle("Voting time")
     .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **2 hours** to vote`)
     .setColor(await (await getConfig()).colour)).then(async (msg) => {
-        msg.react('1️⃣');
-        msg.react('2️⃣');
+        await msg.react('1️⃣');
+        await msg.react('2️⃣');
         m.messageID.push(msg.id);
     });
 

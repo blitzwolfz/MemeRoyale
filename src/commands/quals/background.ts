@@ -90,7 +90,7 @@ async function matchVotingLogic(client: Client, m: Qual) {
             channel.send(new MessageEmbed()
             .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
             .setImage(p.memelink)
-            .setColor(await (await getConfig()).colour)).then(async msg => {
+            .setColor((await getConfig()).colour)).then(async msg => {
                 m.messageID.push(msg.id);
             });
         }
