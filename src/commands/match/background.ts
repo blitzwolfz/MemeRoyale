@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { deleteMatch, getAllMatches, getConfig, updateMatch } from "../../db";
+import { deleteMatch, getAllMatches, getConfig, getProfile, updateMatch, updateProfile } from "../../db";
 import type { Match } from "../../types";
 import { grandwinner, winner } from "./utils";
 
@@ -159,23 +159,18 @@ async function matchVotingLogic(client: Client, m: Match) {
 
 async function matchResults(client: Client, m: Match) {
     let channel = <TextChannel>await client.channels.cache.get(m._id);
+    let u1 = await getProfile(m.p1.userid);
+    let u2 = await getProfile(m.p2.userid);
 
     // if (m.p1.memedone && !m.p2.memedone || !m.p1.memedone && m.p2.memedone) {
     //     if (m.p1.memedone) {
     //         await channel.send(new MessageEmbed()
     //         .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-    //         .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
-    //         .setColor((await getConfig()).colour));
-    //     }
-    //
-    //     if (m.p2.memedone) {
-    //         await channel.send(new MessageEmbed()
-    //         .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-    //         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
-    //         .setColor((await getConfig()).colour));
-    //     }
-    //     return;
-    // }
+    //         .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat
+    // ${client.users.cache.get(m.p2.userid)?.username}`) .setColor((await getConfig()).colour)); }  if (m.p2.memedone)
+    // { await channel.send(new MessageEmbed() .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+    // .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat
+    // ${client.users.cache.get(m.p1.userid)?.username}`) .setColor((await getConfig()).colour)); } return; }
 
     if (m.p1.votes > m.p2.votes) {
         await channel.send(new MessageEmbed()
@@ -195,8 +190,14 @@ async function matchResults(client: Client, m: Match) {
 
         else {
             await channel.send(await grandwinner(client, m.p1.userid));
-            await channel.send(`Congratulations on winning this Cycle <@${m.p1.userid}>`)
+            await channel.send(`Congratulations on winning this Cycle <@${m.p1.userid}>`);
         }
+
+        u2.loss += 1;
+        u1.points += (m.p2.votes * 5);
+
+        u1.wins += 1;
+        u1.points += (m.p1.votes * 5) + 25;
 
     }
 
@@ -219,8 +220,14 @@ async function matchResults(client: Client, m: Match) {
 
         else {
             await channel.send(await grandwinner(client, m.p2.userid));
-            await channel.send(`Congratulations on winning this Cycle <@${m.p2.userid}>`)
+            await channel.send(`Congratulations on winning this Cycle <@${m.p2.userid}>`);
         }
+
+        u1.loss += 1;
+        u1.points += (m.p1.votes * 5);
+
+        u2.wins += 1;
+        u2.points += (m.p2.votes * 5) + 25;
     }
 
     else if (m.p1.votes === m.p2.votes) {
@@ -232,6 +239,9 @@ async function matchResults(client: Client, m: Match) {
         await channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
 
     }
+
+    await updateProfile(u1);
+    await updateProfile(u2);
 
     return await deleteMatch(m._id);
 }
