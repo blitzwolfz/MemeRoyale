@@ -152,7 +152,7 @@ export const unsignup: Command = {
         if (signup.open === false) return message.reply("You can't un-signup as they are not open");
 
         if (signup.users.includes(message.author.id) && message.channel.type === "dm") {
-            signup.users = signup.users.splice(signup.users.indexOf(message.author.id), 1);
+            signup.users.splice(signup.users.indexOf(message.author.id), 1);
 
             await updateDoc("config", "signups", signup);
 
