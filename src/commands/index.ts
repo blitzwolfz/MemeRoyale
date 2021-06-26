@@ -206,7 +206,7 @@ export const editConfig: Command = {
                     break;
 
                 case "isfinale":
-
+                    if(!args[1]) return  message.reply("isfinale must either be true or false");
                     await message.channel.send("No type check. Click emote to continue").then(async msg => {
 
                         await msg.react(`✔️`);
@@ -223,6 +223,10 @@ export const editConfig: Command = {
                             }
 
                             await updateConfig(config);
+                            config.isfinale ? await message.reply("All matches are now evaluated as a" +
+                                " finale match.") : await message.reply("All matches are now evaluated as a non" +
+                                " finale" +
+                                " match.")
                         });
 
                     });

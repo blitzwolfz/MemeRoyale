@@ -59,7 +59,7 @@ export async function backgroundMatchLoop(client: Client) {
 
             if (m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 2700) || m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 2700)) {
                 await (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
-                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p2.userid)?.username}`)
                 .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won!`)
                 .setColor((await getConfig()).colour));
 
@@ -68,7 +68,7 @@ export async function backgroundMatchLoop(client: Client) {
                     m.p2
                 ]) {
                     await (await client.users.fetch(p.userid)).send(new MessageEmbed()
-                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p2.userid)?.username}`)
                     .setDescription(`${m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} has won! ${!m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`} failed to submit on time.`)
                     .setColor((await getConfig()).colour));
                 }

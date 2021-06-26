@@ -78,7 +78,7 @@ export const transition: Command = {
             _id:1,
             disabledcommands:[],
             colour:"#d7be26",
-            status:"Deadlines people, deadlines. Also check out https://memeroyale.mrworldberg.repl.co/",
+            status:"",
             servers:["621044091056029696"],
             isfinale:false
         }
