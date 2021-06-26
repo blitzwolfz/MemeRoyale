@@ -148,12 +148,13 @@ client.on("message", async message => {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
         await message.channel.send(await commandError(message, client, false)).then(async mssg => {
             let probablyName = closest(commandName, commands.map(cmd => cmd.name).sort());
+            let emote = `☑️`
             let msg = await message
             .channel
-            .send(`Did you mean \`!${probablyName}\`? If so, click on the the ☑️ to continue.`);
+            .send(`Did you mean \`!${probablyName}\`? If so, click on the the ${emote} to continue.`);
 
-            await msg.react(`✔️`);
-            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '☑️' && !user.bot;
+            await msg.react(`${emote}`);
+            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === `${emote}` && !user.bot;
             const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
 
             approve.on('collect', async () => {
