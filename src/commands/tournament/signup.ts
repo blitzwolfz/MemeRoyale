@@ -178,7 +178,7 @@ export const view_signup: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        let page: number = parseInt(args[0]) - 1 || 0;
+        let page: number = parseInt(args[0]) || 1;
         let signup: Signups = await getDoc("config", "signups");
 
         if (signup.users.length === 0) {

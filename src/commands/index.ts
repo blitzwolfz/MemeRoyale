@@ -16,6 +16,7 @@ import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
 import {transition} from "./convertMMtoMR";
 import { manualverify } from "./verification";
+import { sleep } from "./util";
 
 //@ts-ignore
 export const example: Command = {
@@ -40,7 +41,7 @@ export const ping: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         message.channel.send(new MessageEmbed()
         .setAuthor(`Pinging`)
-        .setColor("RANDOM")).then(m => {
+        .setColor("RANDOM")).then(async m => {
             // The math thingy to calculate the user's ping
             let ping = m.createdTimestamp - message.createdTimestamp;
 
@@ -48,10 +49,17 @@ export const ping: Command = {
 
             let embed = new MessageEmbed()
             .setTitle(`Your ping is ${ping} ms`)
-            .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+            // .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
             .setColor(m.embeds![0]!.hexColor!);
             // Then It Edits the message with the ping variable embed that you created
-            m.edit(embed);
+            await m.edit(embed).then(async m => {
+                await sleep(1)
+                let embed = new MessageEmbed()
+                .setTitle(`Your ping is ${ping} ms`)
+                .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+                .setColor(m.embeds![0]!.hexColor!);
+                await m.edit(embed)
+            });
         });
     }
 };
