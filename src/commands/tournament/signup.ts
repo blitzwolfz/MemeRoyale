@@ -220,7 +220,7 @@ async function groupEmbed(page: number = 0, client: Client, signup: Signups) {
     }
 
     return {
-        title: `Signup list. You are on page ${page! + 1 || 1} of ${Math.floor(signup.users.length / 10) + 1}`,
+        title: `Signup list. You are on page ${page! || 1} of ${Math.floor(signup.users.length / 10) + 1}`,
         description: fields.length === 0 ? `There are no signups` : `there are ${signup.users.length} signups`,
         fields,
         color: "#d7be26",
