@@ -60,7 +60,7 @@ export const signup: Command = {
 export const signup_manager: Command = {
     name: "signup-manager",
     description: "Managing command for signups.",
-    group: "tournament-manager",
+    group: "signups",
     owner: false,
     admins: true,
     mods: false,
@@ -154,7 +154,7 @@ export const unsignup: Command = {
         if (signup.users.includes(message.author.id) && message.channel.type === "dm") {
             signup.users = signup.users.splice(signup.users.findIndex(x => x === message.author.id), 1);
 
-            await updateDoc("config", "signup", signup);
+            await updateDoc("config", "signups", signup);
 
             return message.reply("You have been removed!");
 
