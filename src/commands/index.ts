@@ -33,8 +33,8 @@ export const example: Command = {
 
 export const ping: Command = {
     name: "ping",
-    description: "ping",
-    group: "",
+    description: "You can ping, lmao",
+    group: "ping",
     owner: false,
     admins: false,
     mods: false,
