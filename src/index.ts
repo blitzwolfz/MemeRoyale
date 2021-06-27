@@ -40,20 +40,18 @@ const listener = app.listen(Port, () => {
 client.on("message", async message => {
     if (message.author.bot) return;
     if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
-    // var args: Array<string>;
-    // // if (!message.content.startsWith(process.env.prefix!) || !message.content.startsWith(`<@!${client.user?.id}>`)) return;
-    // if (message.content.startsWith(process.env.prefix!)
-    //     || message.content.startsWith(`<@!${client.user?.id}>`)) {
-    //
-    //     if (message.content.startsWith(process.env.prefix!)) {
-    //         args = message.content.slice((process.env.prefix!.length)).trim().split(/ +/g);
-    //     }
-    //
-    //     else if (message.content.startsWith(`<@!${client.user?.id}>`)) {
-    //         args = message.content.slice((`<@!${client.user?.id}>`.length)).trim().split(/ +/g);
-    //     }
-    // } else return;
-    var args = message.content.startsWith(`<@!${client.user?.id}>`) ? message.content.slice((`<@!${client.user?.id}>`.length)).trim().split(/ +/g) : message.content.slice((process.env.prefix!.length)).trim().split(/ +/g);
+
+    var args: Array<string>;
+
+    if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user?.id}>`)) {
+
+        args = message.content.startsWith(`<@!${client.user?.id}>`)
+            ? message.content.slice((`<@!${client.user?.id}>`.length)).trim().split(/ +/g)
+            : message.content.slice((process.env.prefix!.length)).trim().split(/ +/g);
+    }
+    else {
+        return;
+    }
 
     const commandName: string | undefined = args?.shift()?.toLowerCase();
 
