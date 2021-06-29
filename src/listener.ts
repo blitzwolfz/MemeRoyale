@@ -224,23 +224,22 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         '🇫'
     ].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);
-        if (!await (await getQual(messageReaction.message.channel.id)).players.some(x => x.userid === user.id) && !!user.client.guilds.cache
+        let m = await getQual(messageReaction.message.channel.id);
+        if (!m) return;
+        let pos = [
+            "🇦",
+            "🇧",
+            "🇨",
+            "🇩",
+            "🇪",
+            "🇫"
+        ].indexOf(messageReaction.emoji.name);
+        if ((m.players[pos].userid !== user.id) && !!user.client.guilds.cache
         .get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") === false) {
             return user.send("No.");
         }
-        let m = await getQual(messageReaction.message.channel.id);
-        if (!m) return;
-        let pos = [
-            '🇦',
-            '🇧',
-            '🇨',
-            '🇩',
-            '🇪',
-            '🇫'
-        ].indexOf(messageReaction.emoji.name);
-        if(m.players[pos].userid !== user.id) return user.send("No.")
         cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid]);
     }
 
