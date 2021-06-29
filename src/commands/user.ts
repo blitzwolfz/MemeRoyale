@@ -21,7 +21,7 @@ export const create_profile: Command = {
         else {
 
             await insertProfile({
-                _id: message.author.id, votetally: 0, points: 0, wins: 0, loss: 0
+                _id: message.author.id, totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0
             });
 
 
@@ -65,11 +65,12 @@ export const profile_stats: Command = {
             .setThumbnail(imgurl)
             //.setColor("#d7be26")
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`}, {
-                name: 'Total Wins', value: `${user.wins}`
-            }, {name: 'Total Loss', value: `${user.loss}`}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`
-            }, {name: 'Win Rate', value: `${wr}%`});
+            .addFields({name: 'Total Points', value: `${user.points}`, inline:true},
+                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true}, {
+                name: 'Total Wins', value: `${user.wins}`, inline:true
+            }, {name: 'Total Loss', value: `${user.loss}`, inline:true}, {
+                name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true
+            }, {name: 'Win Rate', value: `${wr}%`, inline:true});
 
             await message.channel.send(UserEmbed);
         }
@@ -84,7 +85,7 @@ export async function createProfileatMatch(userId: string) {
 
     else {
         await insertProfile({
-            _id: userId, votetally: 0, points: 0, wins: 0, loss: 0
+            _id: userId, totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0
         });
     }
 }

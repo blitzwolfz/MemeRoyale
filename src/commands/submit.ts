@@ -103,6 +103,24 @@ export const submit: Command = {
             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
         }
 
+        let p = await getProfile(message.author.id)
+
+        if(p.totalMemes === 0){
+            p.totalMemes += 1;
+            p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time)
+        }
+
+        else{
+            let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+
+            oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+            p.totalTime = oldAverage;
+            p.totalMemes += 1;
+        }
+
+        await updateProfile(p)
+
         await updateMatch(m);
         return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
     }
@@ -186,6 +204,24 @@ export const qualsubmit: Command = {
             } catch (error) {
                 console.log("");
             }
+
+            let p = await getProfile(message.author.id)
+
+            if(p.totalMemes === 0){
+                p.totalMemes += 1;
+                p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
+            }
+
+            else{
+                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
+
+                oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                p.totalTime = oldAverage;
+                p.totalMemes += 1;
+            }
+
+            await updateProfile(p);
 
             return message.reply("Your meme for your qualifier has been attached.");
         }

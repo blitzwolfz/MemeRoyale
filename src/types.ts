@@ -118,6 +118,8 @@ export interface Profile {
     points: number;
     wins: number;
     loss: number;
+    totalMemes:number;
+    totalTime:number;
 }
 
 export interface DuelProfile {

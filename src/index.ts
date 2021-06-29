@@ -6,7 +6,7 @@ import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-import { getConfig, getOneColl } from "./db";
+import { getAllProfiles, getConfig, getOneColl, updateProfile } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
@@ -136,8 +136,13 @@ client.on("message", async message => {
     }
 
     else if (commandName === "test") {
-        message.mentions.users.delete(client.user!.id)
-        await message.channel.send(message.mentions.users.array())
+        let allProfiles = await getAllProfiles()
+
+        for(let p of allProfiles){
+            p.totalMemes = 0
+            p.totalTime = 0
+            await updateProfile(p)
+        }
     }
 
     else if (commandName === "test3") {
