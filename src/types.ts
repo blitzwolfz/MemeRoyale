@@ -70,6 +70,7 @@ export interface Signups {
     _id: "signups";
     msgID: string;
     open: boolean;
+    autoClose:number;
     users: Array<string>;
 }
 
