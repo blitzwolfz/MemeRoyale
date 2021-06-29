@@ -87,7 +87,6 @@ client.on("message", async message => {
         }
     }
 
-    console.log(command)
 
     if (commandName === "test2") {
         if (message.author.id !== process.env.owner) return await message.reply("nah b");
@@ -241,7 +240,7 @@ process.env.dev! ? client.login(process.env.devtoken!) : client.login(process.en
 
 async function runCommand(command: Command, message: Message, client: Client, args: string[]) {
     if (await (await getConfig()).disabledcommands.includes(command.name)) return message.reply(`${command.name} is currently disabled`);
-
+    console.log(command)
     if (command.owner || command.admins || command.mods) {
         try {
             if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
@@ -266,7 +265,7 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             await command.execute(message, client, args);
 
         } catch (error) {
-            message.channel.send(await commandError(message, client, false, error));
+            message.channel.send(await commandError(message, client, true, error));
         }
     }
 }
