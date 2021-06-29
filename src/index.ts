@@ -87,6 +87,8 @@ client.on("message", async message => {
         }
     }
 
+    console.log(command)
+
     if (commandName === "test2") {
         if (message.author.id !== process.env.owner) return await message.reply("nah b");
 
