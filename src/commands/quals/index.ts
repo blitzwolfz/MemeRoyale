@@ -3,7 +3,7 @@ import { deleteQual, getConfig, getQual, getTemplatedB, getThemes, insertQual, i
 import type { Command, Qual } from "../../types";
 
 export const splitqual: Command = {
-    name: "split-qual",
+    name: "splitqual",
     description: "",
     group: "qual",
     owner: false,
