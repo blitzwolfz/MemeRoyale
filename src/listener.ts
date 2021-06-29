@@ -240,6 +240,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             '🇪',
             '🇫'
         ].indexOf(messageReaction.emoji.name);
+        if(m.players[pos].userid !== user.id) return user.send("No.")
         cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid]);
     }
 
