@@ -163,7 +163,7 @@ export const qualchannelcreate: Command = {
                     let string = "";
 
                     for (let u of qlist.users[i]) {
-                        string += `<@${u} `;
+                        string += `<@${u}> `;
                     }
 
                     await insertReminder({
