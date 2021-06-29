@@ -114,9 +114,13 @@ export const splitqual: Command = {
                 q.temp.link = msg.embeds[0].image?.url!;
             }
 
-            await insertQual(q);
+            await insertQual(q).then(async a => {
+                let c = await (<TextChannel>client.channels.cache.get("738047732312309870"));
+                let cc = await (<TextChannel>client.channels.cache.get(q._id));
+                c.send(`<#${q._id}>/${cc.name} template is ${q.temp.link}`);
+            });;
 
-            return await message.channel.send(new MessageEmbed()
+            await message.channel.send(new MessageEmbed()
             .setTitle(`Qualifier Match`)
             .setColor("#d7be26")
             .setDescription(`${q.players.map(a => `<@${a.userid}>`).join(", ")} qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
@@ -133,6 +137,8 @@ export const splitqual: Command = {
                     m.react(emojis[i]);
                 }
             });
+
+            return await msg.delete()
 
         });
 
