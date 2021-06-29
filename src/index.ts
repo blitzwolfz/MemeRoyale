@@ -48,7 +48,9 @@ client.on("message", async message => {
         // args = message.content.startsWith(process.env.prefix!)
         //     ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
         //     : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
-        console.log(message.content)
+        if(message.content.startsWith(`<@!${client.user!.id}>`)){
+            message.mentions.users.delete(client.user!.id)
+        }
         args = message.content.startsWith(process.env.prefix!)
             ? message.content.replace(process.env.prefix!, "").trim().split(/ +/g)
             : message.content.replace((`<@!${client.user!.id}>`), "").trim().split(/ +/g);
@@ -139,16 +141,8 @@ client.on("message", async message => {
     }
 
     else if (commandName === "test") {
-        //await message.mentions.users.first()!.send("");
-
-        await message.channel.send(new MessageEmbed()
-        .setDescription(`Remember to check\n` + `⇒ [#info](https://discord.com/channels/719406444109103117/722284401920180234)\n` + `⇒ [#annoucements](https://discord.com/channels/719406444109103117/722284266108747880)\n` + `⇒ [#rules](https://discord.com/channels/719406444109103117/722284377609994281)\n` + `Also signup for both vote pings\nand signup pings in [#roles](https://discord.com/channels/719406444109103117/731568511138136094)! Enjoy your stay.`)
-        .setColor((await getConfig()).colour)
-        .setTitle("Welcome to Meme Royale!")
-        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-            format: "webp",
-            size: 512
-        }))}`));
+        message.mentions.users.delete(client.user!.id)
+        await message.channel.send(message.mentions.users.array())
     }
 
     else if (commandName === "test3") {
