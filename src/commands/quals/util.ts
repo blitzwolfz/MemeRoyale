@@ -159,8 +159,8 @@ export const forcevote_qual: Command = {
 // };
 
 export const search: Command = {
-    name: "search",
-    description: "!creategroup #Amount in each group",
+    name:"search",
+    description: "!search <@mention>",
     group: "tournament-manager",
     owner: false,
     admins: false,
