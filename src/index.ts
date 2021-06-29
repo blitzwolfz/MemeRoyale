@@ -201,9 +201,6 @@ client.on("message", async message => {
     }
 
     else if(commandName === "search"){
-        if(message.author.id !== process.env.owner){
-            return;
-        }
         await commands.find(cmd => cmd.name.toLowerCase() === "search")!.execute(message, client, args)
     }
 
