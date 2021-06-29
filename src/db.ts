@@ -225,6 +225,6 @@ export async  function getAllColl(name: string): Promise<any> {
     return client.db("mememania").collection(name).find({}).toArray();
 }
 
-export async  function getOneColl(name: string, id:string): Promise<any> {
-    return await ((client.db("mememania").collection(name).findOne({_id: id})).then(r => r))!
+export async  function getOneColl(name: string, id:any, dbName = "mememania"): Promise<any> {
+    return await ((client.db(dbName).collection(name).findOne({_id: id})).then(r => r))!
 }
