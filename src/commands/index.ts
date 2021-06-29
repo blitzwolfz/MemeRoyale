@@ -271,7 +271,6 @@ export default [
     qualsubmit,
     modsubmit,
     modqualsubmit,
-    search,
     splitqual,
     help,
     startsplitqual,
