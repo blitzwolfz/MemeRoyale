@@ -240,6 +240,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         .find(x => x.name.toLowerCase() === "referee") === false) {
             return user.send("No.");
         }
+        if(m.players[pos].memedone === true || m.players[pos].failed === true) return;
         cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid]);
     }
 

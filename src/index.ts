@@ -59,10 +59,7 @@ client.on("message", async message => {
         return;
     }
 
-    console.log(args)
-
     const commandName: string | undefined = args?.shift()?.toLowerCase();
-    console.log(commandName)
     if (!commandName) return;
 
     let command = commands.find(c => {
@@ -105,8 +102,6 @@ client.on("message", async message => {
         var str = fileContents;
         let arr = str.match(/(command === "\w+"*)/g)!;
         let arrr = str.match(/(command === "\w+" \|\| command === "\w+"*)/g)!;
-        // console.log(arr)
-        // console.log(arrr)
         await message.channel.send(`I found ${arr?.length} commands in MR`);
         let strr = "";
         let strrr = "";
@@ -159,7 +154,6 @@ client.on("message", async message => {
                 names[names.findIndex(x => x.name === com.group)].number += 1;
             }
         }
-        console.log(names)
 
         let emb = new MessageEmbed()
         .setColor((await getConfig()).colour)
@@ -188,7 +182,6 @@ client.on("message", async message => {
         for(let i = 0; i <  array3.length; i++){
             array3[i] = `<@${array3[i]}>`
         }
-        console.log(array3)
 
         message.channel.send(array3.join(", "))
     }
@@ -234,7 +227,6 @@ process.env.dev! ? client.login(process.env.devtoken!) : client.login(process.en
 
 async function runCommand(command: Command, message: Message, client: Client, args: string[]) {
     if (await (await getConfig()).disabledcommands.includes(command.name)) return message.reply(`${command.name} is currently disabled`);
-    console.log(command)
     if (command.owner || command.admins || command.mods) {
         try {
             if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
