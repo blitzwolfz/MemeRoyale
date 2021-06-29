@@ -45,9 +45,13 @@ client.on("message", async message => {
     var args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
+        // args = message.content.startsWith(process.env.prefix!)
+        //     ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
+        //     : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
+
         args = message.content.startsWith(process.env.prefix!)
-            ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
-            : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
+            ? message.content.replace(process.env.prefix!, "").trim().split(/ +/g)
+            : message.content.replace((`<@!${client.user!.id}>`), "").trim().split(/ +/g);
     }
     else {
         return;
