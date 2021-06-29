@@ -117,44 +117,68 @@ export const forcevote_qual: Command = {
     }
 };
 
+// export const search: Command = {
+//     name: "search",
+//     description: "!creategroup #Amount in each group",
+//     group: "tournament-manager",
+//     owner: false,
+//     admins: false,
+//     mods: false,
+//     async execute(message: Message, client: Client, args: string[]) {
+//         let signup: QualList = await getDoc("config", "quallist");
+//         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
+//         if (!id) return message.reply("invaild input. Please use User ID or a User mention");
+//
+//         //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
+//         // client.users.fetch(id)).username
+//         if (message.member!.roles.cache.has('719936221572235295')) {
+//             for (let i = 0; i < signup.users.length; i++) {
+//
+//                 if (signup.users[i].includes(id)) {
+//                     return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
+//                 }
+//             }
+//             return message.reply("They are not in a group");
+//         }
+//
+//         else {
+//             if (id !== message.author.id) {
+//                 return message.reply("You don't have those premissions");
+//             }
+//             else {
+//                 for (let i = 0; i < signup.users.length; i++) {
+//
+//                     if (signup.users[i].includes(id)) {
+//                         return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
+//                     }
+//                 }
+//                 return message.reply("They are not in a group");
+//             }
+//         }
+//     }
+// };
+
 export const search: Command = {
     name: "search",
     description: "!creategroup #Amount in each group",
     group: "tournament-manager",
     owner: false,
     admins: false,
-    mods: false,
+    mods: true,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: QualList = await getDoc("config", "quallist");
-        let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
+        let id = (message.mentions?.users?.first()?.id);
         if (!id) return message.reply("invaild input. Please use User ID or a User mention");
 
         //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
         // client.users.fetch(id)).username
-        if (message.member!.roles.cache.has('719936221572235295')) {
-            for (let i = 0; i < signup.users.length; i++) {
-
-                if (signup.users[i].includes(id)) {
-                    return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-                }
-            }
-            return message.reply("They are not in a group");
-        }
-
-        else {
-            if (id !== message.author.id) {
-                return message.reply("You don't have those premissions");
-            }
-            else {
-                for (let i = 0; i < signup.users.length; i++) {
-
-                    if (signup.users[i].includes(id)) {
-                        return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-                    }
-                }
-                return message.reply("They are not in a group");
+        for(let i = 0; i < signup.users.length; i++){
+            if (signup.users[i].includes(id)) {
+                return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
             }
         }
+
+        return await message.reply("This person is not playing in qualifier.")
     }
 };
 

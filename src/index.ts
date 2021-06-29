@@ -200,9 +200,9 @@ client.on("message", async message => {
         await commands.find(cmd => cmd.name.toLowerCase() === "transition")!.execute(message, client, args)
     }
 
-    else if(commandName === "search"){
-        await commands.find(cmd => cmd.name.toLowerCase() === "search")!.execute(message, client, args)
-    }
+    // else if(commandName === "search"){
+    //     await commands.find(cmd => cmd.name.toLowerCase() === "search")!.execute(message, client, args)
+    // }
 
     else if (command) {
         await runCommand(command, message, client, args);
