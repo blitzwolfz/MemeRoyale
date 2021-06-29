@@ -48,7 +48,7 @@ client.on("message", async message => {
         // args = message.content.startsWith(process.env.prefix!)
         //     ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
         //     : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
-
+        console.log(message.content)
         args = message.content.startsWith(process.env.prefix!)
             ? message.content.replace(process.env.prefix!, "").trim().split(/ +/g)
             : message.content.replace((`<@!${client.user!.id}>`), "").trim().split(/ +/g);
@@ -57,8 +57,10 @@ client.on("message", async message => {
         return;
     }
 
-    const commandName: string | undefined = args?.shift()?.toLowerCase();
+    console.log(args)
 
+    const commandName: string | undefined = args?.shift()?.toLowerCase();
+    console.log(commandName)
     if (!commandName) return;
 
     let command = commands.find(c => {
