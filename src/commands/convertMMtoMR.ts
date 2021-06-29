@@ -47,7 +47,7 @@ export const transition: Command = {
         }
 
         let obj: Signups = {
-            _id: "signups", msgID: "", open: false, users: []
+             _id: "signups", msgID: "", autoClose: 0, open: false, users: []
         };
 
         let obj2: MatchList = {
