@@ -224,11 +224,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         '🇫'
     ].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);
-        if (!await (await getQual(messageReaction.message.channel.id)).players.some(x => x.userid === user.id) || !!user.client.guilds.cache
+        if (!await (await getQual(messageReaction.message.channel.id)).players.some(x => x.userid === user.id) && !!user.client.guilds.cache
         .get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") === false) {
-            return;
+            return user.send("No.");
         }
         let m = await getQual(messageReaction.message.channel.id);
         if (!m) return;
