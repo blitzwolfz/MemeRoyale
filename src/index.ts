@@ -6,10 +6,11 @@ import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-import { getConfig } from "./db";
+import { getConfig, getOneColl } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
+import type { Signups } from "./types";
 
 
 export const cmd = allCommands.default;
@@ -130,6 +131,7 @@ client.on("message", async message => {
         await message.channel.send(`Therefore there are ${all.length} commands in MR v2`);
         await message.channel.send(strrrr);
     }
+
     else if (commandName === "test") {
         //await message.mentions.users.first()!.send("");
 
@@ -143,11 +145,66 @@ client.on("message", async message => {
         }))}`));
     }
 
+    else if (commandName === "test3") {
+        //await message.mentions.users.first()!.send("");
+        let names: {name:string, number:number}[] = [];
+        for(let com of cmd){
+            if (!names.find(x => x.name === com.group)) {
+                names.push({
+                    name: com.group, number: 1
+                });
+            }
+
+            else {
+                names[names.findIndex(x => x.name === com.group)].number += 1;
+            }
+        }
+        console.log(names)
+
+        let emb = new MessageEmbed()
+        .setColor((await getConfig()).colour)
+        .setTitle("Total groups")
+        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            format: "webp",
+            size: 512
+        }))}`)
+
+        for(let n of names){
+            emb.addField(
+                n.name, n.number,
+            )
+        }
+
+        await message.channel.send(emb);
+
+
+    }
+
+    else if(commandName === "test4"){
+        let doc = await getOneColl("signup", 1)
+        let signup: Signups = await getOneColl("config", "signups", "memeroyale")
+
+        let array3 = signup.users.filter(function(obj:any) { return doc.users.indexOf(obj) == -1; });
+        for(let i = 0; i <  array3.length; i++){
+            array3[i] = `<@${array3[i]}>`
+        }
+        console.log(array3)
+
+        message.channel.send(array3.join(", "))
+    }
+
     else if(commandName === "trans"){
         if(message.author.id !== process.env.owner){
             return;
         }
         await commands.find(cmd => cmd.name.toLowerCase() === "transition")!.execute(message, client, args)
+    }
+
+    else if(commandName === "search"){
+        if(message.author.id !== process.env.owner){
+            return;
+        }
+        await commands.find(cmd => cmd.name.toLowerCase() === "search")!.execute(message, client, args)
     }
 
     else if (command) {
