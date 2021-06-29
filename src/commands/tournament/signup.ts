@@ -45,12 +45,28 @@ export const signup: Command = {
             if (message.id !== signup.msgID && message.channel.type === "dm" ) {
                 await message.reply("You have been signed up!");
                 signup.users.push(message.author.id);
+                if(signup.users.length === signup.autoClose){
+                    signup.open = false;
+                    let c = <TextChannel>await client.channels.fetch("722284266108747880");
+                    await c.send(new MessageEmbed()
+                    .setDescription("Match signups have closed!" + "\nIf there is an issue with your signup" + "\nyou will be contacted. If you wish to unsignup" + "\nuse `!unsignup` or contact mods. Of course " + "\nif you have problems contact mods!")
+                    .setColor("#d7be26")
+                    .setTimestamp());
+                }
                 return await updateDoc("config", "signups", signup);
             }
 
             else {
                 await client.users.cache.find(x => x.id === args[0])?.send("You have been signed up!");
                 signup.users.push(args[0]);
+                if(signup.users.length === signup.autoClose){
+                    signup.open = false;
+                    let c = <TextChannel>await client.channels.fetch("722284266108747880");
+                    await c.send(new MessageEmbed()
+                    .setDescription("Match signups have closed!" + "\nIf there is an issue with your signup" + "\nyou will be contacted. If you wish to unsignup" + "\nuse `!unsignup` or contact mods. Of course " + "\nif you have problems contact mods!")
+                    .setColor("#d7be26")
+                    .setTimestamp());
+                }
                 return await updateDoc("config", "signups", signup);
             }
         }
@@ -90,6 +106,13 @@ export const signup_manager: Command = {
             await message.channel.send("Signups now deleted.")
             return await updateDoc("config", "signups", signup);
 
+        }
+
+        if (args[0] === "-auto") {
+            if(!args[1]) return message.reply("Please state a number to auto close at.")
+            signup.autoClose = parseInt(args[1])
+            await message.channel.send(`Signups will now auto close at ${args[1]} total users.`)
+            return await updateDoc("config", "signups", signup);
         }
 
         if (args[0] === "-close") {
