@@ -213,7 +213,7 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
                     strr += `Points: ${obj.points}`;
                     break;
                 case "totalTime":
-                    strr += `avg. Time: ${obj.totalTime.toFixed(2)} mins`;
+                    strr += `avg. Time: ${(obj.totalTime/60).toFixed(2)} mins`;
                     break;
                 case "votetally":
                     strr += `Total matches voted: ${obj.votetally}`;
