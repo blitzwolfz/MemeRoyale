@@ -168,6 +168,24 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
         });
     }
 
+    else if (symbol === "totalTime") {
+
+        profiles.sort(function (a, b) {
+            return a[symbol] - b[symbol];
+        });
+
+        // profiles.forEach(function (p) {
+        //     console.log(p._id)
+        //     if (p.totalTime === 0) {
+        //         profiles.splice(profiles.findIndex(x => x._id === p._id));
+        //     }
+        // });
+
+        profiles = profiles.filter(function (p) {
+            if(p.totalTime !== 0) return p
+        })
+    }
+
     else {
         profiles.sort(function (a, b) {
             return b[symbol] - a[symbol];
@@ -175,7 +193,6 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
     }
 
     for (let i = index; i < index + 10; i++) {
-
         let obj = profiles[i];
         try {
             let strr = "";
@@ -223,7 +240,7 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
             }
 
             fields.push({
-                name: `${i + 1}) ${await (await client.users.fetch(profiles[i]._id)).username}`, value: strr
+                name: `${i + 1}) ${((await client.users.fetch(profiles[i]._id)).username)}`, value: strr
             });
         } catch {
 
@@ -255,7 +272,8 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
 
     return {
         title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`,
+        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
+            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`,
         fields,
         color: "#d7be26",
         timestamp: new Date()
