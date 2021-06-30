@@ -48,12 +48,13 @@ client.on("message", async message => {
         // args = message.content.startsWith(process.env.prefix!)
         //     ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
         //     : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
-        if(message.content.startsWith(`<@!${client.user!.id}>`)){
-            message.mentions.users.delete(client.user!.id)
-        }
         args = message.content.startsWith(process.env.prefix!)
             ? message.content.replace(process.env.prefix!, "").trim().split(/ +/g)
             : message.content.replace((`<@!${client.user!.id}>`), "").trim().split(/ +/g);
+        
+        if(message.content.startsWith(`<@!${client.user!.id}>`)){
+            message.mentions.users.delete(client.user!.id)
+        }
     }
     else {
         return;
