@@ -157,7 +157,8 @@ export const qualsubmit: Command = {
             return message.reply("Video submissions aren't allowed");
         }
         else {
-            let match = await (await getAllQuals()).find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+            let allQ = await getAllQuals();
+            let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
 
