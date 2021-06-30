@@ -100,12 +100,12 @@ export const profile_lb: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllProfiles();
 
-        let symbol: "wins" | "points" | "loss" | "votetally" | "ratio" = "wins";
+        let symbol: "wins" | "points" | "loss" | "votetally" | "totalTime" | "ratio" = "wins";
         //@ts-ignore
         let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : args[1];
 
 
-        switch (args[0]?.[0]) {
+        switch (args[0]?.[0].toLowerCase()) {
             case "p":
                 symbol = "points";
                 break;
@@ -114,6 +114,9 @@ export const profile_lb: Command = {
                 break;
             case "l":
                 symbol = "loss";
+                break;
+            case "t":
+                symbol = "totalTime";
                 break;
             case "v":
                 symbol = "votetally";
@@ -142,7 +145,8 @@ export const profile_lb: Command = {
     }
 };
 
-async function makeProfileEmbed(page: number = 1, client: Client, profiles: Profile[], symbol: "wins" | "points" | "loss" | "votetally" | "ratio", userid: string) {
+async function makeProfileEmbed(page: number = 1, client: Client, profiles: Profile[],
+                                symbol: "wins" | "points" | "loss" | "votetally" | "ratio" | "totalTime", userid: string) {
 
     page = page < 1 ? 1 : page;
 
@@ -208,6 +212,9 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
                 case "points":
                     strr += `Points: ${obj.points}`;
                     break;
+                case "totalTime":
+                    strr += `avg. Time: ${obj.totalTime.toFixed(2)} mins`;
+                    break;
                 case "votetally":
                     strr += `Total matches voted: ${obj.votetally}`;
                     break;
@@ -238,6 +245,9 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
             break;
         case "points":
             strrr += `Points.`;
+            break;
+        case "totalTime":
+            strrr += `avg. Time.`;
             break;
         default:
             strrr += `Wins.`;
