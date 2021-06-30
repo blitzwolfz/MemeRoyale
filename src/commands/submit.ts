@@ -226,7 +226,7 @@ export const qualsubmit: Command = {
 
             await updateProfile(p);
 
-            return message.reply("Your meme for your qualifier has been attached.");
+            return message.reply(`Your meme for your qualifier in <#${match._id}> has been attached.`);
         }
     }
 };
