@@ -1,4 +1,4 @@
-import type { Command } from "./types";
+import type { Command, Signups } from "./types";
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
 import * as allCommands from "./commands/index";
 import { client } from "./listener";
@@ -10,7 +10,6 @@ import { getAllProfiles, getConfig, getOneColl, updateProfile } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
-import type { Signups } from "./types";
 
 
 export const cmd = allCommands.default;
@@ -208,7 +207,7 @@ client.on("message", async message => {
     }
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
-        await message.channel.send(await commandError(message, client, false)).then(async mssg => {
+        await message.channel.send(await commandError(message, client, commandName, false)).then(async mssg => {
             let probablyName = closest(commandName, commands.map(cmd => cmd.name).sort());
             let emote = `☑️`
             let msg = await message
@@ -257,24 +256,27 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             await command.execute(message, client, args);
 
         } catch (error) {
-            message.channel.send(await commandError(message, client, true, error));
+            message.channel.send(await commandError(message, client, command.name, true, error));
         }
     }
 }
 
-async function commandError(message: Message, client: Client, exist?: boolean, err?: any): Promise<MessageEmbed> {
+async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed> {
     // noinspection SpellCheckingInspection
     let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size: 512}));
+    let d = new Date();
     let em = new MessageEmbed()
     .setColor("RED")
     .setTitle("ERROR")
     .addFields({
-        name: 'Channel Name',
+        name: "Channel Name",
         value: `${(<TextChannel>await client.channels.fetch(message.channel.id)).name}`,
         inline: true
-    }, {name: 'Channel Id', value: `${message.channel.id}`, inline: true}, {
-        name: 'User', value: `${message.author.tag}`, inline: true
-    }, {name: 'User Id', value: `${message.author.id}`, inline: true});
+    }, {name: "Channel Id", value: `${message.channel.id}`, inline: true}, {
+        name: "User", value: `${message.author.tag}`, inline: true
+    }, {name: "User Id", value: `${message.author.id}`, inline: true}, {
+        name: `Command`, value: `!${name}`, inline: true
+    }, {name: "Time", value: `${d.toLocaleString('en-US', { timeZone: 'America/New_York' })}`, inline: true});
     if (!exist) {
         em
         .setDescription(`Command does not exist. If you think this is in error please contact <@239516219445608449>`)
@@ -288,5 +290,4 @@ async function commandError(message: Message, client: Client, exist?: boolean, e
         .setFooter("blitzwolfz#9338", `${imgurl}`);
         return em;
     }
-
 }
