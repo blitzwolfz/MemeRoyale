@@ -291,7 +291,7 @@ export const modsubmit: Command = {
         }
 
         await updateMatch(m);
-        return await message.channel.send("Your meme has been attached!");
+        return await message.channel.send(`Your meme has been attached for <@${player.userid}> in <#${m._id}>!`);
     }
 };
 
@@ -321,7 +321,8 @@ export const modqualsubmit: Command = {
         }
         else {
             let match = await getQual(message.mentions.channels.first()!.id);
-            args.splice(0, 1);
+            console.log(args)
+            console.log(args)
             let index = parseInt(args[0]) - 1;
             let u = match.players[index];
 
