@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { deleteQual, deleteReminder, getAllQuals, getConfig, getReminder, insertReminder, updateQual } from "../../db";
+import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, getReminder, insertReminder, updateProfile, updateQual } from "../../db";
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
 import { QualifierResults } from "./util";
@@ -228,8 +228,9 @@ async function matchResults(client: Client, q: Qual) {
             totalvotes += v.votes.length;
         });
 
-        for (let x = 0; x < q.players.length; x++) {
 
+
+        for (let x = 0; x < q.players.length; x++) {
             if (!q.players[x].failed && q.players[x].memedone) {
                 fields.push({
                     name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
@@ -242,6 +243,18 @@ async function matchResults(client: Client, q: Qual) {
                     name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
                     value: `${`Finished with 0 | Earned: 0% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
+            }
+
+            for (const t of q.players[x].votes) {
+                try{
+                    let u = await getProfile(t)
+                    if(!u) continue;
+                    u.points += 2
+                    u.votetally += 1
+                    await updateProfile(u)
+                } catch{
+                    console.log("fake")
+                }
             }
         }
 
