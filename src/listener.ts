@@ -144,9 +144,9 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             "5️⃣",
             "6️⃣"
         ].indexOf(messageReaction.emoji.name);
+        if (q.players.filter(y => y.userid === (user.id))) return user.send("Can't vote in your own match");
 
         if (q.players[pos].votes.includes(user.id) === false) {
-            if (q.players.filter(y => y.userid === (user.id))) return user.send("Can't vote in your own match")
             if (q.players.filter(y => y.votes.includes(user.id)).length === 2) {
                 return await user.send("You can only vote for 2 memes. Please hit recycle button to reset your votes");
             }
