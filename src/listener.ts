@@ -146,7 +146,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         ].indexOf(messageReaction.emoji.name);
 
         if (q.players[pos].votes.includes(user.id) === false) {
-
+            if (q.players.filter(y => y.userid === (user.id))) return user.send("Can't vote in your own match")
             if (q.players.filter(y => y.votes.includes(user.id)).length === 2) {
                 return await user.send("You can only vote for 2 memes. Please hit recycle button to reset your votes");
             }
@@ -234,13 +234,13 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             "🇪",
             "🇫"
         ].indexOf(messageReaction.emoji.name);
-        if ((m.players[pos].userid !== user.id) && !!user.client.guilds.cache
+        if ((m.players[pos].userid !== user.id) && !user.client.guilds.cache
         .get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
-        .find(x => x.name.toLowerCase() === "referee") === false) {
+        .find(x => x.name.toLowerCase() === "referee")) {
             return user.send("No.");
         }
-        if(m.players[pos].memedone === true || m.players[pos].failed === true) return;
+        if(m.players[pos].memedone || m.players[pos].failed) return;
         cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid]);
     }
 
@@ -250,10 +250,10 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     }
 
     if (messageReaction.emoji.name === '👌') {
-        if (user.client.guilds.cache
+        if (!user.client.guilds.cache
         .get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!
-        .roles.cache.has("719936221572235295") === false) {
+        .roles.cache.has("719936221572235295")) {
             return;
         }
 
