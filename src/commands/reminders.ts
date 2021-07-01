@@ -2,6 +2,7 @@ import type { Client, Message, TextChannel } from "discord.js";
 import { deleteReminder, getAllReminders, getReminder, updateReminder } from "../db";
 import type { Command } from "../types";
 import { startsplit } from "./match";
+import { startsplitqual } from "./quals";
 
 
 export async function backgroundReminderLoop(client: Client) {
@@ -31,7 +32,13 @@ export async function backgroundReminderLoop(client: Client) {
                     let arr = r.mention.match(/\d+/g)!;
 
                     for (let xx of arr) {
-                        await startsplit.execute(m, client, [xx]);
+                        if(c.parent?.name!.toLowerCase() === "matches"){
+                            await startsplit.execute(m, client, [xx]);
+                        }
+
+                        if(c.parent?.name!.toLowerCase() === "qualifiers"){
+                            await startsplitqual.execute(m, client, [xx])
+                        }
 
                         await (<TextChannel>client.channels.cache.get("748760056333336627")).send({
 

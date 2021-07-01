@@ -3,7 +3,6 @@ import { backgroundExhibitionLoop } from "./commands/exhibition/background";
 import { backgroundMatchLoop } from "./commands/match/background";
 import { backgroundQualLoop } from "./commands/quals/background";
 import { backgroundReminderLoop } from "./commands/reminders";
-import { sleep } from "./commands/util";
 import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "./db";
 import { cmd, prefix } from "./index";
 import type { Profile } from "./types";
@@ -72,11 +71,11 @@ client.once("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`);
     console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}\n\n`);
 
-    await client.user!.setActivity(`Building`);
-    await sleep(2);
-    await client.user!.setActivity(`Warming up`);
-    await sleep(2);
-    await client.user!.setActivity(`${await (await getConfig()).status}`);
+    // await client.user!.setActivity(`Building`);
+    // await sleep(2);
+    // await client.user!.setActivity(`Warming up`);
+    // await sleep(2);
+    await client.user!.setActivity(`${((await getConfig()).status)}`);
 });
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
