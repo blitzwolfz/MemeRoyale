@@ -221,8 +221,8 @@ export async function updateDuelProfile(_id: string, u: DuelProfile, guild: stri
 }
 
 //Transition functions
-export async  function getAllColl(name: string): Promise<any> {
-    return client.db("mememania").collection(name).find({}).toArray();
+export async  function getAllColl(name: string, dbName = "mememania"): Promise<any> {
+    return client.db(dbName).collection(name).find({}).toArray();
 }
 
 export async  function getOneColl(name: string, id:any, dbName = "mememania"): Promise<any> {

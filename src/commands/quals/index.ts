@@ -172,7 +172,7 @@ export const startsplitqual: Command = {
 
             (await client.users.cache.get(e.userid))!.send(`This is your ${q.temp.istheme ? "theme: " : "template: "}` + q.temp.link, new MessageEmbed()
             .setColor(await (await getConfig()).colour)
-            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit to submit each image seperately`));
+            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`));
 
             e.split = true;
             e.time = Math.floor(Date.now() / 1000);
@@ -182,18 +182,21 @@ export const startsplitqual: Command = {
             q.players = arr;
 
             await updateQual(q);
-
-            await insertReminder({
-                _id: e.userid, mention: "", channel: "", type: "meme", time: [
-                    3300,
-                    2700,
-                    1800
-                ], timestamp: Math.floor(Math.floor(Date.now() / 1000) / 60) * 60, basetime: 3600
-            });
+            try{
+                await insertReminder({
+                    _id: e.userid, mention: "", channel: "", type: "meme", time: [
+                        3300,
+                        2700,
+                        1800
+                    ], timestamp: Math.floor(Math.floor(Date.now() / 1000) / 60) * 60, basetime: 3600
+                });
+            }  catch {
+                console.log(`Could not insert a reminder for ${e.userid}`)
+            }
 
             return (<TextChannel>await client.channels.cache.get(q._id)!).send(new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
-            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit to submit each image seperately`));
+            .setColor((await getConfig()).colour)
+            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`));
         } catch (error) {
             console.log(error.message);
         }
