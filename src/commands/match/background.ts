@@ -240,6 +240,18 @@ async function matchResults(client: Client, m: Match) {
 
     }
 
+    for (const t of m.p1.voters.concat(m.p2.voters)) {
+        try{
+            let u = await getProfile(t)
+            if(!u) continue;
+            u.points += 2
+            u.votetally += 1
+            await updateProfile(u)
+        } catch{
+            console.log("fake")
+        }
+    }
+
     await updateProfile(u1);
     await updateProfile(u2);
 

@@ -2,7 +2,6 @@ import { Client, Message, MessageAttachment, MessageEmbed, TextChannel } from "d
 import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedB, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedB } from "../db";
 import type { Command, Match } from "../types";
 
-
 export const submit: Command = {
     name: "submit",
     description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
@@ -34,6 +33,24 @@ export const submit: Command = {
         else if (message.attachments.size <= 0) {
             return message.reply("Your image was not submitted properly. Contact a mod");
         }
+
+        // let allQ = await getAllQuals();
+        // let qualifier = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+        //
+        // if(qualifier){
+        //     let emote = `☑️`
+        //     await message.channel.send(`You are in a qualifier. If you are trying to submit to that click on ${emote}`).then(async msg => {
+        //
+        //
+        //         await msg.react(`${emote}`);
+        //         let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === `${emote}` && !user.bot;
+        //         const approve = msg.createReactionCollector(emoteFilter, {time: 60000});
+        //
+        //         approve.on('collect', async () => {
+        //             return await qualsubmit.execute(message, client, args)
+        //         });
+        //     });
+        // }
 
         let q = function (x: Match) {
             return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
