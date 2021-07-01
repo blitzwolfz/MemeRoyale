@@ -46,8 +46,12 @@ async function matchVotingLogic(client: Client, m: Qual) {
     }
 
     let channel = <TextChannel>await client.channels.cache.get(m._id);
+    try{
+        await deleteReminder(await getReminder(m._id))
+    } catch {
 
-    await deleteReminder(await getReminder(m._id))
+    }
+
 
     for (var i = 0; i < m.players.length - 1; i++) {
         var j = i + Math.floor(Math.random() * (m.players.length - i));
@@ -306,7 +310,7 @@ async function matchResults(client: Client, q: Qual) {
                         channel: channel.id,
                         type: "match",
                         time: timeArr,
-                        timestamp: Math.floor(message.createdTimestamp / 1000),
+                        timestamp: Math.floor(m.createdTimestamp / 1000) +172800,
                         basetime: 172800
                     });
                 }
