@@ -175,7 +175,8 @@ export const qualsubmit: Command = {
         }
         else {
             let allQ = await getAllQuals();
-            let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+            let match = allQ.find(x => x.players.some(y => y.userid === message.author.id && y.memedone === false))!;
+            // let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
 
