@@ -372,6 +372,7 @@ export const modqualsubmit: Command = {
 
             u.split = true;
             u.memedone = true;
+            u.failed = false
             u.memelink = message.attachments.array()[0].url;
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
