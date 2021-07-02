@@ -92,8 +92,7 @@ export const delay: Command = {
         if (message.mentions.channels.array().length === 0) {
             return message.reply("Please mention a channel");
         }
-        args.pop();
-
+        args.splice(0, 1)
         let time = 0;
 
         for (let x of args) {
