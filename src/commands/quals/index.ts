@@ -170,8 +170,10 @@ export const startsplitqual: Command = {
 
             let e = arr.find(x => x.userid === id)!;
 
+            if(e.split && (e.memedone || e.failed)) return message.reply("already done");
+
             (await client.users.cache.get(e.userid))!.send(`This is your ${q.temp.istheme ? "theme: " : "template: "}` + q.temp.link, new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
+            .setColor((await getConfig()).colour)
             .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`));
 
             e.split = true;

@@ -420,7 +420,8 @@ export const startsplit: Command = {
             e.donesplit = true;
             e.time = Math.floor(Date.now() / 1000);
 
-            (await client.users.cache.get(e.userid))!.send(`This is your ${m.temp.istheme ? "theme: " : "template: "}` + m.temp.link, new MessageEmbed()
+            (await client.users.cache.get(e.userid)!).send(`This is your ${m.temp.istheme ? "theme: " : "template: "}` + m.temp.link);
+            (await client.users.cache.get(e.userid))!.send(new MessageEmbed()
             .setColor((await getConfig()).colour)
             .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
                 format: "webp",

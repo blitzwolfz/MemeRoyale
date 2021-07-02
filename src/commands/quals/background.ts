@@ -132,8 +132,10 @@ async function matchResults(client: Client, q: Qual) {
 
     let fields = [];
 
-    //If 2 or more players failed to submit
-    if (q.players.filter(p => p.failed).length >= 2) {
+    //If 50% or more players failed to submit
+    // if (q.players.filter(p => p.memedone).length <= 2)
+    // if (parseFloat((q.players.filter(p => p.memedone).length / q.players.length).toFixed(2)) >= 0.5)
+    if (q.players.filter(p => p.failed).length >= Math.ceil((q.players.length * 0.5))) {
         for (let x = 0; x < q.players.length; x++) {
 
             if (!q.players[x].failed && q.players[x].memedone) {
