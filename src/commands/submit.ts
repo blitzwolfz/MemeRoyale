@@ -316,7 +316,7 @@ export const modsubmit: Command = {
             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
         }
 
-        let p = await getProfile(message.author.id)
+        let p = await getProfile(player.userid)
 
         if(p.totalMemes === 0 && m.exhibition === false){
             p.totalMemes += 1;
@@ -412,7 +412,7 @@ export const modqualsubmit: Command = {
                 console.log("");
             }
 
-            let p = await getProfile(message.author.id)
+            let p = await getProfile(u.userid)
 
             if(p.totalMemes === 0){
                 p.totalMemes += 1;
