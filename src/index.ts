@@ -6,7 +6,7 @@ import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-import { getAllColl, getAllQuals, getConfig, getOneColl } from "./db";
+import { getAllColl, getConfig, getOneColl } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
@@ -136,9 +136,10 @@ client.on("message", async message => {
     }
 
     else if (commandName === "test") {
-        let allQ = await getAllQuals();
-        let match = allQ.find(x => x.players.some(y => y.userid === args[0]))!;
-        console.log(match)
+        // let allQ = await getAllQuals();
+        // let match = allQ.find(x => x.players.some(y => y.userid === args[0]))!;
+        // console.log(match)
+        await message.channel.send("https://imgur.com/wN3r8ZL")
     }
 
     else if (commandName === "test3") {
