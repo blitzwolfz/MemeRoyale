@@ -38,14 +38,14 @@ export const splitqual: Command = {
         let temps: string[] = [];
 
         if (q.temp.istheme) {
-            temps = await (await getThemes()).list;
+            temps = (await getThemes()).list;
 
             em.setTitle(`Theme for ${c.name}`)
             .setDescription(temps[Math.floor(Math.random() * temps.length)]);
         }
 
         else {
-            temps = await (await getTemplatedB()).list;
+            temps = (await getTemplatedB()).list;
 
             em.setTitle(`Template for ${c.name}`)
             .setImage(temps[Math.floor(Math.random() * temps.length)]);
@@ -53,9 +53,9 @@ export const splitqual: Command = {
 
         let msg = await c.send(`<@${message.author.id}>`, em);
 
-        msg.react('✅');
-        msg.react('❌');
-        msg.react('🌀');
+        await msg.react('✅');
+        await msg.react('❌');
+        await msg.react('🌀');
 
         const approveFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✅' && !user.bot;
         const disapproveFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '❌' && !user.bot;
@@ -69,25 +69,25 @@ export const splitqual: Command = {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
 
             if (q.temp.istheme) {
-                temps = await (await getThemes()).list;
+                temps = (await getThemes()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Theme for ${c.name}`)
                 .setDescription(temps[Math.floor(Math.random() * temps.length)])
                 .setColor("PURPLE");
 
-                msg.edit(eem);
+                await msg.edit(eem);
             }
 
             else {
-                temps = await (await getTemplatedB()).list;
+                temps = (await getTemplatedB()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)
                 .setImage(temps[Math.floor(Math.random() * temps.length)])
                 .setColor("PURPLE");
 
-                msg.edit(eem);
+                await msg.edit(eem);
             }
 
         });
@@ -102,6 +102,7 @@ export const splitqual: Command = {
             });
             approve.on("end", async () => {
             });
+            return await msg.delete()
         });
 
         approve.on('collect', async () => {
@@ -134,7 +135,7 @@ export const splitqual: Command = {
                     '🇫'
                 ];
                 for (let i = 0; i < q.players.length; i++) {
-                    m.react(emojis[i]);
+                    await m.react(emojis[i]);
                 }
             });
 
@@ -248,7 +249,7 @@ export const endqual: Command = {
         await updateQual(m);
 
         return message.reply("Qualifier has ended").then(async m => {
-            m.delete({timeout: 1500});
+            await m.delete({timeout: 1500});
         });
     }
 };
