@@ -18,7 +18,7 @@ export async function backgroundReminderLoop(client: Client) {
                             await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
                         } catch (error) {
                             console.log(error.message);
-                            await (<TextChannel>await client.channels.fetch(r.channel)).send(`${xx} you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
+                            await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
                         }
 
                     }
