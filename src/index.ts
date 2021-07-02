@@ -137,8 +137,8 @@ client.on("message", async message => {
 
     else if (commandName === "test") {
         let allQ = await getAllQuals();
-        let match = allQ.find(x => x.players.some(y => y.userid === message.author.id))!;
-        await message.channel.send(`\`\`\`${match}\`\`\``);
+        let match = allQ.find(x => x.players.some(y => y.userid === args[0]))!;
+        console.log(match)
     }
 
     else if (commandName === "test3") {
