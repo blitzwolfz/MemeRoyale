@@ -175,12 +175,13 @@ export const qualsubmit: Command = {
         }
         else {
             let allQ = await getAllQuals();
-            let match = allQ.find(x => x.players.some(y => y.userid === message.author.id && y.memedone === false))!;
+            let match = allQ.find(x => x.players.some(y => y.userid === message.author.id))!;
             // let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
 
             if (u.split === false) return message.reply("Can't submit when you haven't started your portion");
+            if(u.memedone) return  message.reply("You have already submitted a meme.").then(async m => m.channel.send(u.memelink))
 
             u.split = true;
             u.memedone = true;
@@ -192,7 +193,7 @@ export const qualsubmit: Command = {
                     color: "#d7be26",
                     timestamp: new Date()
                 }
-            });
+            }).catch();
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
 
@@ -204,11 +205,12 @@ export const qualsubmit: Command = {
                     },
                     timestamp: new Date()
                 }
-            });
+            }).catch();
 
             match.players[index] = u;
 
             await updateQual(match);
+            await message.reply(`Your meme for your qualifier in <#${match._id}> has been attached.`);
 
             try {
                 let r = await getReminder(match._id);
@@ -227,24 +229,27 @@ export const qualsubmit: Command = {
             }
 
             let p = await getProfile(message.author.id)
+            if(p){
+                if(p.totalMemes === 0){
+                    p.totalMemes += 1;
+                    p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
+                }
 
-            if(p.totalMemes === 0){
-                p.totalMemes += 1;
-                p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
-            }
+                else{
+                    let oldAverage = p.totalTime,
+                        sum = p.totalMemes+1,
+                        newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
 
-            else{
-                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
+                    oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
 
-                oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
-
-                p.totalTime = oldAverage;
-                p.totalMemes += 1;
+                    p.totalTime = oldAverage;
+                    p.totalMemes += 1;
+                }
             }
 
             await updateProfile(p);
 
-            return message.reply(`Your meme for your qualifier in <#${match._id}> has been attached.`);
+            return;
         }
     }
 };
