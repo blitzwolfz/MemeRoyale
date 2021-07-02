@@ -1,4 +1,4 @@
-import type { Command, Signups } from "./types";
+import type { Command, Reminder, Signups } from "./types";
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
 import * as allCommands from "./commands/index";
 import { client } from "./listener";
@@ -6,7 +6,7 @@ import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-import { getConfig, getOneColl} from "./db";
+import { getAllColl, getAllQuals, getConfig, getOneColl } from "./db";
 import * as path from "path";
 //@ts-ignore
 import { readFileSync } from "fs";
@@ -136,43 +136,17 @@ client.on("message", async message => {
     }
 
     else if (commandName === "test") {
-        await message.reply("PING").then(async m => {
-            await m.channel.send(message.createdTimestamp)
-        })
+        let allQ = await getAllQuals();
+        let match = allQ.find(x => x.players.some(y => y.userid === message.author.id))!;
+        await message.channel.send(`\`\`\`${match}\`\`\``);
     }
 
     else if (commandName === "test3") {
-        //await message.mentions.users.first()!.send("");
-        let names: {name:string, number:number}[] = [];
-        for(let com of cmd){
-            if (!names.find(x => x.name === com.group)) {
-                names.push({
-                    name: com.group, number: 1
-                });
-            }
+        let rem:Reminder[] = await getAllColl("reminders", "memeroyale")
 
-            else {
-                names[names.findIndex(x => x.name === com.group)].number += 1;
-            }
+        for(let r of rem){
+            await message.channel.send(`<#${r._id}>`)
         }
-
-        let emb = new MessageEmbed()
-        .setColor((await getConfig()).colour)
-        .setTitle("Total groups")
-        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-            format: "webp",
-            size: 512
-        }))}`)
-
-        for(let n of names){
-            emb.addField(
-                n.name, n.number,
-            )
-        }
-
-        await message.channel.send(emb);
-
-
     }
 
     else if(commandName === "test4"){
