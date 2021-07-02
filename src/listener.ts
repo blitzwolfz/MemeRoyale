@@ -15,8 +15,7 @@ export const client: Client = new Client({
         "MESSAGE",
         "REACTION",
         "USER"
-    ],
-    restRequestTimeout:60000
+    ], restRequestTimeout: 90000
 });
 
 client.once("ready", async () => {
@@ -85,7 +84,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     if (messageReaction.partial) await messageReaction.fetch();
     if (messageReaction.message.partial) await messageReaction.message.fetch();
 
-    if (messageReaction.emoji.name === '1️⃣' && await getMatch(messageReaction.message.channel.id)) {
+    if (messageReaction.emoji.name === "1️⃣" && await getMatch(messageReaction.message.channel.id)) {
         if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
@@ -103,7 +102,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         await user.send(`Vote counted for Player 1's memes in <#${m._id}>. You gained 2 points for voting`);
     }
 
-    if (messageReaction.emoji.name === '2️⃣' && await getMatch(messageReaction.message.channel.id)) {
+    if (messageReaction.emoji.name === "2️⃣" && await getMatch(messageReaction.message.channel.id)) {
         if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
@@ -167,7 +166,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
     }
 
-    if (messageReaction.emoji.name === '♻️') {
+    if (messageReaction.emoji.name === "♻️") {
         await messageReaction.users.remove(user.id);
         let q = await getQual(messageReaction.message.channel.id);
         if (!q) return;
@@ -184,7 +183,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         return user.send(`All votes in <#${messageReaction.message.channel.id}> reset`);
     }
 
-    if (messageReaction.emoji.name === '🅰️') {
+    if (messageReaction.emoji.name === "🅰️") {
         await messageReaction.users.remove(user.id);
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
@@ -192,14 +191,14 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") && m.p1.userid !== user.id) {
-            await messageReaction.users.remove(user.id)
+            await messageReaction.users.remove(user.id);
             return user.send("No.");
         }
-        await messageReaction.users.remove(user.id)
+        await messageReaction.users.remove(user.id);
         return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p1.userid]);
     }
 
-    if (messageReaction.emoji.name === '🅱️') {
+    if (messageReaction.emoji.name === "🅱️") {
         await messageReaction.users.remove(user.id);
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
@@ -207,20 +206,20 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if (!user.client.guilds.cache.get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!.roles.cache
         .find(x => x.name.toLowerCase() === "referee") && m.p2.userid !== user.id) {
-            await messageReaction.users.remove(user.id)
+            await messageReaction.users.remove(user.id);
             return user.send("No.");
         }
-        await messageReaction.users.remove(user.id)
+        await messageReaction.users.remove(user.id);
         return cmd.find(c => c.name.toLowerCase() === "start-split")?.execute(messageReaction.message, client, [m.p2.userid]);
     }
 
     if ([
-        '🇦',
-        '🇧',
-        '🇨',
-        '🇩',
-        '🇪',
-        '🇫'
+        "🇦",
+        "🇧",
+        "🇨",
+        "🇩",
+        "🇪",
+        "🇫"
     ].includes(messageReaction.emoji.name)) {
         await messageReaction.users.remove(user.id);
         let m = await getQual(messageReaction.message.channel.id);
@@ -239,16 +238,16 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         .find(x => x.name.toLowerCase() === "referee")) {
             return user.send("No.");
         }
-        if(m.players[pos].memedone || m.players[pos].failed) return;
+        if (m.players[pos].memedone || m.players[pos].failed) return;
         cmd.find(c => c.name.toLowerCase() === "start-qual")?.execute(messageReaction.message, client, [m.players[pos].userid]);
     }
 
-    if (messageReaction.emoji.name === '🗳️') {
+    if (messageReaction.emoji.name === "🗳️") {
         await cmd.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id]);
-        await messageReaction.users.remove(user.id)
+        await messageReaction.users.remove(user.id);
     }
 
-    if (messageReaction.emoji.name === '👌') {
+    if (messageReaction.emoji.name === "👌") {
         if (!user.client.guilds.cache
         .get(messageReaction.message.guild!.id)!
         .members.cache.get(user.id)!
@@ -273,7 +272,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         cmd.find(c => c.name.toLowerCase() === "dqw")?.execute(messageReaction.message, client, key, "2", [user.id]);
     }
 
-    if (messageReaction.emoji.name === '🏁') {
+    if (messageReaction.emoji.name === "🏁") {
         let voteCollection: Collection<string, MessageReaction>;
 
         await messageReaction.message.channel.messages.fetch(messageReaction.message.id).then(msg => voteCollection = msg.reactions.cache);
@@ -319,7 +318,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         }
     }
 
-    if (messageReaction.emoji.name === '🗡️') {
+    if (messageReaction.emoji.name === "🗡️") {
         let voteCollection: Collection<string, MessageReaction>;
 
         await messageReaction.message.channel.messages.fetch(messageReaction.message.id).then(msg => voteCollection = msg.reactions.cache);
@@ -334,11 +333,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 });
 
 client.on("guildMemberAdd", async function (member) {
-    try{
-        await member.roles.add("730650583413030953")
+    try {
+        await member.roles.add("730650583413030953");
 
-        await member.user?.send("Please start verification with `!verify <reddit username>` in the verification channel.")
+        await member.user?.send("Please start verification with `!verify <reddit username>` in the verification channel.");
     } catch {
-        console.log("Not Meme Royale Server")
+        console.log("Not Meme Royale Server");
     }
 });
