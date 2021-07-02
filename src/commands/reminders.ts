@@ -16,6 +16,7 @@ export async function backgroundReminderLoop(client: Client) {
                     for(let xx of r.mention.match(/\d+/g)!){
                         try {
                             await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
+                            await (await client.users.fetch(xx)).send(`https://imgur.com/wN3r8ZL`)
                         } catch (error) {
                             console.log(error.message);
                             await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
