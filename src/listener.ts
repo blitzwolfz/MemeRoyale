@@ -6,6 +6,7 @@ import { backgroundReminderLoop } from "./commands/reminders";
 import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "./db";
 import { cmd, prefix } from "./index";
 import type { Profile } from "./types";
+import { qual_winner } from "./commands/quals/util";
 
 //https://stackoverflow.com/questions/64814346/discord-js-httperror-aborterror-the-user-aborted-a-request
 export const client: Client = new Client({
@@ -267,7 +268,8 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                 return;
             }
         }
-        cmd.find(c => c.name.toLowerCase() === "dqw")?.execute(messageReaction.message, client, key, "2", [user.id]);
+        console.log(key)
+        await qual_winner.execute(messageReaction.message, client, key, "2", [user.id]);
     }
 
     if (messageReaction.emoji.name === "🏁") {
