@@ -11,12 +11,12 @@ import * as c from "./exhibition/index";
 import * as d from "./user";
 import * as e from "./jointcommands";
 import * as f from "./verification";
+import { manualverify } from "./verification";
 import * as imageCommands from "./imagecommands/index";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
-import {transition} from "./convertMMtoMR";
-import { manualverify } from "./verification";
+import { transition } from "./convertMMtoMR";
 import { sleep } from "./util";
 
 //@ts-ignore

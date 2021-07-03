@@ -86,7 +86,6 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     if (messageReaction.message.partial) await messageReaction.message.fetch();
 
     if (messageReaction.emoji.name === "1️⃣" && await getMatch(messageReaction.message.channel.id)) {
-        if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
         await messageReaction.users.remove(user.id);
@@ -104,7 +103,6 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     }
 
     if (messageReaction.emoji.name === "2️⃣" && await getMatch(messageReaction.message.channel.id)) {
-        if (user.bot) return;
         let m = await getMatch(messageReaction.message.channel.id);
         if (!m) return;
         await messageReaction.users.remove(user.id);
@@ -268,7 +266,6 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                 break;
             }
         }
-        console.log(key)
         await qual_winner.execute(messageReaction.message, client, key, "2", [user.id]);
     }
 
