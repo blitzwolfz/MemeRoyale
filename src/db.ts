@@ -19,6 +19,7 @@ export async function connectToDB(): Promise<void> {
                 await client.db(dbn).createCollection("quals");
                 await client.db(dbn).createCollection("config");
                 await client.db(dbn).createCollection("reminders");
+                await client.db(dbn).createCollection("levels");
             } catch (error) {
 
             }

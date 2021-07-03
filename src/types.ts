@@ -122,6 +122,13 @@ export interface Profile {
     totalTime:number;
 }
 
+export interface levelProfile {
+    _id: string;
+    xp:number;
+    level:number
+    timeStamp:number;
+}
+
 export interface DuelProfile {
     _id: string;
     votetally: number;

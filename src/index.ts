@@ -1,15 +1,14 @@
-import type { Command, Reminder, Signups } from "./types";
-import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
+import type { Command, levelProfile } from "./types";
+import Discord, { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
 import * as allCommands from "./commands/index";
 import { client } from "./listener";
 import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
 import { app } from "./api/router";
-import { getAllColl, getConfig, getOneColl } from "./db";
+import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import * as path from "path";
-//@ts-ignore
-import { readFileSync } from "fs";
+import { levelCalc } from "./commands/levelsystem";
 
 
 export const cmd = allCommands.default;
@@ -40,7 +39,9 @@ const listener = app.listen(Port, () => {
 client.on("message", async message => {
     if (message.author.bot) return;
     if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
-
+    if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
+        await levelUp(message)
+    }
     var args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
@@ -86,96 +87,16 @@ client.on("message", async message => {
         }
     }
 
-
-    if (commandName === "test2") {
-        if (message.author.id !== process.env.owner) return await message.reply("nah b");
-
-        const fileContents = readFileSync('oldIndex.ts', 'utf8');
-
-        // writeFile('oldIndex.txt', fileContents, err => {
-        //     if (err) {
-        //       console.error(err)
-        //       return
-        //     }
-        // })
-
-        var str = fileContents;
-        let arr = str.match(/(command === "\w+"*)/g)!;
-        let arrr = str.match(/(command === "\w+" \|\| command === "\w+"*)/g)!;
-        await message.channel.send(`I found ${arr?.length} commands in MR`);
-        let strr = "";
-        let strrr = "";
-        let strrrr = "";
-        for (let a of arr) {
-            strr += a.replace("command ===", "").replace('"', '').replace('"', '') + ", ";
-        }
-
-        for (let a of arrr) {
-            strrr += a
-            .replace("command ===", "")
-            .replace(" || ", ", ")
-            .replace("command ===", "")
-            .replace('"', '')
-            .replace('"', '')
-            .replace('"', '')
-            .replace('"', '') + ", ";
-        }
-
-        await message.channel.send(`There are ${arrr?.length} repeats in MR`);
-        await message.channel.send(`Therefore there are ${arr?.length - arrr?.length} commands in MR`);
-        await message.channel.send(strr.split(", ").sort().join(", ") + "\n");
-        await message.channel.send(strrr.split(", ").sort().join(", "));
-
-        let all: string[] = [];
-        cmd.map(x => {
-            all.push(x.name);
-            strrrr += x.name + ", ";
-        });
-        await message.channel.send(`Therefore there are ${all.length} commands in MR v2`);
-        await message.channel.send(strrrr);
-    }
-
     else if (commandName === "test") {
-        // let allQ = await getAllQuals();
-        // let match = allQ.find(x => x.players.some(y => y.userid === args[0]))!;
-        // console.log(match)
-        await message.channel.send("https://imgur.com/wN3r8ZL")
-    }
-
-    else if (commandName === "test3") {
-        let rem:Reminder[] = await getAllColl("reminders", "memeroyale")
-
-        for(let r of rem){
-            await message.channel.send(`<#${r._id}>`)
+        for(let i = 1; i < 11; i++){
+            await message.channel.send(`${i}) ${((25 * (i ** 2)) + (50 * i)) + 100}`);
         }
     }
-
-    else if(commandName === "test4"){
-        let doc = await getOneColl("signup", 1)
-        let signup: Signups = await getOneColl("config", "signups", "memeroyale")
-
-        let array3 = signup.users.filter(function(obj:any) { return doc.users.indexOf(obj) == -1; });
-        for(let i = 0; i <  array3.length; i++){
-            array3[i] = `<@${array3[i]}>`
-        }
-
-        message.channel.send(array3.join(", "))
-    }
-
-    else if(commandName === "trans"){
-        if(message.author.id !== process.env.owner){
-            return;
-        }
-        await commands.find(cmd => cmd.name.toLowerCase() === "transition")!.execute(message, client, args)
-    }
-
-    // else if(commandName === "search"){
-    //     await commands.find(cmd => cmd.name.toLowerCase() === "search")!.execute(message, client, args)
-    // }
 
     else if (command) {
         await runCommand(command, message, client, args);
     }
+
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
         await message.channel.send(await commandError(message, client, commandName, false)).then(async mssg => {
@@ -234,6 +155,7 @@ async function runCommand(command: Command, message: Message, client: Client, ar
 
 async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed> {
     // noinspection SpellCheckingInspection
+    console.log(err)
     let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size: 512}));
     let d = new Date();
     let em = new MessageEmbed()
@@ -261,4 +183,33 @@ async function commandError(message: Message, client: Client, name:string, exist
         .setFooter("blitzwolfz#9338", `${imgurl}`);
         return em;
     }
+}
+
+async  function levelUp(message: Message){
+    let profile:levelProfile = await getDoc("levels", message.author.id)
+
+    if(!profile){
+        profile = {
+            _id:message.author.id,
+            xp: 0,
+            level: 1,
+            timeStamp:(Math.floor(Math.floor(Date.now()/1000)/60) * 60)
+        }
+
+        await insertDoc("levels", profile)
+    }
+
+    if(((Math.floor(Math.floor(Date.now()/1000)/60) * 60) - profile.timeStamp) <= 90) return;
+
+    profile.xp += Math.floor(Math.random() * (5 - 2 + 1)) + 2
+    profile.timeStamp = (Math.floor(Math.floor(Date.now()/1000)/60) * 60);
+
+    if(profile.xp > await levelCalc(profile.level)){
+        await (<Discord.TextChannel>await client.channels.cache.get("724839353129369681"))
+        .send(`Congrats <@${message.author.id}>, you have achieved level ${profile.level+1}.`)
+
+        profile.level += 1;
+    }
+
+    await updateDoc("levels", message.author.id, profile)
 }

@@ -11,8 +11,9 @@ import * as c from "./exhibition/index";
 import * as d from "./user";
 import * as e from "./jointcommands";
 import * as f from "./verification";
-import { manualverify } from "./verification";
 import * as imageCommands from "./imagecommands/index";
+import * as level from "./levelsystem";
+import { manualverify } from "./verification";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
@@ -290,6 +291,7 @@ export default [
 .concat(e.default)
 .concat(f.default)
 .concat(imageCommands.default)
+.concat(level.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
