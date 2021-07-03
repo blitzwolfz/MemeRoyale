@@ -236,7 +236,7 @@ async function matchResults(client: Client, m: Match) {
         .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
         .setColor((await getConfig()).colour));
 
-        await channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> You have 48h to complete this re-match. Contact a ref to begin, you may also split your match`);
+        await channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> complete this re-match **ASAP**. Contact a ref to begin, you may also ask for a split match`);
 
     }
 

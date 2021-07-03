@@ -260,9 +260,7 @@ export const qual_winner: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
-        console.log(args)
         let ids: string[] = (message.mentions?.users?.array().map(a => a.id).length >= 1 ? message.mentions?.users?.array().map(a => a.id) : args);
-        console.log(ids)
         let list: MatchList = await getDoc('config', "matchlist");
 
         if (list) {
@@ -287,7 +285,7 @@ export const qual_winner: Command = {
             }
 
             else {
-                message.channel.send(`<@${silentargs[0]}> Added users.`);
+                message.channel.send(`<@${silentargs[0]}>, Added users.`);
                 return;
             }
         }
