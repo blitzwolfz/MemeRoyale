@@ -255,8 +255,6 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             return;
         }
 
-        if (messageReaction.message.author.id === "722303830368190485") return;
-
         let channel = <TextChannel>await messageReaction.message.channel.fetch();
         let em = (await channel.messages.fetch(messageReaction.message.id)).embeds[0]!;
         let iter = 0;

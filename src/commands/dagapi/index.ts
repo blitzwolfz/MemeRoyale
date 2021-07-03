@@ -2,7 +2,7 @@
 import { Client, Message, MessageAttachment } from "discord.js";
 import { Client as dagci } from "dagpijs";
 import type { Command } from "../../types";
-export var dagcli = new dagci(process.env.dagToken!)
+// export var dagcli = new dagci(process.env.dagToken!)
 //@ts-ignore
 export const example: Command = {
     name: "EXAMPLE",
@@ -24,6 +24,7 @@ export const gay: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
+        var dagcli = new dagci(process.env.dagToken!)
         if(!args[0]) return message.reply("Please pass a user mention or a user id.")
         let url = message.mentions.users.array().length === 1
             ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL({format: "png"})) :
