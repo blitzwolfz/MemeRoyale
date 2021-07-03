@@ -265,6 +265,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             iter += 1;
             if (iter === 2) {
                 await messageReaction.remove();
+                break;
             }
         }
         console.log(key)

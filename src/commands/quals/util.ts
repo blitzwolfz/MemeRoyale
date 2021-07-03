@@ -282,7 +282,7 @@ export const qual_winner: Command = {
                 }
             }
             await updateDoc('config', list._id, list);
-            if (message.mentions.users) {
+            if (message.mentions.users.array().map(a => a.id).length >= 1) {
                 return message.reply("Added users.");
             }
 
