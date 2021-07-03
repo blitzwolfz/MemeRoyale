@@ -266,7 +266,7 @@ export const qual_winner: Command = {
         if (list) {
             for (let id of ids) {
                 if (list.users.includes(id)) {
-                    return message.reply("User has already been added.");
+                    return message.channel.send("User has already been added.");
                 }
 
                 else {
@@ -276,17 +276,17 @@ export const qual_winner: Command = {
                     u.points += 25;
                     await updateProfile(u);
                     await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion");
+                    await message.channel.send(`Congrats on winning your qualifer <@${id}>`);
                 }
             }
-
+            await updateDoc('config', list._id, list);
             if (message.mentions.users) {
-                await updateDoc('config', list._id, list);
                 return message.reply("Added users.");
             }
 
             else {
                 message.channel.send(`<@${silentargs[0]}> Added users.`);
-                return await updateDoc('config', list._id, list);
+                return;
             }
         }
 
