@@ -261,7 +261,7 @@ export const qual_winner: Command = {
     mods: true,
     async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
         console.log(args)
-        let ids: string[] = (message.mentions?.users?.array().map(a => a.id) || args);
+        let ids: string[] = (message.mentions?.users?.array().map(a => a.id).length >= 1 ? message.mentions?.users?.array().map(a => a.id) : args);
         console.log(ids)
         let list: MatchList = await getDoc('config', "matchlist");
 
@@ -278,7 +278,7 @@ export const qual_winner: Command = {
                     u.points += 25;
                     await updateProfile(u);
                     await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion");
-                    await message.channel.send(`Congrats on winning your qualifer <@${id}>`);
+                    await message.channel.send(`Congrats on winning your qualifer <@${id}>!`);
                 }
             }
             await updateDoc('config', list._id, list);
@@ -289,32 +289,6 @@ export const qual_winner: Command = {
             else {
                 message.channel.send(`<@${silentargs[0]}> Added users.`);
                 return;
-            }
-        }
-
-        else {
-
-            let list: MatchList = {
-                _id: "matchlist", url: "", users: []
-            };
-
-            for (let id of ids) {
-                list.users.push(id);
-                let u = await getProfile(id);
-                u.wins += 1;
-                u.points += 25;
-                await updateProfile(u);
-                await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion");
-            }
-
-            if (message.mentions.users) {
-                await updateDoc('config', list._id, list);
-                return message.reply("Added users.");
-            }
-
-            else {
-                message.channel.send(`<@${silentargs[0]}> Added users.`);
-                return await updateDoc('config', list._id, list);
             }
         }
     }
