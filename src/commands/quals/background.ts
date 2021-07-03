@@ -195,7 +195,9 @@ async function matchResults(client: Client, q: Qual) {
                 await channel.send({embed: emm});
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                .send({embed: emm}).then(async m => {
+                    await m.react("👌")
+                });
             }
 
             else if (t!.concat([message.id]).length < timeconsts.qual.results) {
@@ -339,7 +341,9 @@ async function matchResults(client: Client, q: Qual) {
                 await channel.send({embed: emm});
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                .send({embed: emm}).then(async m => {
+                    await m.react("👌")
+                });
             }
 
 
