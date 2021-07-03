@@ -37,7 +37,8 @@ export const gay: Command = {
 
 export const wont_affect_kid: Command = {
     name: "autist",
-    description: "Make a person's pfp gay",
+    aliases:["retard"],
+    description: "Hmm",
     group: "image-fun",
     owner: false,
     admins: false,
