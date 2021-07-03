@@ -54,16 +54,14 @@ client.on("message", async message => {
         }
     }
     else {
-        return;
-    }
-
-    const commandName: string | undefined = args?.shift()?.toLowerCase();
-    if (!commandName) {
         if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
         return;
-    };
+    }
+
+    const commandName: string | undefined = args?.shift()?.toLowerCase();
+    if (!commandName) return;
 
     let command = commands.find(c => {
         if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
