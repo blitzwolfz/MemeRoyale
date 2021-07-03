@@ -39,9 +39,6 @@ const listener = app.listen(Port, () => {
 client.on("message", async message => {
     if (message.author.bot) return;
     if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
-    if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
-        await levelUp(message)
-    }
     var args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
@@ -61,7 +58,12 @@ client.on("message", async message => {
     }
 
     const commandName: string | undefined = args?.shift()?.toLowerCase();
-    if (!commandName) return;
+    if (!commandName) {
+        if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
+            await levelUp(message)
+        }
+        return;
+    };
 
     let command = commands.find(c => {
         if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
