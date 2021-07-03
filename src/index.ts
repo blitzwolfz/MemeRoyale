@@ -56,9 +56,12 @@ client.on("message", async message => {
     else {
         return;
     }
-
+    console.log(args)
     const commandName: string | undefined = args?.shift()?.toLowerCase();
+    console.log(commandName)
+    console.log(args)
     if (!commandName){
+        console.log("he")
         if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
@@ -73,6 +76,7 @@ client.on("message", async message => {
             return c.name.toLowerCase() === commandName;
         }
     });
+    console.log(command)
 
     if (command?.groupCommand === true) {
         if (typeof args[0] !== "undefined") {
@@ -111,9 +115,9 @@ client.on("message", async message => {
     //     await modqualsubmit.execute(message, client, args)
     // }
     //
-    // else if (command) {
-    //     await runCommand(command, message, client, args);
-    // }
+    else if (command) {
+        await runCommand(command, message, client, args);
+    }
 
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
