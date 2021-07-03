@@ -208,9 +208,9 @@ async function commandError(message: Message, client: Client, name:string, exist
 }
 
 async  function levelUp(message: Message){
-    let name = message.guild!.channels.cache.find(x => x.id === message.channel.id)!.parent!.name!;
+    // let name = message.guild!.channels.cache.find(x => x.id === message.channel.id)!.parent!.name!;
 
-    if(["social", "other"].includes(name) === false) return;
+    // if(["social", "other"].includes(name) === false) return;
 
     let profile:levelProfile = await getDoc("levels", message.author.id)
 
