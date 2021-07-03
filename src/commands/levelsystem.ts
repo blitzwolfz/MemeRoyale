@@ -1,7 +1,7 @@
 import type { Command, levelProfile } from "../types";
 //@ts-ignore
 import { Client, Message, MessageAttachment } from "discord.js";
-import { getDoc } from "../db";
+import { getDoc, insertDoc } from "../db";
 
 
 const { createCanvas, loadImage } = require("canvas");
@@ -39,6 +39,17 @@ export const level: Command = {
             : message.author.id;
 
         let profile:levelProfile = await getDoc("levels", id)
+
+        if(!profile){
+            profile = {
+                _id:message.author.id,
+                xp: 0,
+                level: 1,
+                timeStamp:(Math.floor(Math.floor(Date.now()/1000)/60) * 60)
+            }
+
+            await insertDoc("levels", profile)
+        }
 
         let image = await draw({
             backgroundSource: "levelBackground.png",
