@@ -9,7 +9,6 @@ import { app } from "./api/router";
 import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import * as path from "path";
 import { levelCalc } from "./commands/levelsystem";
-import { modqualsubmit, modsubmit, qualsubmit, submit } from "./commands/submit";
 
 
 export const cmd = allCommands.default;
@@ -39,7 +38,7 @@ const listener = app.listen(Port, () => {
 
 client.on("message", async message => {
     if (message.author.bot) return;
-    if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
+    // if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
     var args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
@@ -55,14 +54,16 @@ client.on("message", async message => {
         }
     }
     else {
+        return;
+    }
+
+    const commandName: string | undefined = args?.shift()?.toLowerCase();
+    if (!commandName){
         if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
         return;
     }
-
-    const commandName: string | undefined = args?.shift()?.toLowerCase();
-    if (!commandName) return;
 
     let command = commands.find(c => {
         if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
@@ -94,25 +95,25 @@ client.on("message", async message => {
         }
     }
 
-    else if (commandName === "submit") {
-        await submit.execute(message, client, args)
-    }
-
-    else if (commandName === "qualsubmit") {
-        await qualsubmit.execute(message, client, args)
-    }
-
-    else if (commandName === "submit -mod") {
-        await modsubmit.execute(message, client, args)
-    }
-
-    else if (commandName === "qualsubmit -mod") {
-        await modqualsubmit.execute(message, client, args)
-    }
-
-    else if (command) {
-        await runCommand(command, message, client, args);
-    }
+    // else if (commandName === "submit") {
+    //     await submit.execute(message, client, args)
+    // }
+    //
+    // else if (commandName === "qualsubmit") {
+    //     await qualsubmit.execute(message, client, args)
+    // }
+    //
+    // else if (commandName === "submit -mod") {
+    //     await modsubmit.execute(message, client, args)
+    // }
+    //
+    // else if (commandName === "qualsubmit -mod") {
+    //     await modqualsubmit.execute(message, client, args)
+    // }
+    //
+    // else if (command) {
+    //     await runCommand(command, message, client, args);
+    // }
 
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
