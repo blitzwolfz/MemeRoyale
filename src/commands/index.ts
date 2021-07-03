@@ -2,7 +2,7 @@ import { Client, Message, MessageEmbed, User } from "discord.js";
 import type { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
-import { endmatch, forcevote, match_stats, reload_match } from "./match/utils";
+import { endmatch, forcevote, match_stats, matchlist, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
 import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual, search } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
@@ -11,6 +11,7 @@ import * as c from "./exhibition/index";
 import * as d from "./user";
 import * as e from "./jointcommands";
 import * as f from "./verification";
+import * as dagapiCommands from "./dagapi/index";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
@@ -275,6 +276,7 @@ export default [
     splitqual,
     help,
     startsplitqual,
+    matchlist,
     cancelqual,
     endqual,
     qual_stats,
@@ -287,6 +289,7 @@ export default [
 .concat(d.default)
 .concat(e.default)
 .concat(f.default)
+.concat(dagapiCommands.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
