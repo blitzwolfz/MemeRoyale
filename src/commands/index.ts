@@ -11,7 +11,7 @@ import * as c from "./exhibition/index";
 import * as d from "./user";
 import * as e from "./jointcommands";
 import * as f from "./verification";
-import * as dagapiCommands from "./dagapi/index";
+import * as imageCommands from "./imagecommands/index";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
@@ -289,7 +289,7 @@ export default [
 .concat(d.default)
 .concat(e.default)
 .concat(f.default)
-.concat(dagapiCommands.default)
+.concat(imageCommands.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
