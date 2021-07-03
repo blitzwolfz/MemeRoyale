@@ -9,6 +9,7 @@ import { app } from "./api/router";
 import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import * as path from "path";
 import { levelCalc } from "./commands/levelsystem";
+import { modqualsubmit, modsubmit, qualsubmit, submit } from "./commands/submit";
 
 
 export const cmd = allCommands.default;
@@ -91,6 +92,22 @@ client.on("message", async message => {
         for(let i = 1; i < 11; i++){
             await message.channel.send(`${i}) ${((25 * (i ** 2)) + (50 * i)) + 100}`);
         }
+    }
+
+    else if (commandName === "submit") {
+        await submit.execute(message, client, args)
+    }
+
+    else if (commandName === "qualsubmit") {
+        await qualsubmit.execute(message, client, args)
+    }
+
+    else if (commandName === "submit -mod") {
+        await modsubmit.execute(message, client, args)
+    }
+
+    else if (commandName === "qualsubmit -mod") {
+        await modqualsubmit.execute(message, client, args)
     }
 
     else if (command) {
