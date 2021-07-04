@@ -197,7 +197,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
     }
 
     return {
-        title: `All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}`,
+        title: `All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}. ${list.length} users.`,
         fields,
         color: "#d7be26",
         timestamp: new Date()

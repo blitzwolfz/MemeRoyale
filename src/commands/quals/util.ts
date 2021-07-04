@@ -271,11 +271,20 @@ export const qual_winner: Command = {
 
                 else {
                     list.users.push(id);
-                    let u = await getProfile(id);
-                    u.wins += 1;
-                    u.points += 25;
-                    await updateProfile(u);
-                    await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion");
+                    try{
+                        let u = await getProfile(id);
+                        u.wins += 1;
+                        u.points += 25;
+                        await updateProfile(u);
+                    } catch {
+                        console.log("No profile.")
+                    }
+
+                    try{
+                        await client.users.cache.get(id)?.send("Congrats on winning your qualifer. Now get ready for the bracket portion");
+                    } catch {
+                        console.log("Not allowed to send it")
+                    }
                     await message.channel.send(`Congrats on winning your qualifer <@${id}>!`);
                 }
             }
