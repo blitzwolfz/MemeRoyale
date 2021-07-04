@@ -74,6 +74,25 @@ export const trash: Command = {
     }
 }
 
+export const beautiful: Command = {
+    name: "beautiful",
+    description: "Ayy",
+    group: "image-fun",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        if(!args[0]) return message.reply("Please pass a user mention or a user id.")
+        let url = message.mentions.users.array().length === 1
+            ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL({format: "png"})) :
+            client.users.cache.get(args[0])!.displayAvatarURL({format: "png"});
+
+        let img = await new DIG.Beautiful().getImage(url);
+
+        return await message.channel.send(new MessageAttachment(img, "trash.png"))
+    }
+}
+
 export const winners: Command = {
     name: "winners",
     description: "Delete this trash",
@@ -107,5 +126,6 @@ export default [
     gay,
     wont_affect_kid,
     trash,
-    winners
+    winners,
+    beautiful
 ]

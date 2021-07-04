@@ -53,16 +53,16 @@ client.on("message", async message => {
             message.mentions.users.delete(client.user!.id)
         }
     }
+    
     else {
         if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
         return;
     }
-    console.log(args)
+
     const commandName: string | undefined = args?.shift()?.toLowerCase();
-    console.log(commandName)
-    console.log(args)
+
     if (!commandName){
         return;
     }
