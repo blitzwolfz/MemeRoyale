@@ -54,6 +54,9 @@ client.on("message", async message => {
         }
     }
     else {
+        if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
+            await levelUp(message)
+        }
         return;
     }
     console.log(args)
@@ -61,10 +64,6 @@ client.on("message", async message => {
     console.log(commandName)
     console.log(args)
     if (!commandName){
-        console.log("he")
-        if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
-            await levelUp(message)
-        }
         return;
     }
 

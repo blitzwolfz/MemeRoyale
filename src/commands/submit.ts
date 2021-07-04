@@ -6,7 +6,7 @@ export const submit: Command = {
     name: "submit",
     description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
     group: "tourny",
-    groupCommand: false,
+    groupCommand: true,
     owner: false,
     admins: false,
     mods: false,
@@ -149,7 +149,7 @@ export const qualsubmit: Command = {
     name: "qualsubmit",
     description: "",
     group: "tourny",
-    groupCommand: false,
+    groupCommand: true,
     owner: false,
     admins: false,
     mods: false,
@@ -255,9 +255,10 @@ export const qualsubmit: Command = {
 };
 
 export const modsubmit: Command = {
-    name: "modsubmit",
+    name: "submit -mod",
     description: "`!submit -mod <1 | 2> #channel` with an image in the message.",
     group: "tourny",
+    groupCommand: true,
     owner: false,
     admins: false,
     mods: true,
@@ -342,9 +343,10 @@ export const modsubmit: Command = {
 };
 
 export const modqualsubmit: Command = {
-    name: "modqualsubmit",
+    name: "qualsubmit -mod",
     description: "`!qualsubmit -mod <player position> #channel` with an image in the message.",
     group: "tourny",
+    groupCommand: true,
     owner: false,
     admins: false,
     mods: true,
