@@ -61,9 +61,9 @@ client.on("message", async message => {
         return;
     }
 
-    const commandName: string | undefined = args?.shift()?.toLowerCase();
+    let commandName: string | undefined = args?.shift()?.toLowerCase();
 
-    if (!commandName){
+    if (commandName === undefined){
         return;
     }
 
@@ -75,12 +75,16 @@ client.on("message", async message => {
 
     let command = commands.find(c => {
         if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
-            return (c.aliases?.includes(commandName) || c.name.toLowerCase() === commandName);
+            return (c.aliases?.includes(commandName!) || c.name.toLowerCase() === commandName);
         }
         else {
             return c.name.toLowerCase() === commandName;
         }
     });
+    console.log(commandName)
+    commandName = command ? command.name : commandName
+    console.log(commandName)
+    console.log(command)
 
     if (command?.groupCommand === true) {
         if (typeof args[0] !== "undefined") {
@@ -104,7 +108,7 @@ client.on("message", async message => {
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
         await message.channel.send(await commandError(message, client, commandName, false)).then(async mssg => {
-            let probablyName = closest(commandName, commands.map(cmd => cmd.name).sort());
+            let probablyName = closest(commandName!, commands.map(cmd => cmd.name).sort());
             let emote = `☑️`
             let msg = await message
             .channel

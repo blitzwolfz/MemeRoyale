@@ -182,8 +182,8 @@ export async function updateReminder(r: Reminder) {
     await dB.collection("reminders").updateOne({_id: r._id}, {$set: r});
 }
 
-export async function deleteReminder(r: Reminder) {
-    await dB.collection("reminders").deleteOne({_id: r._id});
+export async function deleteReminder(r: string) {
+    await dB.collection("reminders").deleteOne({_id: r});
 }
 
 //Profile dB commands
@@ -218,7 +218,7 @@ export async function getDuelProfile(_id: string, guild: string): Promise<DuelPr
 }
 
 export async function updateDuelProfile(_id: string, u: DuelProfile, guild: string): Promise<void> {
-    await await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
+    await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
 }
 
 //Transition functions

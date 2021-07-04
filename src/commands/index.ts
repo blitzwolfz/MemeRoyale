@@ -35,6 +35,7 @@ export const example: Command = {
 
 export const ping: Command = {
     name: "ping",
+    aliases:["pong"],
     description: "You can ping, lmao",
     group: "ping",
     owner: false,

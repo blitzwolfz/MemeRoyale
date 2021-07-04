@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, getReminder, insertReminder, updateProfile, updateQual } from "../../db";
+import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, insertReminder, updateProfile, updateQual } from "../../db";
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
 import { QualifierResults } from "./util";
@@ -47,7 +47,7 @@ async function matchVotingLogic(client: Client, m: Qual) {
 
     let channel = <TextChannel>await client.channels.cache.get(m._id);
     try{
-        await deleteReminder(await getReminder(m._id))
+        await deleteReminder(m._id)
     } catch {
 
     }

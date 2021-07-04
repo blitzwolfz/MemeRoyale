@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { deleteReminder, getDoc, getReminder, insertReminder, updateDoc } from "../../db";
+import { deleteReminder, getDoc, insertReminder, updateDoc } from "../../db";
 import type { Command, MatchList, QualList } from "../../types";
 import { matchcard } from "../match/utils";
 import { sleep } from "../util";
@@ -259,7 +259,7 @@ export const channeldelete: Command = {
                     await channel.delete();
 
                     try{
-                        await deleteReminder(await getReminder(channel.id))
+                        await deleteReminder(channel.id)
                     } catch  {
                         continue
                     }

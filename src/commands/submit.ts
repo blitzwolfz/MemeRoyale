@@ -34,24 +34,6 @@ export const submit: Command = {
             return message.reply("Your image was not submitted properly. Contact a mod");
         }
 
-        // let allQ = await getAllQuals();
-        // let qualifier = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
-        //
-        // if(qualifier){
-        //     let emote = `☑️`
-        //     await message.channel.send(`You are in a qualifier. If you are trying to submit to that click on ${emote}`).then(async msg => {
-        //
-        //
-        //         await msg.react(`${emote}`);
-        //         let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === `${emote}` && !user.bot;
-        //         const approve = msg.createReactionCollector(emoteFilter, {time: 60000});
-        //
-        //         approve.on('collect', async () => {
-        //             return await qualsubmit.execute(message, client, args)
-        //         });
-        //     });
-        // }
-
         let q = function (x: Match) {
             return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
@@ -64,9 +46,8 @@ export const submit: Command = {
 
         if (allPossibleMatches.length > 1 && !args[0]) {
             message.channel.send("You are in multiple matches. Please mention the corresponding number to submit. For example `!submit 1`");
-            let i = 0;
-            for (let m of allPossibleMatches) {
-                await message.channel.send(`${i + 1}) <#${m._id}>`);
+            for (let i = 0; i < allPossibleMatches.length; i++) {
+                await message.channel.send(`${i + 1}) <#${allPossibleMatches[i]._id}>`);
                 i += 1;
             }
             return;
@@ -102,7 +83,7 @@ export const submit: Command = {
         }
 
         try {
-            await deleteReminder(await getReminder(player.userid));
+            await deleteReminder(player.userid);
             let r = await getReminder(m._id);
 
             r.mention = r.mention.replace(`<@${player.userid}>`, "");
@@ -147,6 +128,7 @@ export const submit: Command = {
 
 export const qualsubmit: Command = {
     name: "qualsubmit",
+    aliases:["qs"],
     description: "",
     group: "tourny",
     groupCommand: true,
@@ -154,6 +136,16 @@ export const qualsubmit: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
+        if (message.channel.type !== "dm") {
+            return message
+            .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+                " again in bot dm.")
+            .then(async m => {
+                await message.delete()
+                await m.delete({timeout:30000, reason: "Sent Match submission in server not bot dm."})
+            });
+        }
+
         if (message.content.includes("imgur")) {
             return message.reply("You can't submit imgur links");
         }
@@ -177,11 +169,13 @@ export const qualsubmit: Command = {
             let allQ = await getAllQuals();
             let match = allQ.find(x => x.players.some(y => y.userid === message.author.id))!;
             // let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+            if(!match) return message.reply("You don't seem to be in a qualifier. If this is wrong, please contact" +
+                " mods.")
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
 
             if (u.split === false) return message.reply("Can't submit when you haven't started your portion");
-            if(u.memedone) return  message.reply("You have already submitted a meme.").then(async m => m.channel.send(u.memelink))
+            if(u.memedone) return message.reply("You have already submitted a meme.").then(async m => m.channel.send(u.memelink));
 
             u.split = true;
             u.memedone = true;
@@ -223,7 +217,7 @@ export const qualsubmit: Command = {
             }
 
             try {
-                await deleteReminder(await getReminder(message.author.id));
+                await deleteReminder(message.author.id);
             } catch (error) {
                 console.log("");
             }
@@ -301,7 +295,7 @@ export const modsubmit: Command = {
         m.p1 === player ? m.p1 = player : m.p2 = player;
 
         try {
-            await deleteReminder(await getReminder(player.userid));
+            await deleteReminder(player.userid);
             let r = await getReminder(m._id);
 
             r.mention = r.mention.replace(`<@${player.userid}>`, "");
@@ -408,7 +402,7 @@ export const modqualsubmit: Command = {
             }
 
             try {
-                await deleteReminder(await getReminder(u.userid));
+                await deleteReminder(u.userid);
             } catch (error) {
                 console.log("");
             }

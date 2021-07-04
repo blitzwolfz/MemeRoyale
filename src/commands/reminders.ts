@@ -58,7 +58,7 @@ export async function backgroundReminderLoop(client: Client) {
                 r.time.pop();
 
                 if (r.time.length === 0) {
-                    await deleteReminder(r);
+                    await deleteReminder(r._id);
                 }
 
                 else {
@@ -72,7 +72,7 @@ export async function backgroundReminderLoop(client: Client) {
                 r.time.pop();
 
                 if (r.time.length === 0) {
-                    await deleteReminder(r);
+                    await deleteReminder(r._id);
                 }
 
                 else {
