@@ -15,6 +15,7 @@ export async function levelCalc(i:number){
 
 export const level: Command = {
     name: "level",
+    aliases:["rank"],
     description: "Check your level",
     group: "level-system",
     owner: false,
@@ -68,14 +69,6 @@ export const level: Command = {
  * @param {{backgroundSource?:string,avatarSource?:string,username?:string,xpMax?:Number,xpCurrent?:number,currentLevel?:number}} opts
  */
 async function draw(opts: { backgroundSource: string, avatarSource: string, username: string, xpMax: number, xpCurrent: number, currentLevel: number }) {
-    // opts = {
-    //     backgroundSource: "background.jpg",
-    //     avatarSource: "https://i.imgur.com/Mj3IzDZ.png",
-    //     username: "Armagan#4869",
-    //     xpMax: 100,
-    //     xpCurrent: 25,
-    //     currentLevel: 1
-    // };
 
     const canvas = createCanvas(350, 132);
     const ctx = canvas.getContext("2d");
@@ -118,7 +111,7 @@ async function draw(opts: { backgroundSource: string, avatarSource: string, user
 
     ctx.fillStyle = "#ffffffee";
     ctx.font = "20px 'Trebuchet MS'";
-    ctx.fillText(`${opts.xpCurrent} / ${await toWordsconver(opts.xpMax)} | ${opts.currentLevel} LVL`, avatarX + avatarSize + generalPadding / 2, avatarY * 2 + generalPadding / 2);
+    ctx.fillText(`${await toWordsconver(opts.xpCurrent)} / ${await toWordsconver(opts.xpMax)} | ${opts.currentLevel} LVL`, avatarX + avatarSize + generalPadding / 2, avatarY * 2 + generalPadding / 2);
 
     ctx.fillStyle = "#00000070";
     let barBorderX = avatarX + avatarSize + generalPadding / 2;
@@ -144,31 +137,30 @@ function percent(part = 1, total = 100, maxVal = 100, nanVal = 0) {
     return isNaN(val) ? nanVal : val;
 }
 
-
-async function toWordsconver(s:number) {
-    if(s <= 999){
+async function toWordsconver(s: number) {
+    if (s <= 999) {
         return s.toString();
     }
 
-    else if(s <=9999){
-        if(parseInt(s.toString()[1]) > 0){
-            return s.toString().slice(0, 1) + "." + s.toString().slice(1, 2) + "k"
+    else if (s <= 9999) {
+        if (parseInt(s.toString()[1]) > 0) {
+            return s.toString().slice(0, 1) + "." + s.toString().slice(1, 2) + "k";
         }
-        return s.toString().slice(0, 1) + "k"
+        return s.toString().slice(0, 1) + "k";
     }
 
-    else if(s <=99999){
-        if(parseInt(s.toString()[2]) > 0){
-            return s.toString().slice(0, 2) + "." + s.toString().slice(2, 3) + "k"
+    else if (s <= 99999) {
+        if (parseInt(s.toString()[2]) > 0) {
+            return s.toString().slice(0, 2) + "." + s.toString().slice(2, 3) + "k";
         }
-        return s.toString().slice(0, 2) + "k"
+        return s.toString().slice(0, 2) + "k";
     }
 
-    else if(s <= 999999){
-        if(parseInt(s.toString()[3]) > 0){
-            return s.toString().slice(0, 3) + "." + s.toString().slice(3, 4) + "k"
+    else if (s <= 999999) {
+        if (parseInt(s.toString()[3]) > 0) {
+            return s.toString().slice(0, 3) + "." + s.toString().slice(3, 4) + "k";
         }
-        return s.toString().slice(0, 3) + "k"
+        return s.toString().slice(0, 3) + "k";
     }
 
 }
