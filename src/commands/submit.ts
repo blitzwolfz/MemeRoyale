@@ -345,7 +345,6 @@ export const modqualsubmit: Command = {
     name: "modqualsubmit",
     description: "`!qualsubmit -mod <player position> #channel` with an image in the message.",
     group: "tourny",
-    groupCommand: true,
     owner: false,
     admins: false,
     mods: true,
