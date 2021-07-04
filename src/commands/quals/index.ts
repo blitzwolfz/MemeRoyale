@@ -1,6 +1,7 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
 import { deleteQual, getConfig, getQual, getTemplatedB, getThemes, insertQual, insertReminder, updateQual } from "../../db";
 import type { Command, Qual } from "../../types";
+import { createProfileatMatch } from "../user";
 
 export const splitqual: Command = {
     name: "splitqual",
@@ -26,6 +27,8 @@ export const splitqual: Command = {
             q.players.push({
                 userid: u.id, memedone: false, memelink: "", time: 0, split: false, failed: false, votes: []
             });
+
+            await createProfileatMatch(u.id)
         }
 
         if (args.includes("template")) {
