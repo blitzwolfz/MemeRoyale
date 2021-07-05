@@ -42,9 +42,6 @@ client.on("message", async message => {
     var args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
-        // args = message.content.startsWith(process.env.prefix!)
-        //     ? message.content.slice(process.env.prefix!.length).trim().split(/ +/g)
-        //     : message.content.slice((`<@!${client.user!.id}>`.length)).trim().split(/ +/g);
         args = message.content.startsWith(process.env.prefix!)
             ? message.content.replace(process.env.prefix!, "").trim().split(/ +/g)
             : message.content.replace((`<@!${client.user!.id}>`), "").trim().split(/ +/g);
@@ -81,10 +78,8 @@ client.on("message", async message => {
             return c.name.toLowerCase() === commandName;
         }
     });
-    console.log(commandName)
+    
     commandName = command ? command.name : commandName
-    console.log(commandName)
-    console.log(command)
 
     if (command?.groupCommand === true) {
         if (typeof args[0] !== "undefined") {
@@ -194,9 +189,9 @@ async function commandError(message: Message, client: Client, name:string, exist
 }
 
 async  function levelUp(message: Message){
-    // let name = message.guild!.channels.cache.find(x => x.id === message.channel.id)!.parent!.name!;
+    let name = message.guild!.channels.cache.find(x => x.id === message.channel.id)!.parent!.name!;
 
-    // if(["social", "other"].includes(name) === false) return;
+    if(["social", "other"].includes(name) === false) return;
 
     let profile:levelProfile = await getDoc("levels", message.author.id)
 

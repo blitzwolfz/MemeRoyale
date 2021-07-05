@@ -2,13 +2,11 @@ import type { Command, levelProfile } from "../types";
 //@ts-ignore
 import { Client, Message, MessageAttachment } from "discord.js";
 import { getDoc, insertDoc } from "../db";
-
-
 const { createCanvas, loadImage } = require("canvas");
-const { getAverageColor } = require("fast-average-color-node");
+const {getAverageColor} = require("fast-average-color-node");
 const chillout = require("chillout");
-// //@ts-ignore
 // const drawLevelImage = require("image-generators-level");
+
 export async function levelCalc(i:number){
     return ((25 * (i ** 2)) + (50 * i)) + 100;
 }
@@ -53,7 +51,7 @@ export const level: Command = {
         }
 
         let image = await draw({
-            backgroundSource: "levelBackground.png",
+            backgroundSource: "https://cdn.discordapp.com/attachments/798975443058556968/861426186512760842/levelBackground.png",
             avatarSource: imgurl, // string
             username: tag, // string
             xpMax: await levelCalc(profile.level), // number
@@ -68,7 +66,7 @@ export const level: Command = {
 /**
  * @param {{backgroundSource?:string,avatarSource?:string,username?:string,xpMax?:Number,xpCurrent?:number,currentLevel?:number}} opts
  */
-async function draw(opts: { backgroundSource: string, avatarSource: string, username: string, xpMax: number, xpCurrent: number, currentLevel: number }) {
+export async function draw(opts: { backgroundSource: string, avatarSource: string, username: string, xpMax: number, xpCurrent: number, currentLevel: number }) {
 
     const canvas = createCanvas(350, 132);
     const ctx = canvas.getContext("2d");
