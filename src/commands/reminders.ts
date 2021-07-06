@@ -18,14 +18,16 @@ export async function backgroundReminderLoop(client: Client) {
                 if(r.basetime !== r.time[r.time.length-1]){
                     let ids = r.mention.match(/\d+/g)!
                     console.log(ids)
+                    console.log(r._id)
                     console.log(r.mention.match(/\d+/g)!)
-                    for(let xx of ids!){
+                    console.log(r.mention)
+                    for(let xx of r.mention){
                         try {
-                            await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
-                            if(imgArr[num - 1] !== "none") await (await client.users.fetch(xx)).send(`${imgArr[num - 1]}`)
+                            await (await client.users.fetch(xx.match(/\d+/g)![0])).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
+                            if(imgArr[num - 1] !== "none") await (await client.users.fetch(xx.match(/\d+/g)![0])).send(`${imgArr[num - 1]}`)
                         } catch (error) {
                             console.log(error.message);
-                            await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
+                            await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx.match(/\d+/g)![0]}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
                         }
 
                     }
