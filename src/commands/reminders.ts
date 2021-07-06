@@ -16,7 +16,8 @@ export async function backgroundReminderLoop(client: Client) {
                 let num = Math.floor(Math.random() * (imgArr.length - 1 + 1) + 1);
                 // await (<TextChannel>await client.channels.fetch(r.channel)).send(`${r.mention} you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`);
                 if(r.basetime !== r.time[r.time.length-1]){
-                    for(let xx of r.mention.match(/\d+/g)!){
+                    let ids = r.mention.match(/\d+/g)!
+                    for(let xx of ids!){
                         try {
                             await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
                             if(imgArr[num - 1] !== "none") await (await client.users.fetch(xx)).send(`${imgArr[num - 1]}`)
