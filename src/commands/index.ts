@@ -4,7 +4,7 @@ import { help } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
 import { endmatch, forcevote, match_stats, matchlist, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
-import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual, search } from "./quals/util";
+import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
 import * as b from "./tournament/index";
 import * as c from "./exhibition/index";
@@ -267,7 +267,6 @@ export default [
     endmatch,
     forcevote,
     forcevote_qual,
-    search,
     qual_winner,
     splitmatch,
     cancelmatch,

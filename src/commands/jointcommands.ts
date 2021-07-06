@@ -1,6 +1,6 @@
 import type { Client, Message, TextChannel } from "discord.js";
-import type { Command } from "../types";
-import { getMatch, getQual, updateMatch, updateQual } from "../db";
+import type { Command, QualList } from "../types";
+import { getDoc, getMatch, getQual, updateMatch, updateQual } from "../db";
 import { cancelmatch } from "./match";
 import { cancelqual, endqual } from "./quals/index";
 import { endmatch } from "./match/utils";
@@ -87,8 +87,65 @@ export const end: Command = {
     }
 };
 
+export const search: Command = {
+    name: "search",
+    description: "!search <@mention>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+
+        let matches = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "category")!;
+        let qualifiers = await message.guild!.channels.cache.find(c => c.name == "qualifiers" && c.type == "category")!;
+
+        if(matches) {
+            let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
+            if (!id) return message.reply("invaild input. Please use User ID or a User mention");
+            let username = await client.users.cache.get(id)!.username.substring(0, 10)
+
+            return  message.reply(`The channel is ${message.guild!.channels.cache.find(x => x.name.split("-vs-").includes(username))}`)
+
+        }
+
+        if(qualifiers) {
+            let signup: QualList = await getDoc("config", "quallist");
+            let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
+            if (!id) return message.reply("invaild input. Please use User ID or a User mention");
+
+            //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
+            // client.users.fetch(id)).username
+            if (message.member!.roles.cache.has('719936221572235295')) {
+                for (let i = 0; i < signup.users.length; i++) {
+
+                    if (signup.users[i].includes(id)) {
+                        return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
+                    }
+                }
+                return message.reply("They are not in a group");
+            }
+
+            else {
+                if (id !== message.author.id) {
+                    return message.reply("You don't have those premissions");
+                }
+                else {
+                    for (let i = 0; i < signup.users.length; i++) {
+
+                        if (signup.users[i].includes(id)) {
+                            return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
+                        }
+                    }
+                    return message.reply("They are not in a group");
+                }
+            }
+        }
+    }
+};
+
 export default [
     pause,
     cancel,
-    end
+    end,
+    search
 ];

@@ -1,6 +1,6 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
 import { getDoc, getProfile, getQual, updateDoc, updateProfile, updateQual } from "../../db";
-import type { Command, MatchList, QualList } from "../../types";
+import type { Command, MatchList } from "../../types";
 
 
 export const reload_qual: Command = {
@@ -157,47 +157,6 @@ export const forcevote_qual: Command = {
 //         }
 //     }
 // };
-
-export const search: Command = {
-    name:"search",
-    description: "!search <@mention>",
-    group: "tournament-manager",
-    owner: false,
-    admins: false,
-    mods: false,
-    async execute(message: Message, client: Client, args: string[]) {
-        let signup: QualList = await getDoc("config", "quallist");
-        let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
-        if (!id) return message.reply("invaild input. Please use User ID or a User mention");
-
-        //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
-        // client.users.fetch(id)).username
-        if (message.member!.roles.cache.has('719936221572235295')) {
-            for (let i = 0; i < signup.users.length; i++) {
-
-                if (signup.users[i].includes(id)) {
-                    return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-                }
-            }
-            return message.reply("They are not in a group");
-        }
-
-        else {
-            if (id !== message.author.id) {
-                return message.reply("You don't have those premissions");
-            }
-            else {
-                for (let i = 0; i < signup.users.length; i++) {
-
-                    if (signup.users[i].includes(id)) {
-                        return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-                    }
-                }
-                return message.reply("They are not in a group");
-            }
-        }
-    }
-};
 
 export async function QualifierResults(channel: TextChannel, client: Client, ids: string[]) {
     let msgArr: Message[] = [];

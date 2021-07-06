@@ -19,7 +19,6 @@ let commands: Command[] = cmd;
 
 //Express for hosting
 app.use(express.static(path.join(__dirname, '../')));
-//app.use(express.static('public'));
 
 //@ts-ignore
 let _server = http.createServer(app);
@@ -78,7 +77,7 @@ client.on("message", async message => {
             return c.name.toLowerCase() === commandName;
         }
     });
-    
+
     commandName = command ? command.name : commandName
 
     if (command?.groupCommand === true) {
