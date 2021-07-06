@@ -7,27 +7,34 @@ import { startsplitqual } from "./quals";
 
 export async function backgroundReminderLoop(client: Client) {
     let reminders = await getAllReminders();
-    let imgArr = ["none", "https://imgur.com/wN3r8ZL", "https://cdn.discordapp.com/emojis/770946656496910364.png?v=1"]
+    let imgArr = [
+        "none",
+        "https://imgur.com/wN3r8ZL",
+        "https://imgur.com/XmKe0FX",
+        "https://cdn.discordapp.com/emojis/770946656496910364.png?v=1"
+    ];
 
     for (let r of reminders) {
         if (Math.floor(Date.now() / 1000) - r.timestamp >= r.time[r.time.length - 1]) {
             if (r.type === "match") {
 
-                let num = Math.floor(Math.random() * (imgArr.length - 1 + 1) + 1);
-                // await (<TextChannel>await client.channels.fetch(r.channel)).send(`${r.mention} you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`);
+                let randomLink = imgArr[Math.floor(Math.random() * imgArr.length)];
                 if(r.basetime !== r.time[r.time.length-1]){
                     console.log(r._id)
                     console.log(r.mention.match(/\d+/g)!)
                     console.log(r.mention)
                     for(let xx of r.mention.match(/\d+/g)!){
                         try {
-                            await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
-                            if(imgArr[num - 1] !== "none") await (await client.users.fetch(xx)).send(`${imgArr[num - 1]}`)
+
+                            await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`);
+                            if(randomLink !== "none") await (await client.users.fetch(xx)).send(`${randomLink}`);
+
                         } catch (error) {
+
                             console.log(error.message);
                             await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
-                        }
 
+                        }
                     }
                 }
 
@@ -48,7 +55,6 @@ export async function backgroundReminderLoop(client: Client) {
                         }
 
                         await (<TextChannel>client.channels.cache.get("748760056333336627")).send({
-
                             embed: {
                                 description: `<@${client.user?.id}>/${client.user?.tag} has auto started <@${xx}> in <#${r.channel}>`,
                                 color: "#d7be26",

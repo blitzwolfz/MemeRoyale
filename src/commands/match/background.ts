@@ -126,21 +126,21 @@ async function matchVotingLogic(client: Client, m: Match) {
     channel.send(new MessageEmbed()
     .setTitle("Player 1's Meme")
     .setImage(m.p1.memelink)
-    .setColor(await (await getConfig()).colour)).then(async msg => {
+    .setColor((await getConfig()).colour)).then(async msg => {
         m.messageID.push(msg.id);
     });
 
     channel.send(new MessageEmbed()
     .setTitle("Player 2's Meme")
     .setImage(m.p2.memelink)
-    .setColor(await (await getConfig()).colour)).then(async msg => {
+    .setColor((await getConfig()).colour)).then(async msg => {
         m.messageID.push(msg.id);
     });
 
     await channel.send(new MessageEmbed()
     .setTitle("Voting time")
     .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **2 hours** to vote`)
-    .setColor(await (await getConfig()).colour)).then(async (msg) => {
+    .setColor((await getConfig()).colour)).then(async (msg) => {
         await msg.react('1️⃣');
         await msg.react('2️⃣');
         m.messageID.push(msg.id);
