@@ -175,12 +175,18 @@ async function matchResults(client: Client, m: Match) {
     if (m.p1.votes > m.p2.votes) {
         await channel.send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+        .setDescription
+        (`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n`
+            + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`
+        )
         .setColor((await getConfig()).colour));
 
         await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
-        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+        .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p2.userid)?.username}`)
+        .setDescription
+        (`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n`
+            + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`
+        )
         .setColor((await getConfig()).colour)
         .setImage(m.p1.memelink));
 
@@ -205,12 +211,18 @@ async function matchResults(client: Client, m: Match) {
 
         await channel.send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+        .setDescription
+        (`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n`
+            + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`
+        )
         .setColor((await getConfig()).colour));
 
         await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(new MessageEmbed()
         .setTitle(`${client.users.cache.get(m.p2.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+        .setDescription
+        (`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n`
+            + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`
+        )
         .setColor((await getConfig()).colour)
         .setImage(m.p2.memelink));
 
@@ -233,10 +245,14 @@ async function matchResults(client: Client, m: Match) {
     else if (m.p1.votes === m.p2.votes) {
         await channel.send(new MessageEmbed()
         .setTitle(`Both users come to a draw`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
+        .setDescription
+        (`${client.users.cache.get(m.p1.userid)?.username} and ${client.users.cache.get(m.p2.userid)?.username}\n`
+            + `both got a score of ${m.p2.votes}`
+        )
         .setColor((await getConfig()).colour));
 
-        await channel.send(`<@${m.p1.userid}> <@${m.p2.userid}> complete this re-match **ASAP**. Contact a ref to begin, you may also ask for a split match`);
+        await channel
+            .send(`<@${m.p1.userid}> <@${m.p2.userid}> complete this re-match **ASAP**. Contact a ref to begin, you may also ask for a split match`);
 
     }
 

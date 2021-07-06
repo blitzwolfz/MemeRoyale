@@ -100,6 +100,7 @@ export const search: Command = {
         let qualifiers = await message.guild!.channels.cache.find(c => c.name == "qualifiers" && c.type == "category")!;
 
         if(matches) {
+
             let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
             if (!id) return message.reply("invaild input. Please use User ID or a User mention");
             let username = await client.users.cache.get(id)!.username.substring(0, 10)
