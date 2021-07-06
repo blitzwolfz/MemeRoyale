@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { deleteMatch, getAllMatches, getConfig, getProfile, updateMatch, updateProfile } from "../../db";
+import { deleteMatch, deleteReminder, getAllMatches, getConfig, getProfile, updateMatch, updateProfile } from "../../db";
 import type { Match } from "../../types";
 import { grandwinner, winner } from "./utils";
 
@@ -155,6 +155,7 @@ async function matchVotingLogic(client: Client, m: Match) {
     m.votetime = Math.floor(Math.floor(Date.now() / 1000) / 60) * 60;
 
     await updateMatch(m);
+    await deleteReminder(m._id);
 }
 
 async function matchResults(client: Client, m: Match) {
