@@ -173,20 +173,24 @@ async function matchResults(client: Client, m: Match) {
         )
         .setColor((await getConfig()).colour)
 
+        if (!(await getConfig()).isfinale) {
+            await channel.send(winResultsEmbed)
+            await channel.send(await winner(client, m.p1.userid));
+        }
+
+        else {
+            await channel.send(winResultsEmbed)
+            await channel.send(await grandwinner(client, m.p1.userid));
+            await channel.send(`Congratulations on winning this Cycle <@${m.p1.userid}>`);
+        }
+
+        await client.users.cache.get(u1._id)!.send(winResultsEmbed)
+        await client.users.cache.get(u2._id)!.send(winResultsEmbed)
 
         await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(
             winResultsEmbed
             .setImage(m.p1.memelink)
         );
-
-        if (!(await getConfig()).isfinale) {
-            await channel.send(winResultsEmbed, await winner(client, m.p1.userid));
-        }
-
-        else {
-            await channel.send(winResultsEmbed, await grandwinner(client, m.p1.userid));
-            await channel.send(`Congratulations on winning this Cycle <@${m.p1.userid}>`);
-        }
 
         u2.loss += 1;
         u2.points += (m.p2.votes * 5);
@@ -206,19 +210,24 @@ async function matchResults(client: Client, m: Match) {
         )
         .setColor((await getConfig()).colour)
 
+        if (!(await getConfig()).isfinale) {
+            await channel.send(winResultsEmbed)
+            await channel.send(await winner(client, m.p2.userid));
+        }
+
+        else {
+            await channel.send(winResultsEmbed)
+            await channel.send(await grandwinner(client, m.p2.userid));
+            await channel.send(`Congratulations on winning this Cycle <@${m.p2.userid}>`);
+        }
+
+        await client.users.cache.get(u1._id)!.send(winResultsEmbed)
+        await client.users.cache.get(u2._id)!.send(winResultsEmbed)
+
         await (<TextChannel>await client.channels.cache.get("734565012378746950")).send(
             winResultsEmbed
             .setImage(m.p2.memelink)
         );
-
-        if (!(await getConfig()).isfinale) {
-            await channel.send(winResultsEmbed, await winner(client, m.p2.userid));
-        }
-
-        else {
-            await channel.send(winResultsEmbed, await grandwinner(client, m.p2.userid));
-            await channel.send(`Congratulations on winning this Cycle <@${m.p2.userid}>`);
-        }
 
         u1.loss += 1;
         u1.points += (m.p1.votes * 5);
@@ -256,9 +265,6 @@ async function matchResults(client: Client, m: Match) {
 
     await updateProfile(u1);
     await updateProfile(u2);
-
-    await client.users.cache.get(u1._id)!.send(winResultsEmbed)
-    await client.users.cache.get(u2._id)!.send(winResultsEmbed)
 
     return await deleteMatch(m._id);
 }
