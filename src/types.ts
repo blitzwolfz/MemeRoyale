@@ -24,7 +24,8 @@ export interface config {
 }
 
 export interface Match {
-    _id: string,
+    _id: string;
+    pause:boolean;
     messageID: Array<string>;
     split: boolean;
     exhibition: boolean;
@@ -44,6 +45,7 @@ export interface Match {
 
 export interface Qual {
     _id: string;
+    pause:boolean;
     messageID: Array<string>;
     players: Array<QualPlayer>;
     temp: {
@@ -68,6 +70,7 @@ export interface Signups {
     _id: "signups";
     msgID: string;
     open: boolean;
+    autoClose:number;
     users: Array<string>;
 }
 
@@ -115,6 +118,15 @@ export interface Profile {
     points: number;
     wins: number;
     loss: number;
+    totalMemes:number;
+    totalTime:number;
+}
+
+export interface levelProfile {
+    _id: string;
+    xp:number;
+    level:number
+    timeStamp:number;
 }
 
 export interface DuelProfile {

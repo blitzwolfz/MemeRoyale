@@ -19,6 +19,7 @@ export async function connectToDB(): Promise<void> {
                 await client.db(dbn).createCollection("quals");
                 await client.db(dbn).createCollection("config");
                 await client.db(dbn).createCollection("reminders");
+                await client.db(dbn).createCollection("levels");
             } catch (error) {
 
             }
@@ -181,8 +182,8 @@ export async function updateReminder(r: Reminder) {
     await dB.collection("reminders").updateOne({_id: r._id}, {$set: r});
 }
 
-export async function deleteReminder(r: Reminder) {
-    await dB.collection("reminders").deleteOne({_id: r._id});
+export async function deleteReminder(r: string) {
+    await dB.collection("reminders").deleteOne({_id: r});
 }
 
 //Profile dB commands
@@ -217,14 +218,14 @@ export async function getDuelProfile(_id: string, guild: string): Promise<DuelPr
 }
 
 export async function updateDuelProfile(_id: string, u: DuelProfile, guild: string): Promise<void> {
-    await await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
+    await dB.collection(guild).updateOne({_id: _id}, {$set: u})!;
 }
 
 //Transition functions
-export async  function getAllColl(name: string): Promise<any> {
-    return client.db("mememania").collection(name).find({}).toArray();
+export async  function getAllColl(name: string, dbName = "mememania"): Promise<any> {
+    return client.db(dbName).collection(name).find({}).toArray();
 }
 
-export async  function getOneColl(name: string, id:string): Promise<any> {
-    return await ((client.db("mememania").collection(name).findOne({_id: id})).then(r => r))!
+export async  function getOneColl(name: string, id:any, dbName = "mememania"): Promise<any> {
+    return await ((client.db(dbName).collection(name).findOne({_id: id})).then(r => r))!
 }

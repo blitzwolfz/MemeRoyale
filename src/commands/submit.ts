@@ -2,7 +2,6 @@ import { Client, Message, MessageAttachment, MessageEmbed, TextChannel } from "d
 import { deleteReminder, getAllMatches, getAllQuals, getMatch, getProfile, getQual, getReminder, getTemplatedB, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedB } from "../db";
 import type { Command, Match } from "../types";
 
-
 export const submit: Command = {
     name: "submit",
     description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
@@ -14,7 +13,13 @@ export const submit: Command = {
     async execute(message: Message, client: Client, args: string[]) {
 
         if (message.channel.type !== "dm") {
-            return message.reply("You didn't not submit this in the DM with the bot.\nPlease delete and try again.");
+            return message
+            .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+                " again in bot dm.")
+            .then(async m => {
+                await message.delete()
+                await m.delete({timeout:30000, reason: "Sent Match submission in server not bot dm."})
+            });
         }
 
         if (message.attachments.array()[0].url.includes("imgur")) {
@@ -29,41 +34,39 @@ export const submit: Command = {
             return message.reply("Your image was not submitted properly. Contact a mod");
         }
 
-
         let q = function (x: Match) {
-            return ((x.p1.userid === message.author.id || x.p2.userid === message.author.id) && (x.p1.memedone === false || x.p2.memedone === false) && x.votingperiod === false);
+            return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
 
-        let allmatches = await (await getAllMatches()).filter(q);
+        let allPossibleMatches = await (await getAllMatches()).filter(q);
 
-        if (allmatches.length > 1 && !args[0]) {
-            message.channel.send("You are in multiply matches. Please mention the corresponding number to submit. For example `!submit 1`");
-            let i = 0;
-            for (let m of allmatches) {
-                await message.channel.send(`${i + 1}) <#${m._id}>`);
+        if (allPossibleMatches.length === 0) {
+            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
+        }
+
+        if (allPossibleMatches.length > 1 && !args[0]) {
+            message.channel.send("You are in multiple matches. Please mention the corresponding number to submit. For example `!submit 1`");
+            for (let i = 0; i < allPossibleMatches.length; i++) {
+                await message.channel.send(`${i + 1}) <#${allPossibleMatches[i]._id}>`);
                 i += 1;
             }
             return;
         }
 
-        let m = args[0] ? allmatches[parseInt(args[0]) - 1] : allmatches[0];
-
-        if (!m) {
-            return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
-        }
+        let m = args[0] ? allPossibleMatches[parseInt(args[0]) - 1] : allPossibleMatches[0];
 
         let arr = [
             m.p1,
             m.p2
         ];
 
-        let e = arr.find(x => x.userid === message.author.id)!;
+        let player = arr.find(x => x.userid === message.author.id)!;
 
-        if (e.donesplit === false) return message.reply("You can't submit until your portion starts");
+        if (player.donesplit === false) return message.reply("You can't submit until your portion starts");
 
-        e.memelink = message.attachments.array()[0].url;
-        e.memedone = true;
-        e.donesplit = true;
+        player.memelink = message.attachments.array()[0].url;
+        player.memedone = true;
+        player.donesplit = true;
 
         if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
@@ -80,15 +83,17 @@ export const submit: Command = {
         }
 
         try {
-            await deleteReminder(await getReminder(e.userid));
+            await deleteReminder(player.userid);
             let r = await getReminder(m._id);
 
-            r.mention = r.mention.replace(`<@${e.userid}>`, "");
+            r.mention = r.mention.replace(`<@${player.userid}>`, "");
 
             await updateReminder(r);
         } catch (error) {
             console.log("");
         }
+
+        m.p1 === player ? m.p1 = player : m.p2 = player;
 
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
             m.split = false;
@@ -96,13 +101,34 @@ export const submit: Command = {
             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
         }
 
+        let p = await getProfile(message.author.id)
+
+        if(p.totalMemes === 0 && m.exhibition === false){
+            p.totalMemes += 1;
+            p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time)
+        }
+
+        else{
+            if(m.exhibition === false){
+                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+
+                oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                p.totalTime = oldAverage;
+                p.totalMemes += 1;
+            }
+        }
+
+        await updateProfile(p)
+
         await updateMatch(m);
-        return await message.channel.send("Your meme has been attached!");
+        return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
     }
 };
 
 export const qualsubmit: Command = {
     name: "qualsubmit",
+    aliases:["qs"],
     description: "",
     group: "tourny",
     groupCommand: true,
@@ -110,6 +136,16 @@ export const qualsubmit: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
+        if (message.channel.type !== "dm") {
+            return message
+            .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+                " again in bot dm.")
+            .then(async m => {
+                await message.delete()
+                await m.delete({timeout:30000, reason: "Sent Match submission in server not bot dm."})
+            });
+        }
+
         if (message.content.includes("imgur")) {
             return message.reply("You can't submit imgur links");
         }
@@ -130,11 +166,16 @@ export const qualsubmit: Command = {
             return message.reply("Video submissions aren't allowed");
         }
         else {
-            let match = await (await getAllQuals()).find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+            let allQ = await getAllQuals();
+            let match = allQ.find(x => x.players.some(y => y.userid === message.author.id))!;
+            // let match = allQ.find(x => x.players.find(y => y.userid === message.author.id && y.memedone === false))!;
+            if(!match) return message.reply("You don't seem to be in a qualifier. If this is wrong, please contact" +
+                " mods.")
             let index = match.players.findIndex(x => x.userid === message.author.id);
             let u = match.players[index];
 
             if (u.split === false) return message.reply("Can't submit when you haven't started your portion");
+            if(u.memedone) return message.reply("You have already submitted a meme.").then(async m => m.channel.send(u.memelink));
 
             u.split = true;
             u.memedone = true;
@@ -146,7 +187,7 @@ export const qualsubmit: Command = {
                     color: "#d7be26",
                     timestamp: new Date()
                 }
-            });
+            }).catch();
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
 
@@ -158,11 +199,12 @@ export const qualsubmit: Command = {
                     },
                     timestamp: new Date()
                 }
-            });
+            }).catch();
 
             match.players[index] = u;
 
             await updateQual(match);
+            await message.reply(`Your meme for your qualifier in <#${match._id}> has been attached.`);
 
             try {
                 let r = await getReminder(match._id);
@@ -175,12 +217,33 @@ export const qualsubmit: Command = {
             }
 
             try {
-                await deleteReminder(await getReminder(message.author.id));
+                await deleteReminder(message.author.id);
             } catch (error) {
                 console.log("");
             }
 
-            return message.reply("Your meme for your qualifier has been attached.");
+            let p = await getProfile(message.author.id)
+            if(p){
+                if(p.totalMemes === 0){
+                    p.totalMemes += 1;
+                    p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
+                }
+
+                else{
+                    let oldAverage = p.totalTime,
+                        sum = p.totalMemes+1,
+                        newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
+
+                    oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                    p.totalTime = oldAverage;
+                    p.totalMemes += 1;
+                }
+            }
+
+            await updateProfile(p);
+
+            return;
         }
     }
 };
@@ -189,6 +252,7 @@ export const modsubmit: Command = {
     name: "submit -mod",
     description: "`!submit -mod <1 | 2> #channel` with an image in the message.",
     group: "tourny",
+    groupCommand: true,
     owner: false,
     admins: false,
     mods: true,
@@ -205,20 +269,20 @@ export const modsubmit: Command = {
             m.p2
         ];
 
-        let e = arr[parseInt(args[0]) - 1];
+        let player = arr[parseInt(args[0]) - 1];
 
-        //Modsubmit so their portion started already, unless bug from other area
-        //if(e.donesplit === false) return message.reply("You can't submit until your portion starts");
+        //Mod submit assumes their portion started already, unless bug from other area
+        //if(player.donesplit === false) return message.reply("You can't submit until your portion starts");
 
-        e.memelink = message.attachments.array()[0].url;
-        e.memedone = true;
-        e.donesplit = true;
+        player.memelink = message.attachments.array()[0].url;
+        player.memedone = true;
+        player.donesplit = true;
 
         if (m.exhibition === false) {
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
 
                 embed: {
-                    description: `<@${e.userid}>/${(await client.users.cache.get(e.userid))!.tag} has submitted their meme\nChannel: <#${m._id}>`,
+                    description: `<@${player.userid}>/${(await client.users.cache.get(player.userid))!.tag} has submitted their meme\nChannel: <#${m._id}>`,
                     color: "#d7be26",
                     image: {
                         url: message.attachments.array()[0].url
@@ -228,34 +292,17 @@ export const modsubmit: Command = {
             });
         }
 
+        m.p1 === player ? m.p1 = player : m.p2 = player;
 
-        if (m.p1.userid === e.userid) {
-            try {
-                await deleteReminder(await getReminder(m.p1.userid));
-                let r = await getReminder(m._id);
+        try {
+            await deleteReminder(player.userid);
+            let r = await getReminder(m._id);
 
-                r.mention = `<@${m.p2.userid}>`;
+            r.mention = r.mention.replace(`<@${player.userid}>`, "");
 
-                await updateReminder(r);
-            } catch (error) {
-                console.log("");
-            }
-
-            m.p1 = e;
-        }
-
-        else {
-            try {
-                await deleteReminder(await getReminder(m.p2.userid));
-                let r = await getReminder(m._id);
-
-                r.mention = `<@${m.p1.userid}>`;
-
-                await updateReminder(r);
-            } catch (error) {
-                console.log("");
-            }
-            m.p2 = e;
+            await updateReminder(r);
+        } catch (error) {
+            console.log("");
         }
 
         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
@@ -264,8 +311,28 @@ export const modsubmit: Command = {
             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
         }
 
+        let p = await getProfile(player.userid)
+
+        if(p.totalMemes === 0 && m.exhibition === false){
+            p.totalMemes += 1;
+            p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time)
+        }
+
+        else{
+            if(m.exhibition === false){
+                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+
+                oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                p.totalTime = oldAverage;
+                p.totalMemes += 1;
+            }
+        }
+
+        await updateProfile(p)
+
         await updateMatch(m);
-        return await message.channel.send("Your meme has been attached!");
+        return await message.channel.send(`Your meme has been attached for <@${player.userid}> in <#${m._id}>!`);
     }
 };
 
@@ -295,7 +362,8 @@ export const modqualsubmit: Command = {
         }
         else {
             let match = await getQual(message.mentions.channels.first()!.id);
-            args.splice(0, 1);
+            console.log(args)
+            console.log(args)
             let index = parseInt(args[0]) - 1;
             let u = match.players[index];
 
@@ -304,6 +372,7 @@ export const modqualsubmit: Command = {
 
             u.split = true;
             u.memedone = true;
+            u.failed = false
             u.memelink = message.attachments.array()[0].url;
 
             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
@@ -333,10 +402,28 @@ export const modqualsubmit: Command = {
             }
 
             try {
-                await deleteReminder(await getReminder(u.userid));
+                await deleteReminder(u.userid);
             } catch (error) {
                 console.log("");
             }
+
+            let p = await getProfile(u.userid)
+
+            if(p.totalMemes === 0){
+                p.totalMemes += 1;
+                p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
+            }
+
+            else{
+                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
+
+                oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                p.totalTime = oldAverage;
+                p.totalMemes += 1;
+            }
+
+            await updateProfile(p);
 
             return message.reply(`The meme for <@${u.userid}> qualifier has been attached.`);
         }
@@ -379,7 +466,7 @@ export const templateSubmission: Command = {
 
                     let attach = new MessageAttachment(message.attachments.array()[i].url);
 
-                    (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
+                    await (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
                 }
 
                 await updateTemplatedB(e.list);

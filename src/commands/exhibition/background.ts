@@ -158,14 +158,14 @@ async function exhibitionResults(client: Client, m: Match) {
             channel.send(new MessageEmbed()
             .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
             .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
-            .setColor(await (await getConfig()).colour));
+            .setColor((await getConfig()).colour));
         }
 
         if (m.p2.memedone) {
             channel.send(new MessageEmbed()
             .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
             .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
-            .setColor(await (await getConfig()).colour));
+            .setColor((await getConfig()).colour));
         }
     }
 

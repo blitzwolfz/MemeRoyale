@@ -1,9 +1,10 @@
 import { Client, Message, MessageEmbed, TextChannel, User } from "discord.js";
 import { deleteQual, getConfig, getQual, getTemplatedB, getThemes, insertQual, insertReminder, updateQual } from "../../db";
 import type { Command, Qual } from "../../types";
+import { createProfileatMatch } from "../user";
 
 export const splitqual: Command = {
-    name: "split-qual",
+    name: "splitqual",
     description: "",
     group: "qual",
     owner: false,
@@ -17,7 +18,7 @@ export const splitqual: Command = {
 
 
         let q: Qual = {
-            _id: message.channel.id, messageID: [], players: [], temp: {
+            _id: message.channel.id, pause:false, messageID: [], players: [], temp: {
                 istheme: true, link: ""
             }, votingperiod: false, votetime: 0
         };
@@ -26,6 +27,8 @@ export const splitqual: Command = {
             q.players.push({
                 userid: u.id, memedone: false, memelink: "", time: 0, split: false, failed: false, votes: []
             });
+
+            await createProfileatMatch(u.id)
         }
 
         if (args.includes("template")) {
@@ -38,14 +41,14 @@ export const splitqual: Command = {
         let temps: string[] = [];
 
         if (q.temp.istheme) {
-            temps = await (await getThemes()).list;
+            temps = (await getThemes()).list;
 
             em.setTitle(`Theme for ${c.name}`)
             .setDescription(temps[Math.floor(Math.random() * temps.length)]);
         }
 
         else {
-            temps = await (await getTemplatedB()).list;
+            temps = (await getTemplatedB()).list;
 
             em.setTitle(`Template for ${c.name}`)
             .setImage(temps[Math.floor(Math.random() * temps.length)]);
@@ -53,9 +56,9 @@ export const splitqual: Command = {
 
         let msg = await c.send(`<@${message.author.id}>`, em);
 
-        msg.react('✅');
-        msg.react('❌');
-        msg.react('🌀');
+        await msg.react('✅');
+        await msg.react('❌');
+        await msg.react('🌀');
 
         const approveFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✅' && !user.bot;
         const disapproveFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '❌' && !user.bot;
@@ -69,25 +72,25 @@ export const splitqual: Command = {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
 
             if (q.temp.istheme) {
-                temps = await (await getThemes()).list;
+                temps = (await getThemes()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Theme for ${c.name}`)
                 .setDescription(temps[Math.floor(Math.random() * temps.length)])
                 .setColor("PURPLE");
 
-                msg.edit(eem);
+                await msg.edit(eem);
             }
 
             else {
-                temps = await (await getTemplatedB()).list;
+                temps = (await getTemplatedB()).list;
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)
                 .setImage(temps[Math.floor(Math.random() * temps.length)])
                 .setColor("PURPLE");
 
-                msg.edit(eem);
+                await msg.edit(eem);
             }
 
         });
@@ -102,6 +105,7 @@ export const splitqual: Command = {
             });
             approve.on("end", async () => {
             });
+            return await msg.delete()
         });
 
         approve.on('collect', async () => {
@@ -114,12 +118,16 @@ export const splitqual: Command = {
                 q.temp.link = msg.embeds[0].image?.url!;
             }
 
-            await insertQual(q);
+            await insertQual(q).then(async a => {
+                let c = await (<TextChannel>client.channels.cache.get("738047732312309870"));
+                let cc = await (<TextChannel>client.channels.cache.get(q._id));
+                c.send(`<#${q._id}>/${cc.name} template is ${q.temp.link}`);
+            });;
 
-            return await message.channel.send(new MessageEmbed()
+            await message.channel.send(new MessageEmbed()
             .setTitle(`Qualifier Match`)
             .setColor("#d7be26")
-            .setDescription(`Your qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
+            .setDescription(`${q.players.map(a => `<@${a.userid}>`).join(", ")} qualifier has been split.\nYou must complete your portion within given round\n Contact admins if you have an issue.`)
             .setTimestamp()).then(async m => {
                 let emojis = [
                     '🇦',
@@ -130,9 +138,11 @@ export const splitqual: Command = {
                     '🇫'
                 ];
                 for (let i = 0; i < q.players.length; i++) {
-                    m.react(emojis[i]);
+                    await m.react(emojis[i]);
                 }
             });
+
+            return await msg.delete()
 
         });
 
@@ -164,9 +174,11 @@ export const startsplitqual: Command = {
 
             let e = arr.find(x => x.userid === id)!;
 
+            if(e.split && (e.memedone || e.failed)) return message.reply("already done");
+
             (await client.users.cache.get(e.userid))!.send(`This is your ${q.temp.istheme ? "theme: " : "template: "}` + q.temp.link, new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
-            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit to submit each image seperately`));
+            .setColor((await getConfig()).colour)
+            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`));
 
             e.split = true;
             e.time = Math.floor(Date.now() / 1000);
@@ -176,18 +188,21 @@ export const startsplitqual: Command = {
             q.players = arr;
 
             await updateQual(q);
-
-            await insertReminder({
-                _id: e.userid, mention: "", channel: "", type: "meme", time: [
-                    3300,
-                    2700,
-                    1800
-                ], timestamp: Math.floor(Math.floor(Date.now() / 1000) / 60) * 60, basetime: 3600
-            });
+            try{
+                await insertReminder({
+                    _id: e.userid, mention: "", channel: "", type: "meme", time: [
+                        3300,
+                        2700,
+                        1800
+                    ], timestamp: Math.floor(Math.floor(Date.now() / 1000) / 60) * 60, basetime: 3600
+                });
+            }  catch {
+                console.log(`Could not insert a reminder for ${e.userid}`)
+            }
 
             return (<TextChannel>await client.channels.cache.get(q._id)!).send(new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
-            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit to submit each image seperately`));
+            .setColor((await getConfig()).colour)
+            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`));
         } catch (error) {
             console.log(error.message);
         }
@@ -219,7 +234,7 @@ export const cancelqual: Command = {
 
             return message.channel.send(new MessageEmbed()
             .setColor("RED")
-            .setDescription("Match has been canceled"));
+            .setDescription("Qualifier has been canceled"));
         }
     }
 };
@@ -237,7 +252,7 @@ export const endqual: Command = {
         await updateQual(m);
 
         return message.reply("Qualifier has ended").then(async m => {
-            m.delete({timeout: 1500});
+            await m.delete({timeout: 1500});
         });
     }
 };

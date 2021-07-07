@@ -1,5 +1,5 @@
 import { Client, MessageEmbed, TextChannel } from "discord.js";
-import { deleteQual, getAllQuals, getConfig, insertReminder, updateQual } from "../../db";
+import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, insertReminder, updateProfile, updateQual } from "../../db";
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
 import { QualifierResults } from "./util";
@@ -8,9 +8,9 @@ require('dotenv').config();
 export async function backgroundQualLoop(client: Client) {
     let quals = await getAllQuals();
 
-
     for (let q of quals) {
         try {
+            if(q.pause) continue;
             if (q.players.find(x => Math.floor(Date.now() / 1000) - x.time >= 3600 && x.split && !x.failed && !x.memedone)) {
                 for (const x of q.players) {
                     if (Math.floor(Date.now() / 1000) - x.time >= 3600 && x.split && !x.failed && !x.memedone) {
@@ -21,7 +21,6 @@ export async function backgroundQualLoop(client: Client) {
                     }
                 }
                 await updateQual(q);
-                console.log("Updated.");
             }
 
             if ((q.players.filter(p => p.split && (p.memedone || p.failed)).length === q.players.length) && !q.votingperiod) {
@@ -40,13 +39,19 @@ export async function backgroundQualLoop(client: Client) {
 
 async function matchVotingLogic(client: Client, m: Qual) {
 
-    // if(m.players.filter(p => p.memedone === true).length <= 2){
-    //     m.votingperiod = true
-    //     m.votetime = Math.floor(Date.now()/1000) - 7200
-    //     return await updateQual(m)
-    // }
+    if(m.players.filter(p => p.memedone === true).length <= 2){
+        m.votingperiod = true
+        m.votetime = Math.floor(Date.now()/1000) - 7200
+        return await updateQual(m)
+    }
 
     let channel = <TextChannel>await client.channels.cache.get(m._id);
+    try{
+        await deleteReminder(m._id)
+    } catch {
+
+    }
+
 
     for (var i = 0; i < m.players.length - 1; i++) {
         var j = i + Math.floor(Math.random() * (m.players.length - i));
@@ -91,7 +96,7 @@ async function matchVotingLogic(client: Client, m: Qual) {
             channel.send(new MessageEmbed()
             .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
             .setImage(p.memelink)
-            .setColor(await (await getConfig()).colour)).then(async msg => {
+            .setColor((await getConfig()).colour)).then(async msg => {
                 m.messageID.push(msg.id);
             });
         }
@@ -127,8 +132,10 @@ async function matchResults(client: Client, q: Qual) {
 
     let fields = [];
 
-    //If 2 or more players failed to submit
-    if (q.players.filter(p => p.failed).length >= 2) {
+    //If 50% or more players failed to submit
+    // if (q.players.filter(p => p.memedone).length <= 2)
+    // if (parseFloat((q.players.filter(p => p.memedone).length / q.players.length).toFixed(2)) >= 0.5)
+    if (q.players.filter(p => p.failed).length >= Math.ceil((q.players.length * 0.5))) {
         for (let x = 0; x < q.players.length; x++) {
 
             if (!q.players[x].failed && q.players[x].memedone) {
@@ -140,7 +147,7 @@ async function matchResults(client: Client, q: Qual) {
 
             if (q.players[x].failed && !q.players[x].memedone) {
                 fields.push({
-                    name: `${await (await client.users.fetch(q.players[x].userid)).username} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
+                    name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
                     value: `${`Finished with 0 | Earned: 0% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }
@@ -185,7 +192,9 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm});
+                await channel.send({embed: emm}).then(async m => {
+                    await m.react("👌")
+                });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
                 .send({embed: emm});
@@ -210,11 +219,11 @@ async function matchResults(client: Client, q: Qual) {
 
     else {
 
-        q.players.sort(function (a, b) {
-            return ((b.votes.length) - (a.votes.length));
-            //Sort could be modified to, for example, sort on the age 
-            // if the name is the same.
-        });
+        // q.players.sort(function (a, b) {
+        //     return ((b.votes.length) - (a.votes.length));
+        //     //Sort could be modified to, for example, sort on the age
+        //     // if the name is the same.
+        // });
 
         //Stole from https://stackoverflow.com/a/27879955
         let totalvotes: number = 0;
@@ -223,24 +232,39 @@ async function matchResults(client: Client, q: Qual) {
             totalvotes += v.votes.length;
         });
 
-        console.log(totalvotes);
+
 
         for (let x = 0; x < q.players.length; x++) {
-
             if (!q.players[x].failed && q.players[x].memedone) {
                 fields.push({
-                    name: `${await (await client.users.fetch(q.players[x].userid)).username} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
+                    name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
                     value: `${`Finished with ${q.players[x].votes.length} | Earned: ${Math.round(q.players[x].votes.length / totalvotes * 100)}% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }
 
             if (q.players[x].failed && !q.players[x].memedone) {
                 fields.push({
-                    name: `${await (await client.users.fetch(q.players[x].userid)).username} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
+                    name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}${`-Failed`}`,
                     value: `${`Finished with 0 | Earned: 0% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }
+
+            for (const t of q.players[x].votes) {
+                try{
+                    let u = await getProfile(t)
+                    if(!u) continue;
+                    u.points += 2
+                    u.votetally += 1
+                    await updateProfile(u)
+                } catch{
+                    console.log("fake")
+                }
+            }
         }
+
+        fields.sort(function(a, b){
+            return parseInt(b.value.match(/\d+/g)![1]) - parseInt(a.value.match(/\d+/g)![1])
+        })
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
         .send({
@@ -265,7 +289,7 @@ async function matchResults(client: Client, q: Qual) {
         }).then(async message => {
             let t = channel.topic?.split(" ");
 
-            if (!t) {
+            if (t?.join("").toLocaleLowerCase() === "round1" || !t) {
                 await channel.setTopic(message.id);
                 t = [];
                 let string = "";
@@ -279,21 +303,21 @@ async function matchResults(client: Client, q: Qual) {
 
                 let time = Math.floor(((Math.floor(m.createdTimestamp / 1000) + 345600) - Math.floor(Date.now() / 1000)) / 3600);
 
-                if (time <= 96 && channel.topic?.split(" ").join("").toLowerCase() === "round1") {
+                if (time <= 96) {
                     await channel.send(`${string} you have ${time}h left to complete Portion 2`);
 
                     let timeArr: Array<number> = [];
                     timeArr.push(172800);
 
-                    if ((time - 2) * 3600 > 0 && time - 2 > 0) {
+                    if ((time)* 3600 > 0 && time - 2 > 0) {
                         timeArr.push(165600);
                     }
 
-                    if ((time - 12) * 3600 > 0 && time - 12 > 0) {
+                    if ((time) * 3600 > 0 && time - 12 > 0) {
                         timeArr.push(129600);
                     }
 
-                    if ((time - 24) * 3600 > 0 && time - 24 > 0) {
+                    if ((time) * 3600 > 0 && time - 24 > 0) {
                         timeArr.push(86400);
                     }
 
@@ -303,7 +327,7 @@ async function matchResults(client: Client, q: Qual) {
                         channel: channel.id,
                         type: "match",
                         time: timeArr,
-                        timestamp: Math.floor(Date.now() / 1000),
+                        timestamp: Math.floor(m.createdTimestamp / 1000) +172800,
                         basetime: 172800
                     });
                 }
@@ -314,25 +338,14 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm});
+                await channel.send({embed: emm}).then(async m => {
+                    await m.react("👌")
+                });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
                 .send({embed: emm});
             }
 
-            // else if(t!.concat([message.id]).length < timeconsts.qual.results){
-
-            //     if(t.includes(message.id) === false){
-            //         await channel.setTopic(t!.concat([message.id]).join(" "))
-            //     }
-
-            //     let string = "";
-
-            //     for(let p of q.players){
-            //         string += `<@${p.userid}>\n`
-            //     }
-            //     await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun.
-            // You have 36h to complete your portion. ${string}`) }
 
         });
 

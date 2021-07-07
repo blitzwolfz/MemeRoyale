@@ -1,7 +1,7 @@
 import { Client, Message, MessageEmbed, User } from "discord.js";
 import { deleteDoc, getConfig, getDoc, getTemplatedB, insertDoc, updateConfig, updateDoc, updateTemplatedB } from "../../db";
 import type { Command, config, QualList, Signups } from "../../types";
-import { signup, signup_manager, unsignup } from "./signup";
+import { signup, signup_manager, unsignup, view_signup } from "./signup";
 import { backwardsFilter, forwardsFilter, shuffle } from "../util";
 import * as s from "./challonge";
 
@@ -36,12 +36,10 @@ export const create_groups: Command = {
     admins: false,
     mods: true,
     async execute(message: Message, client: Client, args: string[]) {
-        console.log((parseInt(args[0])));
-        console.log(isNaN(parseInt(args[0])));
+
         if (isNaN(parseInt(args[0])) === true) {
             return message.reply("The amount entered is not a valid number. Check your input.");
         }
-
 
         let gNum = parseInt(args[0]);
         let signup: Signups = await getDoc("config", "signups");
@@ -294,7 +292,8 @@ export default [
     view_groups,
     create_groups,
     unsignup,
-    templatecheck
+    templatecheck,
+    view_signup
 ]
 .concat(s.default)
 .sort(function keyOrder(k1, k2) {

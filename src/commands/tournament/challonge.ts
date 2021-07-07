@@ -1,7 +1,8 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getDoc, insertReminder, updateDoc } from "../../db";
+import { deleteReminder, getDoc, insertReminder, updateDoc } from "../../db";
 import type { Command, MatchList, QualList } from "../../types";
 import { matchcard } from "../match/utils";
+import { sleep } from "../util";
 
 const challonge = require("challonge-js");
 
@@ -42,6 +43,7 @@ export const matchchannelcreate: Command = {
 
             let matchlist: MatchList = await getDoc("config", "matchlist");
 
+            //@ts-ignore
             await cclient.matches.index({
                 id: matchlist.url, callback: async (err: any, data: any) => {
                     if (err) console.log(err);
@@ -56,65 +58,74 @@ export const matchchannelcreate: Command = {
                                 id: matchlist.url, callback: async (err: any, data: any) => {
                                     if (err) console.log(err);
 
-                                    while (channelstringname.length === 0 && name1.length === 0 && name2.length === 0) {
-                                        for (let x = 0; x < data.length; x++) {
-                                            if (data[x].participant.id === d.match.player1Id) {
-                                                //channelstringname += data[x].participant.name.substring(0, 10)
-                                                name1 = data[x].participant.name;
-                                            }
+                                    // while (channelstringname.length === 0 && name1.length === 0 && name2.length === 0) {
+                                    //     for (let x = 0; x < data.length; x++) {
+                                    //         if (data[x].participant.id === d.match.player1Id) {
+                                    //             //channelstringname += data[x].participant.name.substring(0, 10)
+                                    //             name1 = data[x].participant.name;
+                                    //         }
+                                    //
+                                    //         if (data[x].participant.id === d.match.player2Id) {
+                                    //             name2 = data[x].participant.name;
+                                    //         }
+                                    //     }
+                                    //
+                                    //     if (name2.length > 0 && name1.length > 0) {
+                                    //         channelstringname += name1.substring(0, 10) + "-vs-" + name2.substring(0, 10);
+                                    //     }
+                                    // }
 
-                                            if (data[x].participant.id === d.match.player2Id) {
-                                                name2 = data[x].participant.name;
-                                            }
+                                    for (let x = 0; x < data.length; x++) {
+                                        if (data[x].participant.id === d.match.player1Id) {
+                                            //channelstringname += data[x].participant.name.substring(0, 10)
+                                            name1 = data[x].participant.name;
                                         }
 
-                                        if (name2.length > 0 && name1.length > 0) {
-                                            channelstringname += name1.substring(0, 10) + "-vs-" + name2.substring(0, 10);
+                                        if (data[x].participant.id === d.match.player2Id) {
+                                            name2 = data[x].participant.name;
                                         }
                                     }
 
+                                    if (name2.length > 0 && name1.length > 0) {
+                                        channelstringname += name1.substring(0, 10) + "-vs-" + name2.substring(0, 10);
+                                    }
+                                    let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "category")!;
                                     await message.guild!.channels.create(channelstringname, {
-                                        type: 'text', topic: `48h to complete`
-                                    })
+                                        type: 'text', topic: `48h to complete`,
+                                    position:d.match.id, parent:category.id})
                                     .then(async channel => {
-                                        let category = await message.guild!.channels.cache.find(c => c.name == "matchees" && c.type == "category");
-                                        if (!category) throw new Error("Category channel does not exist");
-                                        await channel.setParent(category.id);
-                                        await channel.lockPermissions();
-                                        await matchcard(client, channel.id, [
-                                            names.find(x => x.str === name1)!.id,
-                                            names.find(x => x.str === name2)!.id
-                                        ]);
-                                        await channel.send(`<@${names.find(x => x.str === name1)!.id} <@${names.find(x => x.str === name2)!.id} You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`);
 
-
-                                        let time = 48;
-
-                                        let timeArr: Array<number> = [];
-
-                                        timeArr.push(time * 3600);
-
-                                        if ((time - 2) * 3600 > 0) {
-                                            timeArr.push((time - 2) * 3600);
-                                        }
-
-                                        if ((time - 12) * 3600 > 0) {
-                                            timeArr.push((time - 12) * 3600);
-                                        }
-
-                                        if ((time - 24) * 3600 > 0) {
-                                            timeArr.push((time - 24) * 3600);
-                                        }
+                                        // if (!category) throw new Error("Category channel does not exist");
+                                        // await channel.setParent(category.id);
+                                        // await channel.lockPermissions();
 
                                         await insertReminder({
                                             _id: channel.id,
                                             mention: `<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}>`,
                                             channel: channel.id,
                                             type: "match",
-                                            time: timeArr,
+                                            time: [
+                                                172800,
+                                                165600,
+                                                129600,
+                                                86400
+                                            ],
                                             timestamp: Math.floor(Date.now() / 1000),
                                             basetime: 172800
                                         });
+                                        try{
+                                            let image = await matchcard(client, channel.id, [
+                                                names.find(x => x.str === name1)!.id,
+                                                names.find(x => x.str === name2)!.id
+                                            ]).catch();
+                                            await sleep(2)
+                                            await channel.send(`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`, image);
+                                        } catch (error) {
+                                            await message.channel.send(`${channelstringname} no Match card`)
+                                            await message.channel.send(error.stack)
+                                            await message.channel.send(error.message)
+                                        }
+
                                     });
                                 }
                             });
@@ -202,16 +213,17 @@ export const matchbracket: Command = {
                     matchlist.users[i]
                 ];
             }
+            randrun--
         }
 
         for (let i = 0; i < matchlist.users.length; i++) {
-            let name = await (await client.users.fetch(matchlist.users[i])).username;
+            let name = (await client.users.fetch(matchlist.users[i])).username;
 
             cclient.participants.create({
                 id: matchid, participant: {
                     name: name
                 }, callback: (err: any, data: any) => {
-                    console.log(err, data);
+                    console.log(err);
                 }
             });
         }
@@ -224,7 +236,7 @@ export const matchbracket: Command = {
 
         await message.reply(new MessageEmbed()
         .setColor("#d7be26")
-        .setTitle(`Meme Mania ${args[0]}`)
+        .setTitle(`Meme Royale: ${args[0]}`)
         .setDescription(`Here's the link to the brackets\nhttps://www.challonge.com/${matchid}`)
         .setTimestamp());
     }
@@ -245,6 +257,12 @@ export const channeldelete: Command = {
             try {
                 if (channel.parent && channel.parent!.name === args[0]) {
                     await channel.delete();
+
+                    try{
+                        await deleteReminder(channel.id)
+                    } catch  {
+                        continue
+                    }
                 }
 
             } catch {

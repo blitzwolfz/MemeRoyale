@@ -114,7 +114,7 @@ export const duel: Command = {
                 }
 
                 let m: Match = {
-                    _id: channel.id, split: false, exhibition: true, messageID: [], temp: {
+                    _id: channel.id, pause:false, split: false, exhibition: true, messageID: [], temp: {
                         istheme: false, link: ""
                     }, tempfound: false, p1: {
                         userid: message.author.id,

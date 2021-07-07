@@ -60,6 +60,7 @@ app.get('/duel/:id/:guild?', async (req, res) => {
     // Reading isbn from the URL
     console.log(req.params);
     let id = req.params.id;
+    // @ts-ignore
     let guild = req.params.guild || "719406444109103117";
 
     let user = await getDuelProfile(id, guild);
@@ -77,6 +78,7 @@ app.get('/duel/:id/:guild?', async (req, res) => {
 app.get('/duelists/:guild?', async (req, res) => {
     // Reading isbn from the URL
     try {
+        // @ts-ignore
         let guild = req.params.guild || "719406444109103117";
         let user = await getAllDuelProfiles(guild);
 
