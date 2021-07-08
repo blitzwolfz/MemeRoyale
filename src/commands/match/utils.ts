@@ -173,6 +173,13 @@ export const match_stats: Command = {
                     inline: true
                 });
 
+            if(message.channel.type === "dm" && message.author.id === process.env.owner!){
+                statsEmbed
+                    .addField(
+                        `votes`, `1 votes: ${m.p1.votes} | 2 votes: ${m.p2.votes}`, true
+                    )
+            }
+
             return await message.channel.send(statsEmbed);
         }
     }
