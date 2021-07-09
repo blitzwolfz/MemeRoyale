@@ -143,7 +143,7 @@ export const match_stats: Command = {
                     inline: true
                 }, {
                     name: 'Time left',
-                    value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
+                    value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
                 }, {name: '\u200B', value: '\u200B'},
 
@@ -161,7 +161,7 @@ export const match_stats: Command = {
                     inline: true
                 }, {
                     name: 'Time left',
-                    value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
+                    value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
                 }, {name: '\u200B', value: '\u200B'},
 
