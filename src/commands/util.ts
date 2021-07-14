@@ -51,11 +51,11 @@ export function dateBuilder() {
 
 export let timeconsts = {
     match: {
-        votingtime: 7200, memetime: 3200
+        votingtime: 7200, memetime: 2700
     },
 
     qual: {
-        votingtime: 7200, memetime: 1800, results: 2
+        votingtime: 7200, memetime: 3600, results: 2
     }
 };
 

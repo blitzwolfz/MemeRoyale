@@ -133,12 +133,13 @@ export const editConfig: Command = {
         let config = await getConfig();
 
         if (args.length === 0) {
+            let copy = config
 
-            if (config.disabledcommands.length > 0) {
-                config.disabledcommands = [];
+            if (copy.disabledcommands.length > 0) {
+                copy.disabledcommands = [];
             }
 
-            let s = JSON.stringify(config, null, 4);
+            let s = JSON.stringify(copy, null, 4);
             console.log(s);
             let arr = s.match(/"\w+":/g)!;
             arr.splice(0, 2);

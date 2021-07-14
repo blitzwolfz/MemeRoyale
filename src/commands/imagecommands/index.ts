@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Client, Message, MessageAttachment } from "discord.js";
 const DIG = require("discord-image-generation");
+import * as contest from "./contest";
 
 import type { Command } from "../../types";
 //@ts-ignore
@@ -129,3 +130,4 @@ export default [
     winners,
     beautiful
 ]
+.concat(contest.default)

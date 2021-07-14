@@ -136,3 +136,17 @@ export interface DuelProfile {
     wins: number;
     loss: number;
 }
+
+export interface Contest {
+    _id: "contest";
+    open:boolean;
+    vote:boolean;
+    users:Contestant[];
+    msgIDS:string[];
+}
+
+export interface Contestant {
+    _id:string;
+    url:string;
+    voters:string[],
+}
