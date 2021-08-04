@@ -833,7 +833,7 @@ client.on("message", async message => {
   else if (command === "announce") {
     if (!message.member!.roles.cache.has('719936221572235295')) return message.reply("only selected users can use this command. If any problem occured, DM <@393137628083388430>.");
     let c: configDB = await getConfig(), output = c.upmsg
-    let channel = <Discord.TextChannel>client.channels.cache.get("722284266108747880"); //Change this to the announcement channel id
+    let channel = <Discord.TextChannel>client.channels.cache.get("722284266108747880");
 
     if (["everyone", "e", "Everyone", "E"].includes(args[0])) channel.send(`@everyone ${output}`);
 

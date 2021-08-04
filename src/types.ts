@@ -24,7 +24,8 @@ export interface config {
 }
 
 export interface Match {
-    _id: string,
+    _id: string;
+    pause: boolean;
     messageID: Array<string>;
     split: boolean;
     exhibition: boolean;
@@ -44,6 +45,7 @@ export interface Match {
 
 export interface Qual {
     _id: string;
+    pause: boolean;
     messageID: Array<string>;
     players: Array<QualPlayer>;
     temp: {
@@ -68,6 +70,7 @@ export interface Signups {
     _id: "signups";
     msgID: string;
     open: boolean;
+    autoClose: number;
     users: Array<string>;
 }
 
@@ -115,6 +118,16 @@ export interface Profile {
     points: number;
     wins: number;
     loss: number;
+    totalMemes: number;
+    totalTime: number;
+    voteDM:boolean;
+}
+
+export interface levelProfile {
+    _id: string;
+    xp: number;
+    level: number
+    timeStamp: number;
 }
 
 export interface DuelProfile {
@@ -123,4 +136,41 @@ export interface DuelProfile {
     points: number;
     wins: number;
     loss: number;
+}
+
+export interface Contest {
+    _id: "contest";
+    open: boolean;
+    vote: boolean;
+    users: Contestant[];
+    msgIDS: string[];
+}
+
+export interface Contestant {
+    _id: string;
+    url: string;
+}
+
+export interface AutoCommands {
+    _id: "autocommands",
+    todo: todoCommands[]
+}
+
+export interface todoCommands {
+    _id: string,
+    timestamp: number,
+    message: {
+        id:string,
+        channelID:string,
+    },
+    args: string[];
+}
+
+export interface verificationDoc {
+    _id:"verify",
+    users: {
+        _id: string,
+        code: string,
+        nickname: string,
+    }[]
 }

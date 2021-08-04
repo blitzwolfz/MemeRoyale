@@ -6,7 +6,6 @@ import * as c from "./index";
 export const help: Command = {
     name: "help",
     aliases: [
-        "helpmenu",
         "menu"
     ],
     group: "helpmenu",
