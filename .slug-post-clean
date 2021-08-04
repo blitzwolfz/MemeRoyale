@@ -4,4 +4,4 @@ oldindex.txt
 README.md
 .gitignore
 tsconfig.json
-node_modules
+./dist/tsconfig.tsbuildinfo
