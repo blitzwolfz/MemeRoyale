@@ -1,6 +1,6 @@
-import type { Command, config, MatchList, Profile, QualList, Signups, VerificationForm } from "./types";
+import type { Command, config, MatchList, Profile, QualList, Signups, VerificationForm } from "../types";
 import type { Client, Message } from "discord.js";
-import { insertDuelProfile, insertProfile, getAllColl, getOneColl, insertDoc, insertExhibition } from "./db";
+import { insertDuelProfile, insertProfile, getAllColl, getOneColl, insertDoc, insertExhibition } from "../db";
 
 
 interface MMuser {
@@ -47,7 +47,7 @@ export const transition: Command = {
         }
 
         let obj: Signups = {
-            _id: "signups", msgID: "", open: false, users: []
+             _id: "signups", msgID: "", autoClose: 0, open: false, users: []
         };
 
         let obj2: MatchList = {
@@ -78,7 +78,7 @@ export const transition: Command = {
             _id:1,
             disabledcommands:[],
             colour:"#d7be26",
-            status:"Deadlines people, deadlines. Also check out https://memeroyale.mrworldberg.repl.co/",
+            status:"",
             servers:["621044091056029696"],
             isfinale:false
         }

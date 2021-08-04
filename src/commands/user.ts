@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { insertDuelProfile, insertProfile, getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile } from "../db";
+import { getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
 import type { Command, DuelProfile, Profile } from "../types";
 import { backwardsFilter, forwardsFilter } from "./util";
 
@@ -20,7 +20,7 @@ export const create_profile: Command = {
         else {
 
             await insertProfile({
-                _id: message.author.id, votetally: 0, points: 0, wins: 0, loss: 0
+                _id: message.author.id, totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0, voteDM:true,
             });
 
 
@@ -43,12 +43,12 @@ export const profile_stats: Command = {
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
-        let user: Profile = await getProfile(args[1] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
+        let user: Profile = await getProfile(args[0] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
         // ||
         // args[0]
         // ||
-        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
-        let name = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
+        let imgurl = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
+        let name = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
         if (!user) {
             return message.reply("That user profile does not exist! Please do `!create` to create your own user profile");
         }
@@ -64,14 +64,36 @@ export const profile_stats: Command = {
             .setThumbnail(imgurl)
             //.setColor("#d7be26")
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`}, {
-                name: 'Total Wins', value: `${user.wins}`
-            }, {name: 'Total Loss', value: `${user.loss}`}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`
-            }, {name: 'Win Rate', value: `${wr}%`});
+            .addFields({name: 'Total Points', value: `${user.points}`, inline:true},
+                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true}, {
+                name: 'Total Wins', value: `${user.wins}`, inline:true
+            }, {name: 'Total Loss', value: `${user.loss}`, inline:true}, {
+                name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true
+            }, {name: 'Win Rate', value: `${wr}%`, inline:true});
 
             await message.channel.send(UserEmbed);
         }
+    }
+};
+
+export const disableDM: Command = {
+    name: "dm",
+    description: "Disable or Enable dm for vote confirmation",
+    group: "profile",
+    owner: false,
+    admins: false,
+    mods: false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let user: Profile = await getProfile(message.author.id);
+        if (!user) {
+            return message.reply("That user profile does not exist! Please do `!create` to create your own user profile");
+        }
+
+        user.voteDM = user.voteDM === false ? true : false;
+
+        await updateProfile(user);
+
+        return message.reply(`Vote confirmation dms are now ${user.voteDM ? "enabled." : "disabled."}`);
     }
 };
 
@@ -83,7 +105,7 @@ export async function createProfileatMatch(userId: string) {
 
     else {
         await insertProfile({
-            _id: userId, votetally: 0, points: 0, wins: 0, loss: 0
+            _id: userId, totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0, voteDM:true,
         });
     }
 }
@@ -98,12 +120,12 @@ export const profile_lb: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllProfiles();
 
-        let symbol: "wins" | "points" | "loss" | "votetally" | "ratio" = "wins";
+        let symbol: "wins" | "points" | "loss" | "votetally" | "totalTime" | "ratio" = "wins";
         //@ts-ignore
         let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : args[1];
 
 
-        switch (args[0]?.[0]) {
+        switch (args[0]?.[0].toLowerCase()) {
             case "p":
                 symbol = "points";
                 break;
@@ -112,6 +134,9 @@ export const profile_lb: Command = {
                 break;
             case "l":
                 symbol = "loss";
+                break;
+            case "t":
+                symbol = "totalTime";
                 break;
             case "v":
                 symbol = "votetally";
@@ -140,7 +165,8 @@ export const profile_lb: Command = {
     }
 };
 
-async function makeProfileEmbed(page: number = 1, client: Client, profiles: Profile[], symbol: "wins" | "points" | "loss" | "votetally" | "ratio", userid: string) {
+async function makeProfileEmbed(page: number = 1, client: Client, profiles: Profile[],
+                                symbol: "wins" | "points" | "loss" | "votetally" | "ratio" | "totalTime", userid: string) {
 
     page = page < 1 ? 1 : page;
 
@@ -162,6 +188,24 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
         });
     }
 
+    else if (symbol === "totalTime") {
+
+        profiles.sort(function (a, b) {
+            return a[symbol] - b[symbol];
+        });
+
+        // profiles.forEach(function (p) {
+        //     console.log(p._id)
+        //     if (p.totalTime === 0) {
+        //         profiles.splice(profiles.findIndex(x => x._id === p._id));
+        //     }
+        // });
+
+        profiles = profiles.filter(function (p) {
+            if(p.totalTime !== 0) return p
+        })
+    }
+
     else {
         profiles.sort(function (a, b) {
             return b[symbol] - a[symbol];
@@ -169,30 +213,9 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
     }
 
     for (let i = index; i < index + 10; i++) {
-
         let obj = profiles[i];
         try {
             let strr = "";
-            // if (symbol === "ratio") {
-            //     let mat = Math.floor(obj.wins / (obj.wins + obj.loss) * 100)
-
-            //     if (obj.wins + obj.loss === 0) mat = 0;
-
-            //     strr += "Win Ratio: " + `${mat}`
-            // }
-
-            // else {
-            //     switch (symbol) {
-            //         case "loss":
-            //             strr += `Losses: ${obj.loss}`;
-            //             break;
-            //         case "votetally":
-            //             strr += `Total matches voted: ${obj.votetally}`;
-            //             break;
-            //         default:
-            //             strr += `Wins: ${obj.wins}`;
-            //     }
-            // }
 
             switch (symbol) {
                 case "ratio":
@@ -203,6 +226,12 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
                 case "loss":
                     strr += `Losses: ${obj.loss}`;
                     break;
+                case "points":
+                    strr += `Points: ${obj.points}`;
+                    break;
+                case "totalTime":
+                    strr += `avg. Time: ${(obj.totalTime/60).toFixed(2)} mins`;
+                    break;
                 case "votetally":
                     strr += `Total matches voted: ${obj.votetally}`;
                     break;
@@ -211,7 +240,7 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
             }
 
             fields.push({
-                name: `${i + 1}) ${await (await client.users.fetch(profiles[i]._id)).username}`, value: strr
+                name: `${i + 1}) ${((await client.users.fetch(profiles[i]._id)).username)}`, value: strr
             });
         } catch {
 
@@ -231,13 +260,20 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
         case "votetally":
             strrr += `Total matches voted in.`;
             break;
+        case "points":
+            strrr += `Points.`;
+            break;
+        case "totalTime":
+            strrr += `avg. Time.`;
+            break;
         default:
             strrr += `Wins.`;
     }
 
     return {
-        title: `Leaderboard sorted by ${strrr}. You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`,
+        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
+        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
+            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`,
         fields,
         color: "#d7be26",
         timestamp: new Date()
@@ -504,7 +540,8 @@ export default [
     profile_lb,
     duel_stats,
     duel_lb,
-    duel_stats_create
+    duel_stats_create,
+    disableDM
 ]
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;

@@ -39,7 +39,7 @@ export const reload_match: Command = {
     }
 };
 
-export const end_match: Command = {
+export const endmatch: Command = {
     name: "end-match",
     description: "This will end the match.",
     group: "match",
@@ -77,7 +77,7 @@ export const forcevote: Command = {
     }
 };
 
-export const matchlist: Command = {
+export const matchList: Command = {
     name: "matchlist",
     description: "View all the players fighting in brackets",
     group: "match",
@@ -106,7 +106,7 @@ export const matchlist: Command = {
     }
 };
 
-export const match_stats: Command = {
+export const matchStats: Command = {
     name: "match-stats",
     description: "View Match Statistics except voting.\mJust mention the channel name" + `\`!match-stats @Channel\``,
     group: "match",
@@ -143,7 +143,7 @@ export const match_stats: Command = {
                     inline: true
                 }, {
                     name: 'Time left',
-                    value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
+                    value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
                 }, {name: '\u200B', value: '\u200B'},
 
@@ -161,7 +161,7 @@ export const match_stats: Command = {
                     inline: true
                 }, {
                     name: 'Time left',
-                    value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${60 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
+                    value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
                 }, {name: '\u200B', value: '\u200B'},
 
@@ -188,7 +188,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
 
         try {
             fields.push({
-                name: `${i + 1}) ${await (await client.users.fetch(list[i])).username}`, value: `UserID is: ${list[i]}`
+                name: `${i + 1}) ${((await client.users.fetch(list[i])).username)}`, value: `UserID is: ${list[i]}`
             });
         } catch {
 
@@ -197,7 +197,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
     }
 
     return {
-        title: `All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}`,
+        title: `All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}. ${list.length} users.`,
         fields,
         color: "#d7be26",
         timestamp: new Date()
@@ -205,7 +205,7 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
 }
 
 export async function matchcard(client: Client, channelid: string, users: string[]) {
-    let ch = <TextChannel>await client.channels.fetch(channelid);
+    //let ch = <TextChannel>await client.channels.fetch(channelid);
 
     const canvas = Canvas.createCanvas(1917, 1168);
     const ctx = canvas.getContext('2d');
@@ -222,11 +222,11 @@ export async function matchcard(client: Client, channelid: string, users: string
     await ctx.drawImage(avatar2, ((canvas.width / 2) + 270), 300 - 26, 740, 636);
     //await ctx.drawImage(avatar2, (320), 300-26, 740, 636);
 
-    await ctx.drawImage(await Canvas.loadImage("newbackground.png"), 0, 0, canvas.width, canvas.height);
-
-    const attachment = new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
+    await ctx.drawImage(await Canvas.loadImage("https://cdn.discordapp.com/attachments/722616679280148504/870102057858793502/newbackground.png"), 0, 0, canvas.width, canvas.height);
+    return new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
+    //const attachment = new MessageAttachment(canvas.toBuffer(), 'matchcard.jpg');
     //await message.channel.send({ files: [attachment]})
-    await ch.send(attachment);
+    // await ch.send(attachment);
 }
 
 export async function winner(client: Client, userid: string) {
@@ -255,7 +255,7 @@ export async function winner(client: Client, userid: string) {
 
     await ctx.restore();
 
-    await ctx.drawImage(await Canvas.loadImage("winnercardnobackgroundwithname.png"), 0, 0, canvas.width, canvas.height);
+    await ctx.drawImage(await Canvas.loadImage("https://cdn.discordapp.com/attachments/722616679280148504/870102003211190312/winnercardnobackgroundwithname.png"), 0, 0, canvas.width, canvas.height);
 
     const attachment = new MessageAttachment(canvas.toBuffer(), 'welcome-image.jpg');
     //await message.channel.send({ files: [attachment]})
@@ -271,10 +271,7 @@ export async function grandwinner(client: Client, userid: string) {
 
     const canvas = Canvas.createCanvas(1032, 648);
     const ctx = canvas.getContext('2d');
-    //await ctx.drawImage(await Canvas.loadImage("winnercardnobackgroundwithname.png"), 0, 0, canvas.width,
-    // canvas.height);
 
-    //await ctx.drawImage(avatar, 547.5, 298.5, 200, 200);
     //@ts-ignore
     ctx.fill("#FF0000");
     await ctx.save();
@@ -290,7 +287,7 @@ export async function grandwinner(client: Client, userid: string) {
 
     await ctx.restore();
 
-    await ctx.drawImage(await Canvas.loadImage("Tourneywinner.png"), 0, 0, canvas.width, canvas.height);
+    await ctx.drawImage(await Canvas.loadImage("https://cdn.discordapp.com/attachments/722616679280148504/870102028062429284/Tourneywinner.png"), 0, 0, canvas.width, canvas.height);
 
     const attachment = new MessageAttachment(canvas.toBuffer(), 'welcome-image.jpg');
     //await message.channel.send({ files: [attachment]})

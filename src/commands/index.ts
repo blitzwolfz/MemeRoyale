@@ -1,17 +1,24 @@
 import { Client, Message, MessageEmbed, User } from "discord.js";
 import type { Command } from "../types";
 import { help } from "./help";
-import { cancelmatch, endmatch, splitmatch, startmatch, startsplit } from "./match";
-import { end_match, forcevote, match_stats, reload_match } from "./match/utils";
+import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
+import { endmatch, forcevote, matchStats, matchList, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
-import { forcevote_qual, qual_result_sum, qual_stats, reload_qual, search } from "./quals/util";
-import { modqualsubmit, modsubmit, qualsubmit, submit } from "./submit";
+import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual } from "./quals/util";
+import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
 import * as b from "./tournament/index";
 import * as c from "./exhibition/index";
 import * as d from "./user";
+import * as e from "./jointcommands";
+import * as f from "./verification";
+import * as imageCommands from "./imagecommands/index";
+import * as level from "./levelsystem";
+import { manualverify } from "./verification";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
+import { transition } from "./convertMMtoMR";
+import { sleep } from "./util";
 
 //@ts-ignore
 export const example: Command = {
@@ -28,15 +35,16 @@ export const example: Command = {
 
 export const ping: Command = {
     name: "ping",
-    description: "ping",
-    group: "",
+    aliases:["pong"],
+    description: "You can ping, lmao",
+    group: "ping",
     owner: false,
     admins: false,
     mods: false,
     async execute(message: Message, client: Client, args: string[]) {
         message.channel.send(new MessageEmbed()
         .setAuthor(`Pinging`)
-        .setColor("RANDOM")).then(m => {
+        .setColor("RANDOM")).then(async m => {
             // The math thingy to calculate the user's ping
             let ping = m.createdTimestamp - message.createdTimestamp;
 
@@ -44,10 +52,17 @@ export const ping: Command = {
 
             let embed = new MessageEmbed()
             .setTitle(`Your ping is ${ping} ms`)
-            .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+            // .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
             .setColor(m.embeds![0]!.hexColor!);
             // Then It Edits the message with the ping variable embed that you created
-            m.edit(embed);
+            await m.edit(embed).then(async m => {
+                await sleep(1)
+                let embed = new MessageEmbed()
+                .setTitle(`Your ping is ${ping} ms`)
+                .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+                .setColor(m.embeds![0]!.hexColor!);
+                await m.edit(embed)
+            });
         });
     }
 };
@@ -72,9 +87,9 @@ export const disableCommands: Command = {
 
         else {
             if (args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to disable all of them, do `!enable all`.");
-            config.disabledcommands.push(args[0]);
             config.disabledcommands.splice(config.disabledcommands.indexOf("enable"), 1);
             config.disabledcommands.splice(config.disabledcommands.indexOf("disable"), 1);
+            config.disabledcommands.push(args[0]);
             await updateConfig(config);
             return message.reply(`Disabled ${args[0]}.`);
         }
@@ -118,12 +133,13 @@ export const editConfig: Command = {
         let config = await getConfig();
 
         if (args.length === 0) {
+            let copy = config
 
-            if (config.disabledcommands.length > 0) {
-                config.disabledcommands = [];
+            if (copy.disabledcommands.length > 0) {
+                copy.disabledcommands = [];
             }
 
-            let s = JSON.stringify(config, null, 4);
+            let s = JSON.stringify(copy, null, 4);
             console.log(s);
             let arr = s.match(/"\w+":/g)!;
             arr.splice(0, 2);
@@ -167,7 +183,7 @@ export const editConfig: Command = {
 
                 case "status":
                     if (typeof args.slice(1).join(" ") !== 'string') {
-                        return message.reply("Status requires the hex code as a string");
+                        return message.reply("Status requires a string");
                     }
 
                     config.status = args.slice(1).join(" ");
@@ -202,7 +218,7 @@ export const editConfig: Command = {
                     break;
 
                 case "isfinale":
-
+                    if(!args[1]) return  message.reply("isfinale must either be true or false");
                     await message.channel.send("No type check. Click emote to continue").then(async msg => {
 
                         await msg.react(`✔️`);
@@ -219,6 +235,10 @@ export const editConfig: Command = {
                             }
 
                             await updateConfig(config);
+                            config.isfinale ? await message.reply("All matches are now evaluated as a" +
+                                " finale match.") : await message.reply("All matches are now evaluated as a non" +
+                                " finale" +
+                                " match.")
                         });
 
                     });
@@ -234,6 +254,7 @@ export const editConfig: Command = {
 
 export default [
     editConfig,
+    transition,
     enableCommands,
     disableCommands,
     startmatch,
@@ -244,10 +265,10 @@ export default [
     reload_qual,
     qual_result_sum,
     ping,
-    end_match,
+    endmatch,
     forcevote,
     forcevote_qual,
-    search,
+    qual_winner,
     splitmatch,
     cancelmatch,
     submit,
@@ -257,13 +278,22 @@ export default [
     splitqual,
     help,
     startsplitqual,
+    matchList,
     cancelqual,
     endqual,
     qual_stats,
-    match_stats
-].concat(b.default)
+    matchStats,
+    templateSubmission,
+    themeSubmission,
+    manualverify
+]
+.concat(b.default)
 .concat(c.default)
 .concat(d.default)
+.concat(e.default)
+.concat(f.default)
+.concat(imageCommands.default)
+.concat(level.default)
 .sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
