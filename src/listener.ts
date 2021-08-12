@@ -342,7 +342,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             else if (await messageReaction.message.embeds[0].fields) {
                 let obj = await getThemes();
 
-                obj.list.push(messageReaction.message.embeds[0].fields[1].value);
+                obj.list.push(messageReaction.message.embeds[0].fields[0].value);
 
                 await updateThemedB({
                     _id: "themelist", list: obj.list
