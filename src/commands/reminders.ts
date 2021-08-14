@@ -3,6 +3,7 @@ import { deleteReminder, getAllReminders, getReminder, updateReminder } from "..
 import type { Command } from "../types";
 import { startsplit } from "./match";
 import { startsplitqual } from "./quals";
+import { MessageEmbed } from "discord.js";
 
 
 export async function backgroundReminderLoop(client: Client) {
@@ -64,13 +65,14 @@ export async function backgroundReminderLoop(client: Client) {
                                 await startsplitqual.execute(m, client, [xx])
                             }
 
-                            await (<TextChannel>client.channels.cache.get("748760056333336627")).send({
-                                embed: {
-                                    description: `<@${client.user?.id}>/${client.user?.tag} has auto started <@${xx}> in <#${r.channel}>`,
-                                    color: "#d7be26",
-                                    timestamp: new Date()
-                                }
-                            });
+                            let em = new MessageEmbed()
+                                .setDescription(`<@${client.user?.id}>/${client.user?.tag} has auto started <@${xx}> in <#${r.channel}>`)
+                                .setColor("#d7be26")
+                                .setTimestamp(new Date())
+
+                            await (<TextChannel>client.channels.cache.get("748760056333336627")).send({embeds:[
+                                    em
+                                ]});
                         }
                     }
 
@@ -113,9 +115,10 @@ export const delay: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let reminder = await getReminder(await message.mentions.channels.first()!.id);
-        if (message.mentions.channels.array().length === 0) {
+        if ([message.mentions.channels.keys()].length === 0) {
             return message.reply("Please mention a channel");
         }
         args.splice(0, 1)

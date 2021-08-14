@@ -1,7 +1,7 @@
 import { Client, Message, MessageEmbed } from "discord.js";
 import { getExhibition, getTemplatedB, getThemes, insertMatch, updateExhibition } from "../../db";
 import type { Command, Match } from "../../types";
-import { createDuelProfileatMatch } from "../user";
+import { createDuelProfileAtMatch } from "../user";
 import * as s from "./utils";
 
 export const duel: Command = {
@@ -12,8 +12,9 @@ export const duel: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
-        if (!message.mentions.users.array()) {
+        if (![message.mentions.users.values()]) {
             return message.reply("Please mention someone");
         }
 
@@ -48,7 +49,7 @@ export const duel: Command = {
 
         let m = message;
 
-        const filter = (response: any) => {
+        const duelWaitForResponseFilter = (response: any) => {
             return (("accept").toLowerCase() === response.content.toLowerCase());
         };
 
@@ -70,7 +71,7 @@ export const duel: Command = {
 
         await message.mentions.users.first()?.send(`<@${m.author.id}> wants to duel you. Send Accept to continue, or don't reply to not`).then(async (userdm: Message) => {
             //console.log(userdm.channel.id)
-            await userdm.channel.awaitMessages(filter, {max: 1, time: 90000, errors: ['time']})
+            await userdm.channel.awaitMessages({filter:duelWaitForResponseFilter, max: 1, time: 90000, errors: ['time']})
             //Don't know why it's raising an error in this code base but didn't in the old one
             //@ts-ignore
             .then(async collected => {
@@ -98,11 +99,11 @@ export const duel: Command = {
             ex = await getExhibition();
 
             let guild = client.guilds.cache.get(message.guild!.id)!;
-            let category = await guild!.channels.cache.find(c => c.name.toLowerCase() == "duels" && c.type == "category")!;
+            let category = await guild!.channels.cache.find(c => c.name.toLowerCase() == "duels" && c.type == "GUILD_CATEGORY")!;
 
             await guild?.channels
             .create(`${message.author.username}-vs-${message.mentions.users.first()?.username}`, {
-                type: 'text', topic: `Exhibition Match`, parent: category!.id
+                type: 'GUILD_TEXT', topic: `Exhibition Match`, parent: category!.id
             })
             .then(async channel => {
 
@@ -162,7 +163,11 @@ export const duel: Command = {
                 .setDescription(`<@${user1.id}> and <@${user2.id}> both have 30 mins to complete your memes.\n Contact admins if you have an issue.`)
                 .setTimestamp();
 
-                channel.send({embed});
+                channel.send({
+                    embeds:[
+                        embed
+                    ]
+                });
 
                 if (m.temp.istheme) {
                     await user1.send(`Your theme is: ${m.temp.link}`);
@@ -171,17 +176,25 @@ export const duel: Command = {
                 }
 
                 else {
-                    await user1.send(new MessageEmbed()
-                    .setTitle("Your template")
-                    .setImage(m.temp.link)
-                    .setColor("#d7be26")
-                    .setTimestamp());
+                    await user1.send({
+                        embeds:[
+                            new MessageEmbed()
+                                .setTitle("Your template")
+                                .setImage(m.temp.link)
+                                .setColor("#d7be26")
+                                .setTimestamp()
+                        ]
+                    });
 
-                    await user2.send(new MessageEmbed()
-                    .setTitle("Your template")
-                    .setImage(m.temp.link)
-                    .setColor("#d7be26")
-                    .setTimestamp());
+                    await user2.send({
+                        embeds:[
+                            new MessageEmbed()
+                                .setTitle("Your template")
+                                .setImage(m.temp.link)
+                                .setColor("#d7be26")
+                                .setTimestamp()
+                        ]
+                    });
                 }
 
                 await user1.send(`You have 30 mins to complete your meme\nUse \`!submit\` to submit each image. If you have an active match in MemeRoyale, you will have to submit based on channel`);
@@ -195,8 +208,8 @@ export const duel: Command = {
                 await insertMatch(m);
                 ex.activematches.push(channel.id);
                 await updateExhibition(ex);
-                await createDuelProfileatMatch(user1.id, guild.id);
-                return await createDuelProfileatMatch(user2.id, guild.id);
+                await createDuelProfileAtMatch(user1.id, guild.id);
+                return await createDuelProfileAtMatch(user2.id, guild.id);
 
             });
         }

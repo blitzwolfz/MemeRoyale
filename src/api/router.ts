@@ -1,5 +1,5 @@
 import { getAllDuelProfiles, getAllMatches, getAllProfiles, getAllQuals, getDuelProfile, getMatch, getProfile, getQual } from "../db";
-import { client } from "../listener";
+import { client } from "../listeners/index";
 import type { APIMatch, APIProfile, APIQual } from "./apitypes";
 import express from "express";
 
@@ -102,16 +102,16 @@ app.get('/duelists-servers', async (req, res) => {
             _id: string, hasDuelists?: true | false
         }[] = [];
 
-        let gg = await client.guilds.cache.array();
+        let gg = [...await client.guilds.cache.keys()];
 
         for (let g of gg) {
             data.push({
-                _id: g.id
+                _id: g
             });
         }
 
         for (let d of data) {
-            if (await (await getAllDuelProfiles(d._id)).length === 0) {
+            if ((await getAllDuelProfiles(d._id)).length === 0) {
                 d.hasDuelists = false;
             }
 

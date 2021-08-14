@@ -1,7 +1,7 @@
-import { Collection, Message, Snowflake, TextChannel, User } from "discord.js";
+import { ApplicationCommandPermissionData, Collection, Message, MessageReaction, Snowflake, TextChannel, User } from "discord.js";
 
-export const backwardsFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '⬅' && !user.bot;
-export const forwardsFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '➡' && !user.bot;
+export const backwardsFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === '⬅' && !user.bot;
+export const forwardsFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === '➡' && !user.bot;
 
 export let emojis = [
     "1️⃣",
@@ -121,3 +121,34 @@ export async function shuffle(a: any[]) {
     }
     return a;
 }
+
+export const userDefaultSlashPermissions:ApplicationCommandPermissionData  = {
+    id: '719941380503371897',
+    permission:false,
+    type:"ROLE"
+}
+
+export const refDefaultSlashPermissions:ApplicationCommandPermissionData  = {
+    id: '724818272922501190',
+    permission:true,
+    type:"ROLE"
+}
+
+export const commissionerDefaultSlashPermissions:ApplicationCommandPermissionData  = {
+    id: '719936221572235295',
+    permission:true,
+    type:"ROLE"
+}
+
+export const ownerDefaultSlashPermissions:ApplicationCommandPermissionData  = {
+    id: '239516219445608449',
+    permission:true,
+    type:"USER"
+}
+
+export const defaultSlashPermissions = [
+    ownerDefaultSlashPermissions,
+    commissionerDefaultSlashPermissions,
+    refDefaultSlashPermissions,
+    userDefaultSlashPermissions
+]

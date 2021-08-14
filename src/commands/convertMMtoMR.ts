@@ -28,6 +28,7 @@ export const transition: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
     execute: async function (message: Message, client: Client, args: string[]) {
         let mmU: MMuser[] = await getAllColl("users");
         let temp = await getOneColl("tempstruct", "templatelist");

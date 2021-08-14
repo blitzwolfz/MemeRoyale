@@ -13,6 +13,7 @@ export const matchchannelcreate: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (!args) {
             return message.reply("Please input round number and how long the round is!");
@@ -89,9 +90,9 @@ export const matchchannelcreate: Command = {
                                     if (name2.length > 0 && name1.length > 0) {
                                         channelstringname += name1.substring(0, 10) + "-vs-" + name2.substring(0, 10);
                                     }
-                                    let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "category")!;
+                                    let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "GUILD_CATEGORY")!;
                                     await message.guild!.channels.create(channelstringname, {
-                                        type: 'text', topic: `48h to complete`,
+                                        type: 'GUILD_TEXT', topic: `48h to complete`,
                                     position:d.match.id, parent:category.id})
                                     .then(async channel => {
 
@@ -119,7 +120,13 @@ export const matchchannelcreate: Command = {
                                                 names.find(x => x.str === name2)!.id
                                             ]).catch();
                                             await sleep(2)
-                                            await channel.send(`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`, image);
+                                            await channel
+                                                .send({
+                                                    content:`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`,
+                                                    files:[
+                                                        image
+                                                    ]
+                                                });
                                         } catch (error) {
                                             await message.channel.send(`${channelstringname} no Match card`)
                                             await message.channel.send(error.stack)
@@ -145,6 +152,7 @@ export const qualchannelcreate: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let time = parseInt(args[1]);
         if (!time) return message.channel.send("Please state how long this qualifier will be");
@@ -154,10 +162,10 @@ export const qualchannelcreate: Command = {
 
             if (qlist.users[i].length > 0) {
 
-                let category = await message.guild!.channels.cache.find(c => c.name == "qualifiers" && c.type == "category");
+                let category = await message.guild!.channels.cache.find(c => c.name == "qualifiers" && c.type == "GUILD_CATEGORY");
 
                 await message.guild!.channels.create(`Group ${i + 1}`, {
-                    type: 'text', topic: `Round ${args[0]}`, parent: category!.id
+                    type: 'GUILD_TEXT', topic: `Round ${args[0]}`, parent: category!.id
                 })
                 .then(async channel => {
                     let string = "";
@@ -191,6 +199,7 @@ export const matchbracket: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         const cclient = challonge.createClient({
             apiKey: process.env.CHALLONGE
@@ -234,11 +243,15 @@ export const matchbracket: Command = {
 
         //await ChannelCreation(message, disclient, ["1"])
 
-        await message.reply(new MessageEmbed()
-        .setColor("#d7be26")
-        .setTitle(`Meme Royale: ${args[0]}`)
-        .setDescription(`Here's the link to the brackets\nhttps://www.challonge.com/${matchid}`)
-        .setTimestamp());
+        await message.reply({
+            embeds:[
+                new MessageEmbed()
+                    .setColor("#d7be26")
+                    .setTitle(`Meme Royale: ${args[0]}`)
+                    .setDescription(`Here's the link to the brackets\nhttps://www.challonge.com/${matchid}`)
+                    .setTimestamp()
+            ]
+        });
     }
 };
 
@@ -249,8 +262,9 @@ export const channeldelete: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
-        let catchannels = message!.guild!.channels.cache.array()!;
+        let catchannels = [...message!.guild!.channels.cache.values()];
 
         for (let channel of catchannels) {
 

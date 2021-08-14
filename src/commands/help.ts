@@ -13,6 +13,7 @@ export const help: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (args.length === 0) {
 
@@ -32,14 +33,14 @@ export const help: Command = {
 
         if (c.default.find(c => c.name === args[0])) {
             let g = args[0];
+            let descriptionForEmbed = c.default!.map(cmd => {
+                if (cmd.name === g) return cmd.description;
+            }).toString()
 
             const embed = new MessageEmbed()
             .setTitle(`!${g}`)
-
-            .setDescription(c.default.map(cmd => {
-                if (cmd.name === g) return cmd.description;
-            }))
-            .setColor(await (await getConfig()).colour);
+            .setDescription(descriptionForEmbed)
+            .setColor(`#${(await getConfig()).colour}`);
 
             if (c.default.find(c => c.name === args[0])?.aliases) {
                 embed.addField("Also known as:", "\u200B");
@@ -47,7 +48,7 @@ export const help: Command = {
                     embed.addField(`!${g}`, `\u200B`, true);
                 }
             }
-            await message.channel.send(embed);
+            await message.channel.send({embeds: [embed]});
         }
 
         if (c.default.find(c => c.group === args[0])) {
@@ -66,29 +67,29 @@ export const help: Command = {
                         return "";
                     }
 
-                    if (cmd.admins && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner") === true) {
+                    if (cmd.admins && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner")) {
                         return "`" + "§§" + cmd.name + "`" + "\n";
                     }
 
-                    else if (cmd.admins && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner") === false) {
+                    else if (cmd.admins && !message.member!.roles.cache.find(x => x.name.toLowerCase() === "comissioner")) {
                         return "";
                     }
 
-                    if (cmd.mods && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee") === true) {
+                    if (cmd.mods && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee")) {
                         return "`" + "§" + cmd.name + "`" + "\n";
                     }
 
-                    else if (cmd.mods && !!message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee") === false) {
+                    else if (cmd.mods && !message.member!.roles.cache.find(x => x.name.toLowerCase() === "referee")) {
                         return "";
                     }
 
                     return "`" + cmd.name + "`" + "\n";
                 }
             }).join(""))
-            .setColor(await (await getConfig()).colour)
+            .setColor(await `#${(await getConfig()).colour}`)
             .setFooter(`You can send \`!help <command name>\` to get info on a specific command!`);
 
-            await message.channel.send(embed);
+            await message.channel.send({embeds: [embed]});
         }
     }
 };

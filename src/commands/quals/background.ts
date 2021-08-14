@@ -3,6 +3,7 @@ import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, insertR
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
 import { QualifierResults } from "./util";
+
 require('dotenv').config();
 
 export async function backgroundQualLoop(client: Client) {
@@ -74,38 +75,54 @@ async function matchVotingLogic(client: Client, m: Qual) {
     // }
 
     if (m.temp.istheme) {
-        channel.send(new MessageEmbed()
-        .setTitle("Theme")
-        .setDescription(`The theme is ${m.temp.link}`)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle("Theme")
+                    .setDescription(`The theme is ${m.temp.link}`)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
     else {
-        channel.send(new MessageEmbed()
-        .setTitle("Template")
-        .setImage(m.temp.link)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle("Template")
+                    .setImage(m.temp.link)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
     for (let p of m.players) {
         if (p.failed === false) {
-            channel.send(new MessageEmbed()
-            .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
-            .setImage(p.memelink)
-            .setColor((await getConfig()).colour)).then(async msg => {
+            channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
+                        .setImage(p.memelink)
+                        .setColor(`#${(await getConfig()).colour}`)
+                ]
+            }).then(async msg => {
                 m.messageID.push(msg.id);
             });
         }
     }
 
-    await channel.send(new MessageEmbed()
-    .setTitle("Voting time")
-    .setDescription(`Vote for the best two memes\nVote by reacting with corresponding emote\nYou have **2 hours** to vote`)
-    .setColor(await (await getConfig()).colour)).then(async (msg) => {
+    await channel.send({
+        embeds:[
+            new MessageEmbed()
+                .setTitle("Voting time")
+                .setDescription(`Vote for the best two memes\nVote by reacting with corresponding emote\nYou have **2 hours** to vote`)
+                .setColor(await `#${(await getConfig()).colour}`)
+        ]
+    }).then(async (msg) => {
         m.messageID.push(msg.id);
 
         for (let p of m.players) {
@@ -155,24 +172,25 @@ async function matchResults(client: Client, q: Qual) {
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
         .send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `No votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`No votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         });
 
-
         channel.send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `No votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle(`Votes for ${channel.name} are in!`)
+                        .setDescription(`No votes for this qualifier`)
+                        .setFields(fields)
+                        .setColor(`#${(await getConfig()).colour}`)
+                        .setTimestamp(new Date())
+                ]
         }).then(async message => {
             let t = channel.topic?.split(" ");
 
@@ -192,12 +210,12 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm}).then(async m => {
+                await channel.send({embeds:[emm]}).then(async m => {
                     await m.react("👌")
                 });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                    .send({embeds:[emm]});
             }
 
             else if (t!.concat([message.id]).length < timeconsts.qual.results) {
@@ -268,24 +286,25 @@ async function matchResults(client: Client, q: Qual) {
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
         .send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `${totalvotes} votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`${totalvotes} votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         });
 
-
         channel.send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `${totalvotes} votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`${totalvotes} votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         }).then(async message => {
             let t = channel.topic?.split(" ");
 
@@ -338,12 +357,12 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm}).then(async m => {
+                await channel.send({embeds:[emm]}).then(async m => {
                     await m.react("👌")
                 });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                .send({embeds:[emm]});
             }
 
 

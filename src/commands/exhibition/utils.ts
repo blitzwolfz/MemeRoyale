@@ -11,6 +11,7 @@ export const duelcheck: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let ex = await getExhibition();
 
@@ -34,15 +35,20 @@ export const duelreload: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let match = await getMatch(message.channel.id);
         let channel = <TextChannel>await client.channels.cache.get(message.channel.id)!;
         message.reply("Reloading").then(async m => {
             for (let ms of match.messageID) {
-                (await channel.messages.fetch(ms)).delete();
+                try {
+                    await (await channel.messages.fetch(ms)).delete();
+                } catch {
+                    continue;
+                }
             }
 
-            m.delete({timeout: 1500});
+            await setTimeout(() => m.delete, 1500);
         });
 
         match.votingperiod = false;
@@ -60,11 +66,11 @@ export const duelcooldownreset: Command = {
     owner: false,
     admins: false,
     mods: true,
-
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let ex = await getExhibition();
 
-        for (let x of message.mentions.users.array()) {
+        for (let x of message.mentions.users.values()) {
             ex.cooldowns.splice(ex.cooldowns.findIndex(c => c.user === x.id));
             await updateExhibition(ex);
             await message.channel.send(`<@${x.id}> has been reset`);

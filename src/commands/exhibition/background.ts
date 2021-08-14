@@ -11,13 +11,19 @@ export async function backgroundExhibitionLoop(client: Client) {
 
     for (let m of matches) {
         try {
-            if (m.exhibition === false) continue;
-            if (m.p1.donesplit === true && m.p1.memedone === false && (Math.floor(Date.now()) / 1000 - m.p1.time > 1800) || m.p2.donesplit === true && m.p2.memedone === false && (Math.floor(Date.now()) / 1000 - m.p2.time > 1800)) {
+            if (!m.exhibition) continue;
+            if (m.p1.donesplit && !m.p1.memedone && (Math.floor(Date.now()) / 1000 - m.p1.time > 1800) || m.p2.donesplit && !m.p2.memedone && (Math.floor(Date.now()) / 1000 - m.p2.time > 1800)) {
                 let winner = (m.p1.memedone ? `${client.users.cache.get(m.p1.userid)?.username}` : `${client.users.cache.get(m.p2.userid)?.username}`);
-                (<TextChannel>await client.channels.cache.get(m._id)).send(new MessageEmbed()
-                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
-                .setDescription(`${winner} has won!`)
-                .setColor(await (await getConfig()).colour));
+                await (<TextChannel>await client.channels.cache.get(m._id)).send(
+                    {
+                        embeds: [
+                            new MessageEmbed()
+                                .setTitle(`${client.users.cache.get(m.p1.userid)?.username}-vs-${client.users.cache.get(m.p1.userid)?.username}`)
+                                .setDescription(`${winner} has won!`)
+                                .setColor(`#${(await getConfig()).colour}`)
+                        ]
+                    }
+                );
                 await deleteMatch(m._id);
             }
 
@@ -92,41 +98,61 @@ async function exhibitionVotingLogic(client: Client, m: Match) {
     }
 
     if (m.temp.istheme) {
-        channel.send(new MessageEmbed()
-        .setTitle("Theme")
-        .setDescription(`The theme is ${m.temp.link}`)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle("Theme")
+                    .setDescription(`The theme is ${m.temp.link}`)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
     else {
-        channel.send(new MessageEmbed()
-        .setTitle("Template")
-        .setImage(m.temp.link)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle("Template")
+                    .setImage(m.temp.link)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
-    channel.send(new MessageEmbed()
-    .setTitle("Player 1's Meme")
-    .setImage(m.p1.memelink)
-    .setColor((await getConfig()).colour)).then(async msg => {
+    channel.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Player 1's Meme")
+                .setImage(m.p1.memelink)
+                .setColor(`#${(await getConfig()).colour}`)
+        ]
+    }).then(async msg => {
         m.messageID.push(msg.id);
     });
 
-    channel.send(new MessageEmbed()
-    .setTitle("Player 2's Meme")
-    .setImage(m.p2.memelink)
-    .setColor((await getConfig()).colour)).then(async msg => {
+    channel.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Player 2's Meme")
+                .setImage(m.p2.memelink)
+                .setColor(`#${(await getConfig()).colour}`)
+        ]
+    }).then(async msg => {
         m.messageID.push(msg.id);
     });
 
-    await channel.send(new MessageEmbed()
-    .setTitle("Voting time")
-    .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **15 mins or until a player gets 5 votes** to vote`)
-    .setColor((await getConfig()).colour)).then(async (msg) => {
+    await channel.send({
+        embeds: [
+            new MessageEmbed()
+                .setTitle("Voting time")
+                .setDescription(`Vote for Meme 1 by reacting with 1️⃣\nVote for Meme 2 by reacting with 2️⃣\nYou have **15 mins or until a player gets 5 votes** to vote`)
+                .setColor(`#${(await getConfig()).colour}`)
+        ]
+    }).then(async (msg) => {
         msg.react('1️⃣');
         msg.react('2️⃣');
         m.messageID.push(msg.id);
@@ -153,19 +179,27 @@ async function exhibitionResults(client: Client, m: Match) {
     // ex.activematches.push(m._id)
     // await updateExhibition(ex)
 
-    if (m.p1.memedone === true && m.p2.memedone === false || m.p1.memedone === false && m.p2.memedone === true) {
+    if (m.p1.memedone && !m.p2.memedone || !m.p1.memedone && m.p2.memedone) {
         if (m.p1.memedone) {
-            channel.send(new MessageEmbed()
-            .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-            .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
-            .setColor((await getConfig()).colour));
+            channel.send({
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+                        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}`)
+                        .setColor(`#${(await getConfig()).colour}`)
+                ]
+            });
         }
 
         if (m.p2.memedone) {
-            channel.send(new MessageEmbed()
-            .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-            .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
-            .setColor((await getConfig()).colour));
+            channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+                        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}`)
+                        .setColor(`#${(await getConfig()).colour}`)
+                ]
+            });
         }
     }
 
@@ -178,31 +212,52 @@ async function exhibitionResults(client: Client, m: Match) {
         d2.points += (m.p2.votes * 5);
 
 
-        channel.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-        .setColor(await (await getConfig()).colour));
+        channel.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u1.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-        .setColor(await (await getConfig()).colour));
+        u1.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u2.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-        .setColor(await (await getConfig()).colour));
+        u2.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p1.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        channel.send(await winner(client, m.p1.userid));
+        channel.send({
+            files:[await winner(client, m.p1.userid)]
+        });
 
-        u1.send(await winner(client, m.p1.userid));
+        u1.send({
+            files:[await winner(client, m.p1.userid)]
+        });
 
         try {
-            await (<TextChannel>client.channels.cache.get((await guild.channels.cache.find(x => x.name.toLowerCase() === "winning-duel-memes")!.id))).send(new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
-            .setImage(m.p1.memelink)
-            .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
-            .setFooter(dateBuilder()));
+            await (<TextChannel>client.channels.cache.get((await guild.channels.cache.find(x => x.name.toLowerCase() === "winning-duel-memes")!.id)))
+                .send({
+                    embeds:[
+                        new MessageEmbed()
+                            .setColor(`#${(await getConfig()).colour}`)
+                            .setImage(m.p1.memelink)
+                            .setDescription(`${client.users.cache.get(m.p1.userid)?.username} beat ${client.users.cache.get(m.p2.userid)?.username}\n` + `by a score of ${m.p1.votes} to ${m.p2.votes} with Meme 1`)
+                            .setFooter(dateBuilder())
+                    ]
+                });
         } catch (error) {
             console.log(error.message);
             console.log("No winning duel channel");
@@ -217,31 +272,52 @@ async function exhibitionResults(client: Client, m: Match) {
         d2.votetally += m.p2.votes;
         d2.points += (25 + (m.p2.votes * 5));
 
-        channel.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-        .setColor(await (await getConfig()).colour));
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u1.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-        .setColor(await (await getConfig()).colour));
+        u1.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u2.send(new MessageEmbed()
-        .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-        .setColor(await (await getConfig()).colour));
+        u2.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`${client.users.cache.get(m.p2.userid)?.username} has won!`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        channel.send(await winner(client, m.p2.userid));
+        channel.send({
+            files:[await winner(client, m.p2.userid)]
+        });
 
-        u2.send(await winner(client, m.p2.userid));
+        u2.send({
+            files:[await winner(client, m.p2.userid)]
+        });
 
         try {
-            await (<TextChannel>client.channels.cache.get((await guild.channels.cache.find(x => x.name.toLowerCase() === "winning-duel-memes")!.id))).send(new MessageEmbed()
-            .setColor(await (await getConfig()).colour)
-            .setImage(m.p2.memelink)
-            .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
-            .setFooter(dateBuilder()));
+            await (<TextChannel>client.channels.cache.get((await guild.channels.cache.find(x => x.name.toLowerCase() === "winning-duel-memes")!.id)))
+                .send({
+                    embeds:[
+                        new MessageEmbed()
+                            .setColor(`#${(await getConfig()).colour}`)
+                            .setImage(m.p2.memelink)
+                            .setDescription(`${client.users.cache.get(m.p2.userid)?.username} beat ${client.users.cache.get(m.p1.userid)?.username}\n` + `by a score of ${m.p2.votes} to ${m.p1.votes} with Meme 2`)
+                            .setFooter(dateBuilder())
+                    ]
+                });
         } catch (error) {
             console.log(error.message);
             console.log("No winning duel channel");
@@ -253,20 +329,32 @@ async function exhibitionResults(client: Client, m: Match) {
         d2.votetally += m.p2.votes;
         d1.points += (m.p1.votes * 5);
         d2.points += (m.p2.votes * 5);
-        channel.send(new MessageEmbed()
-        .setTitle(`Both users come to a draw`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
-        .setColor(await (await getConfig()).colour));
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Both users come to a draw`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u1.send(new MessageEmbed()
-        .setTitle(`Both users come to a draw`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
-        .setColor(await (await getConfig()).colour));
+        u1.send({
+            embeds: [
+                new MessageEmbed()
+                    .setTitle(`Both users come to a draw`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
 
-        u2.send(new MessageEmbed()
-        .setTitle(`Both users come to a draw`)
-        .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
-        .setColor(await (await getConfig()).colour));
+        u2.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Both users come to a draw`)
+                    .setDescription(`${client.users.cache.get(m.p2.userid)?.username} and ${client.users.cache.get(m.p1.userid)?.username}\n` + `both got a score of ${m.p2.votes}`)
+                    .setColor(`#${(await getConfig()).colour}`)
+            ]
+        });
     }
 
     if (guild.name.toLowerCase() !== "MemeRoyale".toLowerCase()) {
@@ -274,10 +362,14 @@ async function exhibitionResults(client: Client, m: Match) {
         .setTitle("Interested in more?")
         .setDescription("Come join us in the " + "in the Meme Royale Server.\n" + "You can play more duels, and participate in our tournament\n" + "with a chance of winning our Cash Prizes.\nClick on the link in the title to join.")
         .setURL("https://discord.gg/GK3R5Vt3tz")
-        .setColor(await (await getConfig()).colour);
+        .setColor(`#${(await getConfig()).colour}`);
 
 
-        await channel.send(e);
+        await channel.send({
+            embeds: [
+                e
+            ]
+        });
     }
 
     await updateDuelProfile(d1._id, d1, guild.id);

@@ -1,4 +1,4 @@
-import { Client, Message, MessageEmbed, User } from "discord.js";
+import { Client, CommandInteraction, Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import type { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
@@ -18,7 +18,7 @@ import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
 import { transition } from "./convertMMtoMR";
-import { sleep } from "./util";
+import { defaultSlashPermissions, sleep } from "./util";
 
 //@ts-ignore
 export const example: Command = {
@@ -41,10 +41,14 @@ export const ping: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
-        message.channel.send(new MessageEmbed()
-        .setAuthor(`Pinging`)
-        .setColor("RANDOM")).then(async m => {
+        message.channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setAuthor(`Pinging`)
+            ]
+        }).then(async m => {
             // The math thingy to calculate the user's ping
             let ping = m.createdTimestamp - message.createdTimestamp;
 
@@ -55,16 +59,33 @@ export const ping: Command = {
             // .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
             .setColor(m.embeds![0]!.hexColor!);
             // Then It Edits the message with the ping variable embed that you created
-            await m.edit(embed).then(async m => {
+            await m.edit({embeds: [embed]}).then(async m => {
                 await sleep(1)
                 let embed = new MessageEmbed()
                 .setTitle(`Your ping is ${ping} ms`)
                 .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
                 .setColor(m.embeds![0]!.hexColor!);
-                await m.edit(embed)
+                await m.edit({embeds:[embed]})
             });
         });
-    }
+    },
+    async slashCommandFunction(interaction: CommandInteraction, client: Client) {
+        if(!interaction.isCommand()) return;
+        await interaction.editReply({
+            content: "Pong"
+        })
+    },
+    slashCommandData:[
+        {
+            name: 'ping',
+            description: 'Replies with Pong!',
+        },
+        {
+            name: 'pong',
+            description: 'Replies with Ping!',
+        }
+    ],
+    slashCommandPermissions: defaultSlashPermissions
 };
 
 export const disableCommands: Command = {
@@ -74,6 +95,7 @@ export const disableCommands: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -103,6 +125,7 @@ export const enableCommands: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -122,6 +145,37 @@ export const enableCommands: Command = {
     }
 };
 
+export const deleteSlashCommands: Command = {
+    name: "delete",
+    description: "owner",
+    group: "owner",
+    owner: true,
+    admins: false,
+    mods: false,
+    slashCommand:false,
+    async execute(message: Message, client: Client, args: string[]) {
+        let guild = await client.guilds.cache.get('719406444109103117')!
+
+        if (args[0] === "all") {
+            for(let c of guild.commands.cache.values()) {
+                c.delete()
+            }
+
+            return message.reply("Deleted all commands")
+        }
+
+        else {
+            if (args[0] === undefined) return message.reply("Please pass the name of the command you want to enable. If you wish to enable all of them, do `!enable all`.");
+
+            let c = [...guild.commands.cache.values()].find(x => x.name === args[0].toLowerCase())
+            if(!c) return  message.reply("Command does not exist");
+            c.delete()
+
+            return message.reply(`Deleted ${c.name}.`);
+        }
+    }
+};
+
 export const editConfig: Command = {
     name: "edit",
     description: "owner",
@@ -129,6 +183,7 @@ export const editConfig: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -222,8 +277,8 @@ export const editConfig: Command = {
                     await message.channel.send("No type check. Click emote to continue").then(async msg => {
 
                         await msg.react(`✔️`);
-                        let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === '✔️' && !user.bot;
-                        const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
+                        let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === '✔️' && !user.bot;
+                        const approve = msg.createReactionCollector({filter:emoteFilter, time: 50000});
 
                         approve.on('collect', async () => {
                             if (args[1] === "true") {
@@ -254,6 +309,7 @@ export const editConfig: Command = {
 
 export default [
     editConfig,
+    deleteSlashCommands,
     transition,
     enableCommands,
     disableCommands,

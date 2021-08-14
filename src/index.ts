@@ -1,7 +1,7 @@
 import type { Command, levelProfile } from "./types";
-import { Client, Message, MessageAttachment, MessageEmbed, TextChannel, User } from "discord.js";
+import { Client, Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import * as allCommands from "./commands/index";
-import { client } from "./listener";
+import { client } from "./listeners/index";
 import express from "express";
 import http from "http";
 import { closest } from "fastest-levenshtein";
@@ -32,12 +32,12 @@ app.get('/', (request, response) => {
     response.sendStatus(200);
 });
 
-const listener = app.listen(Port, () => {
+const httpListener = app.listen(Port, () => {
     //@ts-ignore
-    console.log(`Your app is listening on port ${listener.address().port}`);
+    console.log(`Your app is listening on port ${httpListener.address().port}`);
 });
 
-client.on("message", async message => {
+client.on("messageCreate", async message => {
     if (message.author.bot) return;
     // if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
     let args: Array<string>;
@@ -53,7 +53,7 @@ client.on("message", async message => {
     }
 
     else {
-        if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
+        if (message.channel.type !== "DM" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
         return;
@@ -67,7 +67,25 @@ client.on("message", async message => {
 
     if (commandName === "test") {
 
-        await message.reply("Hello there. General")
+        // await message.reply("Hello there. General")
+
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setCustomId('Peen Been')
+                    .setStyle('PRIMARY')
+                    .setEmoji("😀"),
+            );
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('Some title')
+            .setURL('https://discord.js.org')
+            .setDescription('Some description here');
+
+        await message.reply({ content: 'Pong!', embeds: [embed], components: [row] }).then(async m => {
+            await m.react("😀")
+        });
 
         //Always
         return;
@@ -105,7 +123,7 @@ client.on("message", async message => {
 
     else if (!command) {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
-        await message.channel.send(await commandError(message, client, commandName, false)).then(async mssg => {
+        await message.channel.send({embeds:[await commandError(message, client, commandName, false)]}).then(async mssg => {
             let probablyName = closest(commandName!, commands.map(cmd => cmd.name).sort());
             let emote = `☑️`
             let msg = await message
@@ -113,8 +131,8 @@ client.on("message", async message => {
             .send(`Did you mean \`!${probablyName}\`? If so, click on the the ${emote} to continue.`);
 
             await msg.react(`${emote}`);
-            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === `${emote}` && !user.bot;
-            const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
+            let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === `${emote}` && !user.bot;
+            const approve = msg.createReactionCollector({filter:emoteFilter, time: 50000});
 
             approve.on('collect', async () => {
                 let cmd = commands.find(c => c.name.toLowerCase() === probablyName)!;
@@ -154,7 +172,7 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             await command.execute(message, client, args);
 
         } catch (error) {
-            message.channel.send(await commandError(message, client, command.name, true, error));
+            message.channel.send({embeds:[await commandError(message, client, command.name, true, error)]});
         }
     }
 }
@@ -230,8 +248,15 @@ async  function levelUp(message: Message){
             }
         )
         await (<TextChannel>await client.channels.cache.get("724839353129369681"))
-        .send(`Congrats <@${message.author.id}>, you have achieved Level ${profile.level}.`, new MessageAttachment(levelImage, "level.png"))
+            .send({content:`Congrats <@${message.author.id}>, you have achieved Level ${profile.level}.`, files:[new MessageAttachment(levelImage, "level.png")]});
     }
 
     await updateDoc("levels", message.author.id, profile)
 }
+
+// .setColor(`#${(await getConfig()).colour}`)
+// [...message.attachments.values()]
+// (reaction: MessageReaction, user:User)
+// [...message.mentions.users.values()]
+// setTimeout(() => m.delete(), 10000);
+// [...message.mentions.channel.values()]

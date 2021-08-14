@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
+import { getAllDuelProfiles, getAllProfiles, getConfig, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
 import type { Command, DuelProfile, Profile } from "../types";
 import { backwardsFilter, forwardsFilter } from "./util";
 
@@ -10,6 +10,7 @@ export const create_profile: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
@@ -24,13 +25,21 @@ export const create_profile: Command = {
             });
 
 
-            await message.channel.send(new MessageEmbed()
-            .setTitle(`${message.author.username}`)
-            .setColor("RANDOM")
-            .setThumbnail(`${imgurl}`)
-            .addFields({name: 'Total points', value: `${0}`}, {name: 'Total wins', value: `${0}`}, {
-                name: 'Total loss', value: `${0}`
-            }, {name: 'Total matches', value: `${0}`}, {name: 'Win Rate', value: `${0}%`}));
+            await message.channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`${message.author.username}`)
+                        .setColor("RANDOM")
+                        .setThumbnail(`${imgurl}`)
+                        .addFields(
+                                {name: 'Total points', value: `${0}`},
+                                {name: 'Total wins', value: `${0}`},
+                                {name: 'Total loss', value: `${0}`},
+                                {name: 'Total matches', value: `${0}`},
+                                {name: 'Win Rate', value: `${0}%`}
+                        )
+                ]
+            });
         }
     }
 };
@@ -42,6 +51,7 @@ export const profile_stats: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(args[0] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
         // ||
@@ -71,7 +81,11 @@ export const profile_stats: Command = {
                 name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true
             }, {name: 'Win Rate', value: `${wr}%`, inline:true});
 
-            await message.channel.send(UserEmbed);
+            await message.channel.send({
+                embeds:[
+                    UserEmbed
+                ]
+            });
         }
     }
 };
@@ -83,6 +97,7 @@ export const disableDM: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(message.author.id);
         if (!user) {
@@ -117,6 +132,7 @@ export const profile_lb: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllProfiles();
 
@@ -145,21 +161,33 @@ export const profile_lb: Command = {
                 symbol = "wins";
         }
 
-        const m = <Message>(await message.channel.send({embed: await makeProfileEmbed(page!, client, profiles, symbol, message.author.id)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await makeProfileEmbed(page!, client, profiles, symbol, message.author.id)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeProfileEmbed(--page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds:[
+                    await makeProfileEmbed(--page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeProfileEmbed(++page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds:[
+                    await makeProfileEmbed(++page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
 
     }
@@ -270,14 +298,17 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
             strrr += `Wins.`;
     }
 
-    return {
-        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
-            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`)
+        .setDescription(
+            `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
+            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`
+        )
+        .setFields(
+            fields
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date());
 }
 
 export const duel_stats: Command = {
@@ -288,6 +319,7 @@ export const duel_stats: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let user: DuelProfile = await getDuelProfile((args[1] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
@@ -312,7 +344,11 @@ export const duel_stats: Command = {
                 name: 'Total Matches', value: `${user.wins + user.loss}`
             }, {name: 'Win Rate', value: `${wr}%`});
 
-            await message.channel.send(UserEmbed);
+            await message.channel.send({
+                embeds:[
+                    UserEmbed
+                ]
+            });
         }
     }
 };
@@ -325,6 +361,7 @@ export const duel_stats_create: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
@@ -339,18 +376,26 @@ export const duel_stats_create: Command = {
             }, message.guild!.id);
 
 
-            await message.channel.send(new MessageEmbed()
-            .setTitle(`Duelist: ${message.author.username}`)
-            .setColor("RANDOM")
-            .setThumbnail(`${imgurl}`)
-            .addFields({name: 'Total points', value: `${0}`}, {name: 'Total wins', value: `${0}`}, {
-                name: 'Total loss', value: `${0}`
-            }, {name: 'Total matches', value: `${0}`}, {name: 'Win Rate', value: `${0}%`}));
+            await message.channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`Duelist: ${message.author.username}`)
+                        .setColor("RANDOM")
+                        .setThumbnail(`${imgurl}`)
+                        .addFields(
+                            {name: 'Total points', value: `${0}`},
+                            {name: 'Total wins', value: `${0}`},
+                            {name: 'Total loss', value: `${0}`},
+                            {name: 'Total matches', value: `${0}`},
+                            {name: 'Win Rate', value: `${0}%`}
+                        )
+                ]
+            });
         }
     }
 };
 
-export async function createDuelProfileatMatch(userId: string, guildid: string) {
+export async function createDuelProfileAtMatch(userId: string, guildid: string) {
 
     if (await getDuelProfile(userId, guildid)) {
         return;
@@ -371,6 +416,7 @@ export const duel_lb: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllDuelProfiles(message.guild!.id);
 
@@ -399,21 +445,33 @@ export const duel_lb: Command = {
                 symbol = "wins";
         }
 
-        const m = <Message>(await message.channel.send({embed: await makeDuelProfileEmbed(page!, client, profiles, symbol, message.author.id)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await makeDuelProfileEmbed(page!, client, profiles, symbol, message.author.id)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeDuelProfileEmbed(--page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds: [
+                    await makeDuelProfileEmbed(--page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeDuelProfileEmbed(++page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds:[
+                    await makeDuelProfileEmbed(++page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
     }
 };
@@ -525,13 +583,15 @@ async function makeDuelProfileEmbed(page: number = 1, client: Client, profiles: 
             strrr += `Wins.`;
     }
 
-    return {
-        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`)
+        .setDescription(`Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`)
+        .setFields(
+            fields
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date()
+    );
 }
 
 export default [

@@ -15,13 +15,14 @@ export const pause: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let channel = await <TextChannel>client.channels.cache.get(id);
 
         if (!(await getMatch(id)) && !(await getQual(id))) return message.reply(`There is no match in <#${id}>`)
 
-        if (channel.type === "text" && channel?.parent?.name.toLowerCase() === "matches") {
+        if (channel.type === "GUILD_TEXT" && channel?.parent?.name.toLowerCase() === "matches") {
             let m = await getMatch(id);
             m.pause = m.pause ? false : true;
             await updateMatch(m);
@@ -29,7 +30,7 @@ export const pause: Command = {
             return message.reply(`Match is now ${m.pause ? "paused" : "un-paused"}.`);
         }
 
-        if (channel.type === "text" && channel?.parent?.name.toLowerCase() === "qualifiers") {
+        if (channel.type === "GUILD_TEXT" && channel?.parent?.name.toLowerCase() === "qualifiers") {
             let m = await getQual(id);
             m.pause = m.pause ? false : true;
             await updateQual(m);
@@ -48,6 +49,7 @@ export const cancel: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -73,6 +75,7 @@ export const end: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -97,6 +100,7 @@ export const search: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
 
@@ -120,6 +124,7 @@ export const cycleRestart: Command = {
     owner: false,
     admins: true,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (![
             "true",
@@ -175,6 +180,7 @@ export const autoCommand: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let date = args[0];
         let hours = args[1];

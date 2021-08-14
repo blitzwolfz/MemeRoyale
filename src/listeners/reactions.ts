@@ -1,95 +1,17 @@
-import { Client, Collection, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
-import { backgroundExhibitionLoop } from "./commands/exhibition/background";
-import { backgroundMatchLoop } from "./commands/match/background";
-import { backgroundQualLoop } from "./commands/quals/background";
-import { backgroundReminderLoop } from "./commands/reminders";
-import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "./db";
-import { cmd, prefix } from "./index";
-import type { Profile } from "./types";
-import { qual_winner } from "./commands/quals/util";
-import { autoRunCommandLoop } from "./commands/jointcommands";
-
-//https://stackoverflow.com/questions/64814346/discord-js-httperror-aborterror-the-user-aborted-a-request
-export const client: Client = new Client({
-    partials: [
-        "CHANNEL",
-        "CHANNEL",
-        "MESSAGE",
-        "REACTION",
-        "USER"
-    ], restRequestTimeout: 90000
-});
-
-client.once("ready", async () => {
-    await connectToDB();
-
-    // let obj:Signups = {
-    //     _id:"signups",
-    //     open:false,
-    //     users:[]
-    // }
-
-    // let obj2:MatchList = {
-    //     _id:"matchlist",
-    //     url:"",
-    //     users:[]
-    // }
-
-    // let obj3:QualList = {
-    //     _id:"quallist",
-    //     users:[]
-    // }
-
-    // let obj4:VerificationForm = {
-    //     _id:"verificationform",
-    //     user:[]
-    // }
-
-    // await insertExhibition()
-
-    // await insertDoc('config', obj)
-    // await insertDoc('config', obj2)
-    // await insertDoc('config', obj3)
-    // await insertDoc('config', obj4)
-
-    setInterval(async function () {
-        await autoRunCommandLoop(cmd, client)
-    }, 30000);
-    console.log("Started Atuo Command loop")
-
-    setInterval(async function () {
-        await backgroundMatchLoop(client);
-        await backgroundQualLoop(client);
-        await backgroundExhibitionLoop(client);
-    }, 15000);
-    console.log("Started Match loop\nStarted Qual loop\nStarted Duel loop")
-
-    setInterval(async function () {
-        await backgroundReminderLoop(client);
-    }, 15000);
-    console.log("Started Reminder loop")
-
-    // setInterval(async function () {
-    //     await autoRunCommandLoop(cmd, client)
-    // }, 5000);
-
-    console.log("\n");
-    console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`);
-    console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}\n\n`);
-
-    // await client.user!.setActivity(`Building`);
-    // await sleep(2);
-    // await client.user!.setActivity(`Warming up`);
-    // await sleep(2);
-    await client.user!.setActivity(`${((await getConfig()).status)}`);
-});
+import { client } from "./index";
+import { getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "../db";
+import { cmd } from "../index";
+import { Collection, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
+import { qual_winner } from "../commands/quals/util";
+import type { Profile } from "../types";
 
 client.on("messageReactionAdd", async (messageReaction, user) => {
     if (user.id === "722303830368190485") return;
     if (user.bot) return;
+    if(!messageReaction.emoji.name) return;
 
-    if (messageReaction.partial) await messageReaction.fetch();
-    if (messageReaction.message.partial) await messageReaction.message.fetch();
+    if (messageReaction.partial === true) await messageReaction.fetch();
+    if (messageReaction.message.partial === true) await messageReaction.message.fetch();
 
     if (messageReaction.emoji.name === "1️⃣" && await getMatch(messageReaction.message.channel.id)) {
         let m = await getMatch(messageReaction.message.channel.id);
@@ -233,7 +155,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if(m.p1.donesplit === true) return;
 
         return cmd.find(c => c.name.toLowerCase() === "start-split")
-            ?.execute(messageReaction.message, client, [m.p1.userid]);
+            ?.execute(await messageReaction.message.fetch(), client, [m.p1.userid]);
     }
 
     if (messageReaction.emoji.name === "🅱️") {
@@ -252,7 +174,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         if(m.p2.donesplit === true) return;
 
         return cmd.find(c => c.name.toLowerCase() === "start-split")
-            ?.execute(messageReaction.message, client, [m.p2.userid]);
+            ?.execute(await messageReaction.message.fetch(), client, [m.p2.userid]);
     }
 
     if ([
@@ -282,11 +204,11 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         }
         if (m.players[pos].memedone || m.players[pos].failed) return;
         cmd.find(c => c.name.toLowerCase() === "start-qual")
-            ?.execute(messageReaction.message, client, [m.players[pos].userid]);
+            ?.execute(await messageReaction.message.fetch(), client, [m.players[pos].userid]);
     }
 
     if (messageReaction.emoji.name === "🗳️") {
-        await cmd.find(c => c.name.toLowerCase() === "signup")?.execute(messageReaction.message, client, [user.id]);
+        await cmd.find(c => c.name.toLowerCase() === "signup")?.execute(await messageReaction.message.fetch(), client, [user.id]);
         await messageReaction.users.remove(user.id);
     }
 
@@ -310,14 +232,14 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                 break;
             }
         }
-        await qual_winner.execute(messageReaction.message, client, key, "2", [user.id]);
+        await qual_winner.execute(await messageReaction.message.fetch(), client, key, "2", [user.id]);
     }
 
     if (messageReaction.emoji.name === "🏁") {
-        let voteCollection: Collection<string, MessageReaction>;
+        // let voteCollection: Collection<string, MessageReaction>;
 
-        await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
-            .then(msg => voteCollection = msg.reactions.cache);
+        let voteCollection: Collection<string, MessageReaction> = await messageReaction.message.channel.messages.fetch(messageReaction.message.id)
+            .then(msg => msg.reactions.cache);
 
         let totalVotes = voteCollection!.first()!.count!;
 
@@ -337,7 +259,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
                 let attach = new MessageAttachment(messageReaction.message.embeds[0].image!.url);
 
-                (<TextChannel>await client.channels.fetch("724827952390340648")).send("New template:", attach);
+                (<TextChannel>await client.channels.fetch("724827952390340648")).send({content: "New template:", files:[attach]});
             }
             else if (await messageReaction.message.embeds[0].fields) {
                 let obj = await getThemes();
@@ -371,15 +293,5 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
             //await tempccc.send(await messageReaction.message.embeds[0].image?.url)
             await messageReaction.message.delete();
         }
-    }
-});
-
-client.on("guildMemberAdd", async function (member) {
-    try {
-        await member.roles.add("730650583413030953");
-
-        await member.user?.send("Please start verification with `!verify <reddit username>` in the verification channel.");
-    } catch {
-        console.log("Not Meme Royale Server");
     }
 });

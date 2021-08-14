@@ -1,4 +1,4 @@
-import { Client, Message, MessageEmbed, User } from "discord.js";
+import { Client, Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import { deleteDoc, getConfig, getDoc, getTemplatedB, insertDoc, updateConfig, updateDoc, updateTemplatedB } from "../../db";
 import type { Command, config, QualList, Signups } from "../../types";
 import { signup, signup_manager, unsignup, view_signup } from "./signup";
@@ -12,6 +12,7 @@ export const cycle_restart: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
         signup.users = [];
@@ -35,6 +36,7 @@ export const create_groups: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
 
         if (isNaN(parseInt(args[0])) === true) {
@@ -97,6 +99,7 @@ export const view_groups: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let page: number = parseInt(args[0]) - 1 || 0;
         let ratings: QualList = await getDoc("config", "quallist");
@@ -105,20 +108,32 @@ export const view_groups: Command = {
             return message.reply("No Groups.");
         }
 
-        const m = <Message>(await message.channel.send({embed: await groupEmbed(page!, client, ratings)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await groupEmbed(page!, client, ratings)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await groupEmbed(--page, client, ratings)});
+            m.edit({
+                embeds:[
+                    await groupEmbed(--page, client, ratings)
+                ]
+            });
         });
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await groupEmbed(++page, client, ratings)});
+            m.edit({
+                embeds:[
+                    await groupEmbed(++page, client, ratings)
+                ]
+            });
         });
     }
 };
@@ -139,13 +154,14 @@ async function groupEmbed(page: number = 0, client: Client, signup: QualList) {
 
     }
 
-    return {
-        title: `Qualifier Groups ${page! + 1 || 1} of ${Math.floor(signup.users.length)}`,
-        description: fields.length === 0 ? `There are no groups` : `there are ${signup.users.length} groups`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Qualifier Groups ${page! + 1 || 1} of ${Math.floor(signup.users.length)}`)
+        .setDescription(`${fields.length === 0 ? `There are no groups` : `there are ${signup.users.length} groups`}`)
+        .setFields(
+            fields
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date());
 }
 
 export const templatecheck: Command = {
@@ -156,6 +172,7 @@ export const templatecheck: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let list = await (await getTemplatedB()).list;
         let emotes = [
@@ -170,8 +187,8 @@ export const templatecheck: Command = {
             "9️⃣",
             "🔟"
         ];
-        const filter = (reaction: { emoji: { name: string; }; }, user: User) => {
-            return emotes.includes(reaction.emoji.name) && !user.bot;
+        const removeFilter = (reaction: MessageReaction, user:User) => {
+            return emotes.includes(reaction.emoji.name!) && !user.bot;
         };
 
         let struct: {
@@ -204,9 +221,13 @@ export const templatecheck: Command = {
             });
         }
 
-        const m = <Message>(await message.channel.send(new MessageEmbed()
-        .setColor("RANDOM")
-        .setDescription("Click on the emotes 1 to 10 to select a template to remove.\nClick next arrow to go to the next 10 templates.")));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setColor("RANDOM")
+                    .setDescription("Click on the emotes 1 to 10 to select a template to remove.\nClick next arrow to go to the next 10 templates.")
+            ]
+        }));
 
         for (let l = 0; l < emotes.length; l++) {
             m.react(emotes[l]);
@@ -216,8 +237,8 @@ export const templatecheck: Command = {
 
         //const remove = m.createReactionCollector(((reaction: { emoji: { name: string; }; }, user: Discord.User) =>
         // reaction.emoji.name === '🗡️' && !user.bot), { time: 300000 });
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 300000});
-        const remove = m.createReactionCollector(filter, {time: 300000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 300000});
+        const remove = m.createReactionCollector({filter:removeFilter, time: 300000});
 
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
@@ -239,8 +260,8 @@ export const templatecheck: Command = {
 
         remove.on('collect', async () => {
 
-            m.reactions.cache.forEach(async reaction => {
-                reaction.users.remove(message.author.id);
+            for (const reaction of [...m.reactions.cache.values()]) {
+                await reaction.users.remove(message.author.id);
 
                 if (reaction.count! >= 2) {
                     let pos = [
@@ -254,20 +275,20 @@ export const templatecheck: Command = {
                         "8️⃣",
                         "9️⃣",
                         "🔟"
-                    ].indexOf(reaction.emoji.name);
+                    ].indexOf(reaction.emoji.name!);
 
                     if (pos >= 0) {
                         removelinks.push(struct[pos].tempstring);
 
                     }
                 }
-            });
+            }
         });
 
         remove.on("end", async () => {
             let tempdb: Array<string> = [];
 
-            tempdb = await (await getTemplatedB()).list;
+            tempdb = (await getTemplatedB()).list;
 
 
             for (let x = 0; x < removelinks.length; x++) {
