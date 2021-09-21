@@ -11,6 +11,7 @@ export interface Command {
     admins: boolean;
     mods: boolean;
     slashCommand:boolean;
+    serverOnlyCommand:boolean;
 
     // Making `args` optional
     execute(message: Message, client: Client, args?: string[], ownerID?: string, silentargs?: string[]): Promise<any>;

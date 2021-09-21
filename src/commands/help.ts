@@ -14,6 +14,7 @@ export const help: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (args.length === 0) {
 

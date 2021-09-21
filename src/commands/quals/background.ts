@@ -308,7 +308,7 @@ async function matchResults(client: Client, q: Qual) {
         }).then(async message => {
             let t = channel.topic?.split(" ");
 
-            if (t?.join("").toLocaleLowerCase() === "round1" || !t) {
+            if (t?.join("").toLocaleLowerCase() === "round1" || t?.join("").toLocaleLowerCase() === "qualifierround" || !t) {
                 await channel.setTopic(message.id);
                 t = [];
                 let string = "";

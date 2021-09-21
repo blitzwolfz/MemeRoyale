@@ -39,7 +39,7 @@ const httpListener = app.listen(Port, () => {
 
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
-    // if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
+    if (message.author.id !== process.env.owner && message.channel.type !== "DM" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
     let args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
@@ -118,12 +118,19 @@ client.on("messageCreate", async message => {
     }
 
     if (command) {
-        await runCommand(command, message, client, args);
+
+        if (!command.serverOnlyCommand || (command.serverOnlyCommand && message.guild!.id === "719406444109103117")) {
+            console.log("Running Command")
+            await runCommand(command, message, client, args);
+        }
+
+        else return;
+
     }
 
-    else if (!command) {
+    else if (!command && message.guild!.id === "719406444109103117") {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
-        await message.channel.send({embeds:[await commandError(message, client, commandName, false)]}).then(async mssg => {
+        await message.channel.send({embeds:[<MessageEmbed> await commandError(message, client, commandName, false)]}).then(async mssg => {
             let probablyName = closest(commandName!, commands.map(cmd => cmd.name).sort());
             let emote = `☑️`
             let msg = await message
@@ -153,7 +160,10 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
                 await command.execute(message, client, args, process.env.owner);
             }
-            else if (command.mods && (message.author.id === process.env.owner || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner") || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
+            else if (command.mods && (message.author.id === process.env.owner
+                || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")
+                    || (message.member?.roles.cache.find(x => x.name.toLowerCase().includes("mod")))
+                    || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
                 await command.execute(message, client, args, process.env.owner);
             }
             else if (command.owner && message.author.id === process.env.owner) {
@@ -164,7 +174,7 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             }
 
         } catch (error) {
-            await commandError(message, client, error, false);
+            message.channel.send(<string>await commandError(message, client, error, true, error));
         }
     }
     else {
@@ -172,12 +182,12 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             await command.execute(message, client, args);
 
         } catch (error) {
-            message.channel.send({embeds:[await commandError(message, client, command.name, true, error)]});
+            message.channel.send(<string>await commandError(message, client, error, true, error));
         }
     }
 }
 
-async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed> {
+async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed | string> {
     // noinspection SpellCheckingInspection
     console.log(err)
     let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size: 512}));
@@ -205,7 +215,17 @@ async function commandError(message: Message, client: Client, name:string, exist
         em
         .setDescription(`\`\`\`${err.message}\n${err.stack}\`\`\``)
         .setFooter("blitzwolfz#9338", `${imgurl}`);
-        return em;
+        let errorChannel = <TextChannel>client.channels.cache.get("889897949579063336");
+
+        await errorChannel.send({
+            embeds: [
+                em
+            ],
+            content: `<@239516219445608449>, <@${message.author.id}> caused this error. Happened in Channel <#${message.channel.id}>`
+        })
+
+
+        return "A command error has happened. blitzwolfz has been notified.";
     }
 }
 
@@ -253,6 +273,11 @@ async  function levelUp(message: Message){
 
     await updateDoc("levels", message.author.id, profile)
 }
+
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err);
+});
+
 
 // .setColor(`#${(await getConfig()).colour}`)
 // [...message.attachments.values()]

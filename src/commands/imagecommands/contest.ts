@@ -24,6 +24,7 @@ export const contestSubmit: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (message.channel.type !== "DM") {
             return message
@@ -78,6 +79,7 @@ export const contestManager: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let doc: Contest = await getDoc("contest", "contest");
 
@@ -100,10 +102,10 @@ export const contestManager: Command = {
                     .setDescription("Entered with this image submission")
                     .setURL(winner.url)
                     .setColor(`#${(await getConfig()).colour}`)
-                    .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                        format: "webp",
-                        size: 512
-                    }))}`)
+                .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
                 ;
 
                 await channel.send({embeds:[em]});

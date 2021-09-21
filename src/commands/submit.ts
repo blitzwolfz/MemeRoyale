@@ -11,6 +11,7 @@ export const submit: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
 
         if (message.channel.type !== "DM") {
@@ -144,6 +145,7 @@ export const qualsubmit: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (message.channel.type !== "DM") {
             return message
@@ -264,6 +266,7 @@ export const modsubmit: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let m = await getMatch(message.mentions.channels.first()!.id);
@@ -351,6 +354,7 @@ export const modqualsubmit: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (message.content.includes("imgur")) {
             return message.reply("You can't submit imgur links");
@@ -443,6 +447,7 @@ export const templateSubmission: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let channel = <TextChannel>client.channels.cache.get("722291683030466621");
 
@@ -524,6 +529,7 @@ export const themeSubmission: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let channel = <TextChannel>client.channels.cache.get("722291683030466621");
 

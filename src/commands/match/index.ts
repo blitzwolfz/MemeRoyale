@@ -12,6 +12,7 @@ export const startmatch: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     execute: async function (message: Message, client: Client, args: string[]) {
         if ([...message.mentions.users.values()].length < 2) return message.reply("Please mention the users");
 
@@ -47,27 +48,30 @@ export const startmatch: Command = {
         let em = new MessageEmbed();
 
         let temps: string[] = [];
+        let temp = "";
 
         if (m.temp.istheme) {
             temps = (await getThemes()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)];
 
             em.setTitle(`Theme for ${c.name}`)
-            .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                 format: "webp",
                 size: 512
             }))}`)
-            .setDescription(temps[Math.floor(Math.random() * temps.length)]);
+            .setDescription(temp);
         }
 
         else {
             temps = (await getTemplatedB()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)];
 
             em.setTitle(`Template for ${c.name}`)
-            .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                 format: "webp",
                 size: 512
             }))}`)
-            .setImage(temps[Math.floor(Math.random() * temps.length)]);
+            .setImage(temp);
         }
 
         let msg = await c
@@ -96,17 +100,19 @@ export const startmatch: Command = {
             if (m.temp.istheme) {
                 temps = (await getThemes()).list;
 
+                temp = temps[Math.floor(Math.random() * temps.length)]
+
                 let eem = new MessageEmbed()
-                .setTitle(`Theme for ${c.name}`)
-                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                    format: "webp",
-                    size: 512
-                }))}`)
-                .setDescription(temps[Math.floor(Math.random() * temps.length)])
-                .setColor("PURPLE");
+                    .setTitle(`Theme for ${c.name}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                        format: "webp",
+                        size: 512
+                    }))}`)
+                    .setDescription(temp)
+                    .setColor("PURPLE");
 
                 await msg.edit({
-                    embeds:[
+                    embeds: [
                         eem
                     ]
                 });
@@ -115,17 +121,19 @@ export const startmatch: Command = {
             else {
                 temps = (await getTemplatedB()).list;
 
+                temp = temps[Math.floor(Math.random() * temps.length)]
+
                 let eem = new MessageEmbed()
-                .setTitle(`Template for ${c.name}`)
-                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                    format: "webp",
-                    size: 512
-                }))}`)
-                .setImage(temps[Math.floor(Math.random() * temps.length)])
-                .setColor("PURPLE");
+                    .setTitle(`Template for ${c.name}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                        format: "webp",
+                        size: 512
+                    }))}`)
+                    .setImage(temp)
+                    .setColor("PURPLE");
 
                 await msg.edit({
-                    embeds:[
+                    embeds: [
                         eem
                     ]
                 });
@@ -136,11 +144,11 @@ export const startmatch: Command = {
         disapprove.on('collect', async () => {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
             message.channel.send({
-                embeds:[
+                embeds: [
                     new MessageEmbed()
                         .setColor("RED")
                         .setTitle("FAILED")
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+                        .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                             format: "webp",
                             size: 512
                         }))}`)
@@ -155,10 +163,10 @@ export const startmatch: Command = {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
 
             if (m.temp.istheme) {
-                m.temp.link = msg.embeds[0].description!;
+                m.temp.link = temp;
             }
             else {
-                m.temp.link = msg.embeds[0].image?.url!;
+                m.temp.link = temp;
             }
 
             await insertMatch(m).then(async a => {
@@ -172,31 +180,25 @@ export const startmatch: Command = {
             for (let us of [...message.mentions.users.values()]) {
                 if (m.temp.istheme) {
                     await us.send("Your theme is " + m.temp.link);
-                    await us.send({
-                        embeds:[
-                            new MessageEmbed()
-                                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                                    format: "webp",
-                                    size: 512
-                                }))}`)
-                                .setColor(`#${(await getConfig()).colour}`)
-                                .setDescription(`You have 45 mins to complete your meme\n` + `Use \`!submit\` to submit to submit.`)
-                        ]
-                    });
                 }
 
                 else {
                     await us.send("Your template is " + m.temp.link);
-                    await us.send({embeds:[
-                            new MessageEmbed()
-                                .setColor(`#${(await getConfig()).colour}`)
-                                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                                    format: "webp",
-                                    size: 512
-                                }))}`)
-                                .setDescription(`You have 45 mins to complete your meme\n` + `Use \`!submit\` to submit to submit.`)
-                        ]});
                 }
+
+                await us.send({
+                    embeds: [
+                        new MessageEmbed()
+                            .setColor(`#${(await getConfig()).colour}`)
+                            .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                                format: "webp",
+                                size: 512
+                            }))}`)
+                            .setDescription(`You have 45 mins to complete your meme\n` + `Use \`!submit\` to submit to submit.`)
+                    ]
+                });
+
+
 
                 await insertReminder({
                     _id: us.id, mention: "", channel: "", type: "meme", time: [
@@ -207,21 +209,26 @@ export const startmatch: Command = {
                 });
             }
 
+            try {
+                msg = await msg.fetch(true)
+                if(msg) await msg.delete()
+            } catch {
+                console.log("failed")
+            }
+
             return await message.channel.send({
-                embeds:[
+                embeds: [
                     new MessageEmbed()
                         .setTitle(`Match between ${[...message.mentions.users.values()][0].username} & ${[...message.mentions.users.values()][1].username}`)
                         .setColor("#d7be26")
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+                        .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                             format: "webp",
                             size: 512
                         }))}`)
                         .setDescription(`<@${[...message.mentions.users.values()][0].id}> and <@${[...message.mentions.users.values()][1].id}>, you have 45 mins to submit your memes\n Contact admins if you have an issue.`)
                         .setTimestamp()
                 ]
-            }).then(async () => {
-                await msg.delete().catch()
-            });
+            })
         });
     }
 };
@@ -234,6 +241,7 @@ export const splitmatch: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if ([...message.mentions.users.values()].length < 2) return message.reply("Please mention the users");
 
@@ -265,31 +273,35 @@ export const splitmatch: Command = {
             m.temp.istheme = true;
         }
 
-        let c: TextChannel = <TextChannel>await client.channels.fetch(await message.guild!.channels.cache.find(x => x.name.toLowerCase() === "mod-bot-spam")!.id);
+        // let c: TextChannel = <TextChannel>await client.channels.fetch(await message.guild!.channels.cache.find(x => x.name.toLowerCase() === "mod-bot-spam")!.id);
+        let c: TextChannel = <TextChannel>await client.channels.fetch("722616679280148504");
         let em = new MessageEmbed();
 
         let temps: string[] = [];
+        let temp = "";
 
         if (m.temp.istheme) {
             temps = (await getThemes()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)]
 
             em.setTitle(`Theme for ${c.name}`)
-            .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                 format: "webp",
                 size: 512
             }))}`)
-            .setDescription(temps[Math.floor(Math.random() * temps.length)]);
+            .setDescription(temp);
         }
 
         else {
             temps = (await getTemplatedB()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)]
 
             em.setTitle(`Template for ${c.name}`)
-            .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+            .setFooter("MemeRoyale#3101", `${((await client.users.fetch("722303830368190485"))!.displayAvatarURL({
                 format: "webp",
                 size: 512
             }))}`)
-            .setImage(temps[Math.floor(Math.random() * temps.length)]);
+            .setImage(temp);
         }
 
         let msg = await c
@@ -300,14 +312,9 @@ export const splitmatch: Command = {
             ]
         });
 
-        try {
-            await msg.react("✅");
-            await msg.react("❌");
-            await msg.react('🌀');
-        } catch (e) {
-            await message.channel.send(e.stack)
-            await message.channel.send(e.message)
-        }
+        await msg.react("✅");
+        await msg.react("❌");
+        await msg.react('🌀');
 
         const approveFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === '✅' && !user.bot;
         const disapproveFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === '❌' && !user.bot;
@@ -323,14 +330,16 @@ export const splitmatch: Command = {
             if (m.temp.istheme) {
                 temps = (await getThemes()).list;
 
+                temp = temps[Math.floor(Math.random() * temps.length)];
+
                 let eem = new MessageEmbed()
-                .setTitle(`Theme for ${c.name}`)
-                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                    format: "webp",
-                    size: 512
-                }))}`)
-                .setDescription(temps[Math.floor(Math.random() * temps.length)])
-                .setColor("PURPLE");
+                    .setTitle(`Theme for ${c.name}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                        format: "webp",
+                        size: 512
+                    }))}`)
+                    .setDescription(temp)
+                    .setColor("PURPLE");
 
                 try {
                     await msg.edit({
@@ -346,15 +355,16 @@ export const splitmatch: Command = {
 
             else {
                 temps = (await getTemplatedB()).list;
+                temp = temps[Math.floor(Math.random() * temps.length)]
 
                 let eem = new MessageEmbed()
-                .setTitle(`Template for ${c.name}`)
-                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                    format: "webp",
-                    size: 512
-                }))}`)
-                .setImage(temps[Math.floor(Math.random() * temps.length)])
-                .setColor("PURPLE");
+                    .setTitle(`Template for ${c.name}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                        format: "webp",
+                        size: 512
+                    }))}`)
+                    .setImage(temp)
+                    .setColor("PURPLE");
 
                 try {
                     await msg.edit({
@@ -375,10 +385,10 @@ export const splitmatch: Command = {
             randomize.stop("User failed to choose")
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
             return message.channel.send({
-                embeds:[
+                embeds: [
                     new MessageEmbed()
                         .setColor("RED")
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
+                        .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
                             format: "webp",
                             size: 512
                         }))}`)
@@ -399,13 +409,13 @@ export const splitmatch: Command = {
             }
 
             if (m.temp.istheme) {
-                m.temp.link = msg.embeds[0].description!;
+                m.temp.link = temp;
             }
             else {
-                m.temp.link = msg.embeds[0].image?.url!;
+                m.temp.link = temp;
             }
 
-            await insertMatch(m).then(async a => {
+            await insertMatch(m).then(async () => {
                 let c = await (<TextChannel>client.channels.cache.get("854930976974700554"));
                 let cc = await (<TextChannel>client.channels.cache.get(m._id));
                 c.send(`<#${m._id}>/${cc.name} template is ${m.temp.link}`);
@@ -413,22 +423,15 @@ export const splitmatch: Command = {
             await createProfileatMatch([...message.mentions.users.values()][0].id);
             await createProfileatMatch([...message.mentions.users.values()][1].id);
 
-            try {
-                await msg.delete();
-            } catch (e) {
-                // await message.channel.send(e.stack)
-                // await message.channel.send(e.message)
-            }
-
-            return await message.channel.send({
+            await message.channel.send({
                 embeds:[
                     new MessageEmbed()
                         .setTitle(`Match between ${[...message.mentions.users.values()][0].username} & ${[...message.mentions.users.values()][1].username}`)
                         .setColor("#d7be26")
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                            format: "webp",
-                            size: 512
-                        }))}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
                         .setDescription(`<@${[...message.mentions.users.values()][0].id}> and <@${[...message.mentions.users.values()][1].id}>, your match has been split.\nYou must complete your portion with given round\n Contact admins if you have an issue.`)
                         .setTimestamp()
                 ]
@@ -436,6 +439,14 @@ export const splitmatch: Command = {
                 await m.react('🅰️');
                 await m.react('🅱️');
             });
+
+            try {
+                await msg.delete();
+            } catch (e) {
+                console.log("error deleting fuck my asshole")
+            }
+
+            return;
 
         });
     }
@@ -449,6 +460,7 @@ export const startsplit: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         try {
             if ([...message.mentions.users.values()].length === 0 && args.length === 0) return message.reply("Please mention the user.");
@@ -478,10 +490,10 @@ export const startsplit: Command = {
                 embeds:[
                     new MessageEmbed()
                         .setColor(`#${(await getConfig()).colour}`)
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                            format: "webp",
-                            size: 512
-                        }))}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
                         .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 45 mins to complete your meme\n` + `Use \`!submit\` to submit to submit each image seperately`)
                 ]
             });
@@ -508,10 +520,10 @@ export const startsplit: Command = {
                 embeds:[
                     new MessageEmbed()
                         .setColor(`#${(await getConfig()).colour}`)
-                        .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                            format: "webp",
-                            size: 512
-                        }))}`)
+                    .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
                         .setDescription(`<@${e.userid}> your match has been split.\n`
                             + `You have 45 mins to complete your meme\n`
                             + `Use \`!submit\` to submit to submit each image seperately`)
@@ -531,6 +543,7 @@ export const cancelmatch: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         if ([...message.mentions.channels.values()].length === 1) {

@@ -13,6 +13,7 @@ export const cycle_restart: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
         signup.users = [];
@@ -37,6 +38,7 @@ export const create_groups: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         if (isNaN(parseInt(args[0])) === true) {
@@ -100,6 +102,7 @@ export const view_groups: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let page: number = parseInt(args[0]) - 1 || 0;
         let ratings: QualList = await getDoc("config", "quallist");
@@ -173,6 +176,7 @@ export const templatecheck: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let list = await (await getTemplatedB()).list;
         let emotes = [

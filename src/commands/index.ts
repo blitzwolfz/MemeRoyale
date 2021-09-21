@@ -2,9 +2,9 @@ import { Client, CommandInteraction, Message, MessageEmbed, MessageReaction, Use
 import type { Command } from "../types";
 import { help } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
-import { endmatch, forcevote, matchStats, matchList, reload_match } from "./match/utils";
+import { endmatch, forcevote, matchList, matchStats, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
-import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual } from "./quals/util";
+import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual, removeQualWinner } from "./quals/util";
 import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
 import * as b from "./tournament/index";
 import * as c from "./exhibition/index";
@@ -13,12 +13,11 @@ import * as e from "./jointcommands";
 import * as f from "./verification";
 import * as imageCommands from "./imagecommands/index";
 import * as level from "./levelsystem";
-import { manualverify } from "./verification";
 import { delay } from "./reminders";
 import { getConfig, updateConfig } from "../db";
 import { cmd } from "../index";
 import { transition } from "./convertMMtoMR";
-import { defaultSlashPermissions, sleep } from "./util";
+import { defaultSlashPermissions } from "./util";
 
 //@ts-ignore
 export const example: Command = {
@@ -28,9 +27,20 @@ export const example: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
 
-    }
+    },
+    async slashCommandFunction(interaction: CommandInteraction, client: Client) {
+        if(!interaction.isCommand()) return;
+    },
+    slashCommandData:[
+        {
+            name: 'EXAMPLE',
+            description: 'An example!',
+        },
+    ],
+    slashCommandPermissions: defaultSlashPermissions
 };
 
 export const ping: Command = {
@@ -42,6 +52,7 @@ export const ping: Command = {
     admins: false,
     mods: false,
     slashCommand:true,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         message.channel.send({
             embeds:[
@@ -60,7 +71,6 @@ export const ping: Command = {
             .setColor(m.embeds![0]!.hexColor!);
             // Then It Edits the message with the ping variable embed that you created
             await m.edit({embeds: [embed]}).then(async m => {
-                await sleep(1)
                 let embed = new MessageEmbed()
                 .setTitle(`Your ping is ${ping} ms`)
                 .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
@@ -96,6 +106,7 @@ export const disableCommands: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -126,6 +137,7 @@ export const enableCommands: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -153,6 +165,7 @@ export const deleteSlashCommands: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let guild = await client.guilds.cache.get('719406444109103117')!
 
@@ -184,6 +197,7 @@ export const editConfig: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let config = await getConfig();
 
@@ -325,6 +339,7 @@ export default [
     forcevote,
     forcevote_qual,
     qual_winner,
+    removeQualWinner,
     splitmatch,
     cancelmatch,
     submit,
@@ -341,7 +356,6 @@ export default [
     matchStats,
     templateSubmission,
     themeSubmission,
-    manualverify
 ]
 .concat(b.default)
 .concat(c.default)
