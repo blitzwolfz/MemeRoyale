@@ -116,6 +116,7 @@ export const delay: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let reminder = await getReminder(await message.mentions.channels.first()!.id);
         if ([message.mentions.channels.keys()].length === 0) {

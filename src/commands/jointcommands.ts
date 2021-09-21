@@ -16,6 +16,7 @@ export const pause: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let channel = await <TextChannel>client.channels.cache.get(id);
@@ -50,6 +51,7 @@ export const cancel: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -76,6 +78,7 @@ export const end: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -101,6 +104,7 @@ export const search: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
 
@@ -113,7 +117,16 @@ export const search: Command = {
         if (m !== undefined && q !== undefined) return message.reply(`You are in a Qualifier: <#${q._id}> & Match: <#${m._id}>`);
         if (m !== undefined) return message.reply(`The channel is <#${m._id}>`);
         if (q !== undefined) return message.reply(`The channel is <#${q._id}>`);
-        else return message.reply("You aren't in a match or qualifier.")
+
+        if(m === undefined) {
+            let username = (await client.users.fetch(id)).username.toLowerCase()
+            let channelID = message.guild!.channels.cache.find(x => x.name.toLowerCase().includes(username))?.id
+
+            if(channelID) return message.reply(`The channel is <#${channelID}>`)
+
+        }
+
+        return message.reply("Not in a match or qualifier.")
     }
 };
 
@@ -125,6 +138,7 @@ export const cycleRestart: Command = {
     admins: true,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (![
             "true",
@@ -181,6 +195,7 @@ export const autoCommand: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let date = args[0];
         let hours = args[1];

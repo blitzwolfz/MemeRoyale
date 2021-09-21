@@ -11,6 +11,7 @@ export const splitqual: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if ([...message.mentions.users.values()].length > 6) return message.reply("Please mention no more than 6 users.");
         if ([...message.mentions.users.values()].length < 3) return message.reply("Please mention at least 3 users.");
@@ -40,19 +41,22 @@ export const splitqual: Command = {
         let em = new MessageEmbed();
 
         let temps: string[] = [];
+        let temp = "";
 
         if (q.temp.istheme) {
             temps = (await getThemes()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)]
 
             em.setTitle(`Theme for ${c.name}`)
-            .setDescription(temps[Math.floor(Math.random() * temps.length)]);
+            .setDescription(temp);
         }
 
         else {
             temps = (await getTemplatedB()).list;
+            temp = temps[Math.floor(Math.random() * temps.length)]
 
             em.setTitle(`Template for ${c.name}`)
-            .setImage(temps[Math.floor(Math.random() * temps.length)]);
+            .setImage(temp);
         }
 
         let msg = await c
@@ -81,10 +85,11 @@ export const splitqual: Command = {
 
             if (q.temp.istheme) {
                 temps = (await getThemes()).list;
+                temp = temps[Math.floor(Math.random() * temps.length)]
 
                 let eem = new MessageEmbed()
                 .setTitle(`Theme for ${c.name}`)
-                .setDescription(temps[Math.floor(Math.random() * temps.length)])
+                .setDescription(temp)
                 .setColor("PURPLE");
 
                 await msg.edit({
@@ -96,10 +101,11 @@ export const splitqual: Command = {
 
             else {
                 temps = (await getTemplatedB()).list;
+                temp = temps[Math.floor(Math.random() * temps.length)]
 
                 let eem = new MessageEmbed()
                 .setTitle(`Template for ${c.name}`)
-                .setImage(temps[Math.floor(Math.random() * temps.length)])
+                .setImage(temp)
                 .setColor("PURPLE");
 
                 await msg.edit({
@@ -132,10 +138,10 @@ export const splitqual: Command = {
             msg.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
 
             if (q.temp.istheme) {
-                q.temp.link = msg.embeds[0].description!;
+                q.temp.link = temp;
             }
             else {
-                q.temp.link = msg.embeds[0].image?.url!;
+                q.temp.link = temp;
             }
 
             await insertQual(q).then(async a => {
@@ -181,6 +187,7 @@ export const startsplitqual: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         try {
             if ([...message.mentions.users.values()].length === 0 && args.length === 0) return message.reply("Please mention the user.");
@@ -203,7 +210,7 @@ export const startsplitqual: Command = {
 
             (await client.users.cache.get(e.userid))!
                 .send({
-                    content:`This is your ${q.temp.istheme ? "theme: " : "template: "}`,
+                    content:`This is your ${q.temp.istheme ? "theme: " : "template: "} ${q.temp.link}`,
                     embeds:[
                         new MessageEmbed()
                             .setColor(`#${(await getConfig()).colour}`)
@@ -253,6 +260,7 @@ export const cancelqual: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         if ([...message.mentions.channels.values()].length === 1) {
@@ -291,6 +299,7 @@ export const endqual: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let m = await getQual(message.channel.id);
         m.votetime = (Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - 7200;

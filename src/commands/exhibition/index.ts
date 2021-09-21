@@ -13,6 +13,7 @@ export const duel: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         if (![message.mentions.users.values()]) {
             return message.reply("Please mention someone");
@@ -23,7 +24,8 @@ export const duel: Command = {
         }
 
         if (args.length < 2) {
-            return message.reply("Please use theme flag or template flag");
+            return message.reply("Please use theme flag or template flag. If you need help do the command `!duel" +
+                " -help`");
         }
 
         else if (args.length >= 3) {
@@ -44,7 +46,7 @@ export const duel: Command = {
         }
 
         if (ex.cooldowns.some(x => x.user === message.mentions.users.first()!.id)) {
-            return message.reply(`It hasn't been 5 mins for <@${message.mentions.users.first()!.id}`);
+            return message.reply(`It hasn't been 5 mins for ${message.mentions.users.first()!.username}`);
         }
 
         let m = message;
@@ -99,7 +101,7 @@ export const duel: Command = {
             ex = await getExhibition();
 
             let guild = client.guilds.cache.get(message.guild!.id)!;
-            let category = await guild!.channels.cache.find(c => c.name.toLowerCase() == "duels" && c.type == "GUILD_CATEGORY")!;
+            let category = await guild!.channels.cache.find(c => c.name.toLowerCase().includes("duels")  && c.type == "GUILD_CATEGORY")!;
 
             await guild?.channels
             .create(`${message.author.username}-vs-${message.mentions.users.first()?.username}`, {

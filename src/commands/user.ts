@@ -11,6 +11,7 @@ export const create_profile: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
@@ -52,6 +53,7 @@ export const profile_stats: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(args[0] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
         // ||
@@ -98,6 +100,7 @@ export const disableDM: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(message.author.id);
         if (!user) {
@@ -133,6 +136,7 @@ export const profile_lb: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllProfiles();
 
@@ -320,6 +324,7 @@ export const duel_stats: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let user: DuelProfile = await getDuelProfile((args[1] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
@@ -362,11 +367,12 @@ export const duel_stats_create: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
         if (await getDuelProfile(message.author.id, message.guild!.id)) {
-            return message.reply("That user profile does exist! Please do `!duel-stats` to check the user profile");
+            return message.reply("That user profile does exist! Please do `!duel -stats` to check the user profile");
         }
 
         else {
@@ -417,6 +423,7 @@ export const duel_lb: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let profiles = await getAllDuelProfiles(message.guild!.id);
 
@@ -466,8 +473,10 @@ export const duel_lb: Command = {
             });
         });
         forwards.on('collect', async () => {
+            console.log("A")
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({
+            // [...m.reactions.cache.values()].forEach(reaction => reaction.users.remove(message.author.id));
+            await m.edit({
                 embeds:[
                     await makeDuelProfileEmbed(++page, client, profiles, symbol, message.author.id)
                 ]

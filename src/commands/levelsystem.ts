@@ -18,6 +18,7 @@ export const level: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[0] ?
             (

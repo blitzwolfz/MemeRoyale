@@ -11,6 +11,7 @@ export const reload_qual: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getQual(message.channel.id);
@@ -45,6 +46,7 @@ export const qual_stats: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (!message.mentions.channels.first()) {
             return message.reply("Please mention channel");
@@ -90,6 +92,7 @@ export const qual_result_sum: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         if (args.length <= 1 && args.length >= 2) return message.reply("Please supply two msg ids.");
@@ -117,13 +120,14 @@ export const qual_result_sum: Command = {
 };
 
 export const forcevote_qual: Command = {
-    name: "forcevote-match",
+    name: "forcevote-qual",
     description: "This will force the voting portion of a match to come.",
-    group: "match",
+    group: "quals",
     owner: false,
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         // let match = await getQual(message.channel.id)
@@ -137,47 +141,6 @@ export const forcevote_qual: Command = {
 
     }
 };
-
-// export const search: Command = {
-//     name: "search",
-//     description: "!creategroup #Amount in each group",
-//     group: "tournament-manager",
-//     owner: false,
-//     admins: false,
-//     mods: false,
-//     async execute(message: Message, client: Client, args: string[]) {
-//         let signup: QualList = await getDoc("config", "quallist");
-//         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
-//         if (!id) return message.reply("invaild input. Please use User ID or a User mention");
-//
-//         //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
-//         // client.users.fetch(id)).username
-//         if (message.member!.roles.cache.has('719936221572235295')) {
-//             for (let i = 0; i < signup.users.length; i++) {
-//
-//                 if (signup.users[i].includes(id)) {
-//                     return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-//                 }
-//             }
-//             return message.reply("They are not in a group");
-//         }
-//
-//         else {
-//             if (id !== message.author.id) {
-//                 return message.reply("You don't have those premissions");
-//             }
-//             else {
-//                 for (let i = 0; i < signup.users.length; i++) {
-//
-//                     if (signup.users[i].includes(id)) {
-//                         return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-//                     }
-//                 }
-//                 return message.reply("They are not in a group");
-//             }
-//         }
-//     }
-// };
 
 export async function QualifierResults(channel: TextChannel, client: Client, ids: string[]) {
     let msgArr: Message[] = [];
@@ -243,6 +206,7 @@ export const qual_winner: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
         let ids: string[] = ([...message.mentions.users.values()].map(a => a.id).length >= 1 ? [...message.mentions.users.values()].map(a => a.id) : args);
         let list: MatchList = await getDoc('config', "matchlist");
@@ -281,6 +245,42 @@ export const qual_winner: Command = {
                 message.channel.send(`<@${silentargs[0]}>, Added users.`);
                 return;
             }
+        }
+    }
+};
+
+export const removeQualWinner: Command = {
+    name: "rqw",
+    description: "!rqw <@mentions>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
+        let ids: string[] = ([...message.mentions.users.values()].map(a => a.id).length >= 1 ? [...message.mentions.users.values()].map(a => a.id) : args);
+        let list: MatchList = await getDoc('config', "matchlist");
+
+        if (list) {
+            let index = list.users.indexOf(ids[0]);
+
+            if (index === -1) return message.reply("User is not in list");
+
+            list.users.splice(index, 1)
+            await updateDoc('config', list._id, list);
+
+            try{
+                let u = await getProfile(ids[0]);
+                u.wins -= 1;
+                u.points -= 25;
+                await updateProfile(u);
+            } catch {
+                console.log("No profile.")
+            }
+
+            message.channel.send(`<@${message.author.id}>, Removed <@${ids[0]}>.`);
+            return;
         }
     }
 };

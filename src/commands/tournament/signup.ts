@@ -11,6 +11,7 @@ export const signup: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
 
@@ -90,6 +91,7 @@ export const signup_manager: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
         let c = <TextChannel>await client.channels.fetch(message.guild!
@@ -117,11 +119,15 @@ export const signup_manager: Command = {
 
             await updateDoc("config", "signups", signup);
 
-            let signupRoles = await message.guild!.roles.cache.get("731574671723462757")!.members.map(m => m.user.id);
+            let signupRole = await message.guild!.roles.cache.get("731574671723462757")!.members.map(m => m.user.id);
 
-            for (let u of signupRoles) {
+            for (let u of signupRole) {
                 await client.users.fetch(u).then(async x => {
-                    await x.send("Signups now open. Check announcements.");
+                    try {
+                        await x.send("Signups now open. Check announcements.");
+                    } catch (e) {
+                        console.log(e.message)
+                    }
                 })
             }
 
@@ -201,6 +207,7 @@ export const unsignup: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
 
@@ -241,6 +248,7 @@ export const view_signup: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let page: number = parseInt(args[0]) || 1;
         let signup: Signups = await getDoc("config", "signups");

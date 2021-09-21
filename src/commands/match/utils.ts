@@ -12,6 +12,7 @@ export const reload_match: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
@@ -48,6 +49,7 @@ export const endmatch: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
@@ -67,6 +69,7 @@ export const forcevote: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
@@ -88,6 +91,7 @@ export const matchList: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let list: MatchList = await getDoc('config', "matchlist");
         let page: number = parseInt(args[0]) || 1;
@@ -130,6 +134,7 @@ export const matchStats: Command = {
     admins: false,
     mods: true,
     slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (!message.mentions.channels.first()) {
             return message.reply("Please mention channel");
