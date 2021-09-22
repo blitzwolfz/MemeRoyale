@@ -371,6 +371,28 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         await messageReaction.users.remove(user.id);
     }
 
+    if (messageReaction.emoji.name === "🤥") {
+        if (!user.client.guilds.cache
+            .get(messageReaction.message.guild!.id)!
+            .members.cache.get(user.id)!
+            .roles.cache.has("724818272922501190")) {
+            return;
+        }
+
+        let templateList = (await getTemplatedB())
+
+        if (!templateList.list.includes(messageReaction.message.content!)) return;
+        if (messageReaction.message.channel.type === "GUILD_TEXT" &&
+            !messageReaction.message.channel.name.includes("Total-Amount-of-templates-is".toLowerCase())) return;
+
+
+        templateList.list.splice(templateList.list.indexOf(messageReaction.message.content!), 1)
+
+        await updateTemplatedB(templateList.list)
+
+        await messageReaction.message.react('😵')
+    }
+
     if (messageReaction.emoji.name === "👌") {
         if (!user.client.guilds.cache
             .get(messageReaction.message.guild!.id)!
@@ -454,8 +476,6 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         }
     }
 });
-
-// client.ws.on("MESSAGE_REACTION_ADD", console.log)
 
 async function interactionSlashCommand(interaction: CommandInteraction, client: Client) {
     // let command = cmd.find(c => {

@@ -91,6 +91,35 @@ client.on("messageCreate", async message => {
         return;
     }
 
+    if (commandName === "newtemplatecheck") {
+
+        // try {
+        //     await (<TextChannel>client.channels.cache.get((await message.guild!
+        //         .channels.cache.find(x => x.name.toLowerCase().includes("Total-Amount-of-templates-is".toLowerCase()))!.id)))
+        //         .delete()
+        // } catch {
+        //
+        // }
+        //
+        // let templateList = (await getTemplatedB()).list
+        //
+        // let category = await message.guild!.channels.cache.find(c => c.name.toLowerCase() == "mods"
+        //     && c.type == "GUILD_CATEGORY")!;
+        //
+        // let channel = await message.guild!.channels.create(`Total-Amount-of-templates-is:-${templateList.length}`, {
+        //     type: 'GUILD_TEXT', parent:category.id})
+        //
+        // for (let template of templateList) {
+        //     await channel.send(template).then(async m => {
+        //         await m.react('🤥')
+        //     })
+        // }
+
+        await message.reply("`!tc`")
+
+        return;
+    }
+
     let command = commands.find(c => {
         if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
             return (c.aliases?.includes(commandName!) || c.name.toLowerCase() === commandName);
