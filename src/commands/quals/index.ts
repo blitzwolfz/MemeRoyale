@@ -214,7 +214,7 @@ export const startsplitqual: Command = {
                     embeds:[
                         new MessageEmbed()
                             .setColor(`#${(await getConfig()).colour}`)
-                            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`)
+                            .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!submit\` to submit.`)
                     ]
                 })
             ;
@@ -243,7 +243,7 @@ export const startsplitqual: Command = {
                 embeds:[
                     new MessageEmbed()
                         .setColor(`#${(await getConfig()).colour}`)
-                        .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!qualsubmit\` to submit.`)
+                        .setDescription(`<@${e.userid}> your match has been split.\n` + `You have 60 mins to complete your meme\n` + `Use \`!submit\` to submit.`)
                 ]
             });
         } catch (error) {

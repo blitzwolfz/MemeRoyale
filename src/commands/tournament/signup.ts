@@ -100,6 +100,7 @@ export const signup_manager: Command = {
 
         if (args[0] === "-open") {
             signup.open = true;
+            let link = "e";
 
             await c.send({
                 embeds:[
@@ -111,6 +112,7 @@ export const signup_manager: Command = {
             }).then(async msg => {
                 await msg.react('🗳️');
                 signup.msgID = msg.id;
+                link = msg.url
             });
 
             await client.user!.setActivity("Signup now open!");
@@ -124,7 +126,7 @@ export const signup_manager: Command = {
             for (let u of signupRole) {
                 await client.users.fetch(u).then(async x => {
                     try {
-                        await x.send("Signups now open. Check announcements.");
+                        await x.send(`Signups now open. Check ${link}`);
                     } catch (e) {
                         console.log(e.message)
                     }

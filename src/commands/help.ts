@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getConfig } from "../db";
+import { getAllProfiles, getConfig, getTemplatedB, getThemes } from "../db";
 import type { Command } from "../types";
 import * as c from "./index";
 
@@ -34,9 +34,7 @@ export const help: Command = {
 
         if (c.default.find(c => c.name === args[0])) {
             let g = args[0];
-            let descriptionForEmbed = c.default!.map(cmd => {
-                if (cmd.name === g) return cmd.description;
-            }).toString()
+            let descriptionForEmbed = c.default!.find(cmd => cmd.name === g)!.description!
 
             const embed = new MessageEmbed()
             .setTitle(`!${g}`)
@@ -87,10 +85,48 @@ export const help: Command = {
                     return "`" + cmd.name + "`" + "\n";
                 }
             }).join(""))
-            .setColor(await `#${(await getConfig()).colour}`)
+            .setColor(`#${(await getConfig()).colour}`)
             .setFooter(`You can send \`!help <command name>\` to get info on a specific command!`);
 
             await message.channel.send({embeds: [embed]});
         }
+    }
+};
+
+export const mrStats: Command = {
+    name: "mr-stats",
+    aliases: [
+        "mrs"
+    ],
+    group: "stats",
+    description: "Access the help menu",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let statsGif = [
+            "https://cdn.discordapp.com/attachments/883032538019397712/890096681759162388/statsssss.gif",
+            "https://tenor.com/view/andre-braugher-statistics-is-so-beautiful-b99-holt-statistics-gif-8718500",
+            "https://tenor.com/view/numbers-dont-lie-statistics-statistics-dont-lie-numbers-data-gif-13863389"
+        ]
+        let guild = message.guild!
+        let statsEmbed = new MessageEmbed()
+            .setTitle("MR Basic Server Stats")
+            .setColor("RANDOM")
+            .setImage(statsGif[Math.floor(Math.random() * statsGif.length)])
+            .addFields(
+                {name: 'Total Channels', value: `${guild.channels.cache.size}`, inline:true},
+                {name: 'Total Users', value: `${guild.memberCount}`, inline:true},
+                {name: 'Owner', value: `${(await client.users.fetch(guild.ownerId)).username}`, inline:true},
+
+                {name: 'Total Templates', value: `${(await getTemplatedB()).list.length}`, inline:true},
+                {name: 'Total Themes', value: `${(await getThemes()).list.length}`, inline:true},
+                {name: 'Total Profiles', value: `${(await getAllProfiles()).length}`, inline:true}
+            );
+
+        return  message.reply({embeds:[statsEmbed]})
+
     }
 };

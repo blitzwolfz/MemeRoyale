@@ -1,6 +1,6 @@
 import { Client, CommandInteraction, Message, MessageEmbed, MessageReaction, User } from "discord.js";
 import type { Command } from "../types";
-import { help } from "./help";
+import { help, mrStats } from "./help";
 import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
 import { endmatch, forcevote, matchList, matchStats, reload_match } from "./match/utils";
 import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
@@ -323,6 +323,7 @@ export const editConfig: Command = {
 
 export default [
     editConfig,
+    mrStats,
     deleteSlashCommands,
     transition,
     enableCommands,

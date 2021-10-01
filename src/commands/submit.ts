@@ -1,10 +1,10 @@
-import { Client, Message, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
+import { Client, Message, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import { deleteReminder, getAllMatches, getAllQuals, getConfig, getMatch, getProfile, getQual, getReminder, getTemplatedB, updateMatch, updateProfile, updateQual, updateReminder, updateTemplatedB } from "../db";
 import type { Command, Match } from "../types";
 
 export const submit: Command = {
     name: "submit",
-    description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
+    description: " `!submit` with an image in the message. Works for both Qualifiers and Matches.",
     group: "tourny",
     groupCommand: true,
     owner: false,
@@ -16,12 +16,12 @@ export const submit: Command = {
 
         if (message.channel.type !== "DM") {
             return message
-            .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
-                " again in bot dm.")
-            .then(async m => {
-                await message.delete()
-                await setTimeout(() => m.delete(), 30000);
-            });
+                .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+                    " again in bot dm.")
+                .then(async m => {
+                    await message.delete()
+                    await setTimeout(() => m.delete(), 30000);
+                });
         }
 
         if (message.attachments.size <= 0) {
@@ -40,7 +40,21 @@ export const submit: Command = {
             return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
 
-        let allPossibleMatches = await (await getAllMatches()).filter(q);
+        let allPossibleQuals =                 (await getAllQuals())
+            .filter(x => x.players.some(y => y.userid === message.author.id && !y.memedone)
+            ).map(x => x._id)!
+
+        console.log("E", allPossibleQuals)
+
+        let allPossibleMatches = await (await getAllMatches())
+            .filter(q)
+            .map(x => x._id)
+            .concat(
+                allPossibleQuals
+            )
+        ;
+
+        console.log(allPossibleMatches)
 
         if (allPossibleMatches.length === 0) {
             return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
@@ -49,89 +63,177 @@ export const submit: Command = {
         if (allPossibleMatches.length > 1 && !args[0]) {
             message.channel.send("You are in multiple matches. Please mention the corresponding number to submit. For example `!submit 1`");
             for (let i = 0; i < allPossibleMatches.length; i++) {
-                await message.channel.send(`${i + 1}) <#${allPossibleMatches[i]._id}>`);
-                i += 1;
+                await message.channel.send(`${i + 1}) <#${allPossibleMatches[i]}>`);
             }
             return;
         }
 
-        let m = args[0] ? allPossibleMatches[parseInt(args[0]) - 1] : allPossibleMatches[0];
+        let mId = args[0] ? allPossibleMatches[parseInt(args[0]) - 1] : allPossibleMatches[0];
 
-        let arr = [
-            m.p1,
-            m.p2
-        ];
+        let emote = `☑️`
+        let msg = await message.channel.send(`Are you sure you want to submit this? If so, click on the the ${emote} to continue. You have 1.5 mins.`);
 
-        let player = arr.find(x => x.userid === message.author.id)!;
+        await msg.react(`${emote}`);
+        let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === `${emote}` && !user.bot;
+        const approve = msg.createReactionCollector({filter:emoteFilter, time: 90000});
 
-        if (player.donesplit === false) return message.reply("You can't submit until your portion starts");
+        approve.on('collect', async () => {
+            let m = await getMatch(mId)
 
-        player.memelink = [...message.attachments.values()][0].url;
-        player.memedone = true;
-        player.donesplit = true;
+            if (m) {
+                let arr = [
+                    m.p1,
+                    m.p2
+                ];
 
-        if (m.exhibition === false) {
-            await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
-                embeds:[
-                    new MessageEmbed()
-                        .setDescription(`<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`)
-                        .setColor(`#${(await getConfig()).colour}`)
-                        .setImage([...message.attachments.values()][0].url)
-                        .setTimestamp(new Date())
-                ]
-            });
-        }
+                let player = arr.find(x => x.userid === message.author.id)!;
 
-        try {
-            await deleteReminder(player.userid);
-            let r = await getReminder(m._id);
+                if (player.donesplit === false) return message.reply("You can't submit until your portion starts");
 
-            r.mention = r.mention.replace(`<@${player.userid}>`, "");
+                player.memelink = [...message.attachments.values()][0].url;
+                player.memedone = true;
+                player.donesplit = true;
 
-            await updateReminder(r);
-        } catch (error) {
-            console.log("");
-        }
+                if (m.exhibition === false) {
+                    await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
+                        embeds:[
+                            new MessageEmbed()
+                                .setDescription(`<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`)
+                                .setColor(`#${(await getConfig()).colour}`)
+                                .setImage([...message.attachments.values()][0].url)
+                                .setTimestamp(new Date())
+                        ]
+                    });
+                }
 
-        m.p1 === player ? m.p1 = player : m.p2 = player;
+                try {
+                    await deleteReminder(player.userid);
+                    let r = await getReminder(m._id);
 
-        if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
-            m.split = false;
-            m.p1.time = Math.floor(Date.now() / 1000) - 3200;
-            m.p2.time = Math.floor(Date.now() / 1000) - 3200;
-        }
+                    r.mention = r.mention.replace(`<@${player.userid}>`, "");
 
-        if (!m.exhibition) {
-            let p = await getProfile(message.author.id)
+                    await updateReminder(r);
+                } catch (error) {
+                    console.log("");
+                }
 
-            if(p.totalMemes === 0){
-                p.totalMemes += 1;
-                p.totalTime += Math.floor(
-                    (
-                        Math.floor(
-                            Math.floor(
-                                Date.now() / 1000
-                            ) / 60
-                        ) * 60
-                    ) - m.p1.time
-                );
+                m.p1 === player ? m.p1 = player : m.p2 = player;
+
+                if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
+                    m.split = false;
+                    m.p1.time = Math.floor(Date.now() / 1000) - 3200;
+                    m.p2.time = Math.floor(Date.now() / 1000) - 3200;
+                }
+
+                if (!m.exhibition) {
+                    let p = await getProfile(message.author.id)
+
+                    if(p.totalMemes === 0){
+                        p.totalMemes += 1;
+                        p.totalTime += Math.floor(
+                            (
+                                Math.floor(
+                                    Math.floor(
+                                        Date.now() / 1000
+                                    ) / 60
+                                ) * 60
+                            ) - m.p1.time
+                        );
+                    }
+
+                    else{
+                        let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+
+                        oldAverage = (
+                            (sum - 1) * oldAverage + newTotal
+                        )/sum;
+
+                        p.totalTime = oldAverage;
+                        p.totalMemes += 1;
+                    }
+                    await updateProfile(p);
+                }
+
+                await updateMatch(m);
+                return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
             }
 
-            else{
-                let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+            else {
+                let match = await getQual(mId)
 
-                oldAverage = (
-                    (sum - 1) * oldAverage + newTotal
-                )/sum;
+                let index = match.players.findIndex(x => x.userid === message.author.id);
+                let u = match.players[index];
 
-                p.totalTime = oldAverage;
-                p.totalMemes += 1;
+                if (u.split === false) return message.reply("Can't submit when you haven't started your portion");
+                if(u.memedone) return message.reply("You have already submitted a meme.").then(async m => m.channel.send(u.memelink));
+
+                u.split = true;
+                u.memedone = true;
+                u.memelink = [...message.attachments.values()][0].url;
+
+                await (<TextChannel>client.channels.cache.get("722616679280148504")).send({
+                    embeds:[
+                        new MessageEmbed()
+                            .setDescription(`<@${message.author.id}> has submitted their meme\nChannel: <#${match._id}>`)
+                            .setColor(`#${(await getConfig()).colour}`)
+                    ]
+                }).catch();
+
+                await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
+                    embeds: [
+                        new MessageEmbed()
+                            .setDescription(`<@${message.author.id}> has submitted their meme\nChannel: <#${match._id}>`)
+                            .setColor(`#${(await getConfig()).colour}`)
+                            .setImage([...message.attachments.values()][0].url)
+                            .setTimestamp(new Date())
+                    ]
+                }).catch();
+
+                match.players[index] = u;
+
+                await updateQual(match);
+                await message.reply(`Your meme for your qualifier in <#${match._id}> has been attached.`);
+
+                try {
+                    let r = await getReminder(match._id);
+
+                    r.mention = r.mention.replace(`<@${message.author.id}>`, "");
+
+                    await updateReminder(r);
+                } catch (error) {
+                    console.log("");
+                }
+
+                try {
+                    await deleteReminder(message.author.id);
+                } catch (error) {
+                    console.log("");
+                }
+
+                let p = await getProfile(message.author.id)
+                if(p){
+                    if(p.totalMemes === 0){
+                        p.totalMemes += 1;
+                        p.totalTime += Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time)
+                    }
+
+                    else{
+                        let oldAverage = p.totalTime,
+                            sum = p.totalMemes+1,
+                            newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - u.time);
+
+                        oldAverage = ((sum - 1) * oldAverage + newTotal)/sum;
+
+                        p.totalTime = oldAverage;
+                        p.totalMemes += 1;
+                    }
+                }
+
+                await updateProfile(p);
+
+                return;
             }
-            await updateProfile(p);
-        }
-
-        await updateMatch(m);
-        return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
+        });
     }
 };
 
@@ -143,7 +245,7 @@ export const qualsubmit: Command = {
     groupCommand: true,
     owner: false,
     admins: false,
-    mods: false,
+    mods: true,
     slashCommand:false,
     serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
@@ -566,3 +668,136 @@ export const themeSubmission: Command = {
         await message.reply(`Thank you for submitting themes. You will gain a maximum of ${targs.length} points if they are approved. You currently have ${(await getProfile(message.author.id)).points} points`);
     }
 };
+
+// export const submit: Command = {
+//     name: "submit",
+//     description: " `!submit` with an image in the message. Do `!submit -duel` if you are in a duel.",
+//     group: "tourny",
+//     groupCommand: true,
+//     owner: false,
+//     admins: false,
+//     mods: false,
+//     slashCommand:false,
+//     serverOnlyCommand:false,
+//     async execute(message: Message, client: Client, args: string[]) {
+//
+//         if (message.channel.type !== "DM") {
+//             return message
+//                 .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" +
+//                     " again in bot dm.")
+//                 .then(async m => {
+//                     await message.delete()
+//                     await setTimeout(() => m.delete(), 30000);
+//                 });
+//         }
+//
+//         if (message.attachments.size <= 0) {
+//             return message.reply("Your image was not submitted properly. Contact a mod");
+//         }
+//
+//         else if (message.attachments.size > 1) {
+//             return message.reply("You can't submit more than one image");
+//         }
+//
+//         else if ([...message.attachments.values()][0].url.includes("imgur")) {
+//             return message.reply("You can't submit imgur links");
+//         }
+//
+//         let q = function (x: Match) {
+//             return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
+//         };
+//
+//         let allPossibleMatches = await (await getAllMatches()).filter(q);
+//
+//         if (allPossibleMatches.length === 0) {
+//             return await message.author.send("You are not in any match. If you think this is an error, please contact mods.");
+//         }
+//
+//         if (allPossibleMatches.length > 1 && !args[0]) {
+//             message.channel.send("You are in multiple matches. Please mention the corresponding number to submit. For example `!submit 1`");
+//             for (let i = 0; i < allPossibleMatches.length; i++) {
+//                 await message.channel.send(`${i + 1}) <#${allPossibleMatches[i]._id}>`);
+//                 i += 1;
+//             }
+//             return;
+//         }
+//
+//         let m = args[0] ? allPossibleMatches[parseInt(args[0]) - 1] : allPossibleMatches[0];
+//
+//         let arr = [
+//             m.p1,
+//             m.p2
+//         ];
+//
+//         let player = arr.find(x => x.userid === message.author.id)!;
+//
+//         if (player.donesplit === false) return message.reply("You can't submit until your portion starts");
+//
+//         player.memelink = [...message.attachments.values()][0].url;
+//         player.memedone = true;
+//         player.donesplit = true;
+//
+//         if (m.exhibition === false) {
+//             await (<TextChannel>client.channels.cache.get("793242781892083742")).send({
+//                 embeds:[
+//                     new MessageEmbed()
+//                         .setDescription(`<@${message.author.id}>/${message.author.tag} has submitted their meme\nChannel: <#${m._id}>`)
+//                         .setColor(`#${(await getConfig()).colour}`)
+//                         .setImage([...message.attachments.values()][0].url)
+//                         .setTimestamp(new Date())
+//                 ]
+//             });
+//         }
+//
+//         try {
+//             await deleteReminder(player.userid);
+//             let r = await getReminder(m._id);
+//
+//             r.mention = r.mention.replace(`<@${player.userid}>`, "");
+//
+//             await updateReminder(r);
+//         } catch (error) {
+//             console.log("");
+//         }
+//
+//         m.p1 === player ? m.p1 = player : m.p2 = player;
+//
+//         if (m.p1.donesplit && m.p1.memedone && m.p2.donesplit && m.p2.memedone && m.split) {
+//             m.split = false;
+//             m.p1.time = Math.floor(Date.now() / 1000) - 3200;
+//             m.p2.time = Math.floor(Date.now() / 1000) - 3200;
+//         }
+//
+//         if (!m.exhibition) {
+//             let p = await getProfile(message.author.id)
+//
+//             if(p.totalMemes === 0){
+//                 p.totalMemes += 1;
+//                 p.totalTime += Math.floor(
+//                     (
+//                         Math.floor(
+//                             Math.floor(
+//                                 Date.now() / 1000
+//                             ) / 60
+//                         ) * 60
+//                     ) - m.p1.time
+//                 );
+//             }
+//
+//             else{
+//                 let oldAverage = p.totalTime, sum = p.totalMemes+1, newTotal = Math.floor((Math.floor(Math.floor(Date.now() / 1000) / 60) * 60) - m.p1.time);
+//
+//                 oldAverage = (
+//                     (sum - 1) * oldAverage + newTotal
+//                 )/sum;
+//
+//                 p.totalTime = oldAverage;
+//                 p.totalMemes += 1;
+//             }
+//             await updateProfile(p);
+//         }
+//
+//         await updateMatch(m);
+//         return await message.channel.send(`Your meme has been attached for <#${m._id}>!`);
+//     }
+// };
