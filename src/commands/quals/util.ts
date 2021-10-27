@@ -59,7 +59,7 @@ export const qual_stats: Command = {
             let statsEmbed = new MessageEmbed()
             .setTitle(`Qual Stats`)
             .setColor("LUMINOUS_VIVID_PINK")
-            .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512");
+            .setFooter("blitzwolfz#9338", (await client.users.fetch("239516219445608449")).avatarURL({dynamic:false, size:512, format:"webp"})!);
 
             for (let p of q.players) {
                 statsEmbed.addFields({

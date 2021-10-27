@@ -129,6 +129,7 @@ export const matchList: Command = {
 export const matchStats: Command = {
     name: "match-stats",
     description: "View Match Statistics except voting.\mJust mention the channel name" + `\`!match-stats @Channel\``,
+    aliases:["ms", "matchstats"],
     group: "match",
     owner: false,
     admins: false,
@@ -147,53 +148,77 @@ export const matchStats: Command = {
             let statsEmbed = new MessageEmbed()
             .setTitle(`Match Stats`)
             .setColor("LUMINOUS_VIVID_PINK")
-            .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
-            .addFields({name: `${m.temp.istheme ? `Match theme:` : `Match template`}`, value: `${m.temp.link}`},
-
-
+            .setFooter("blitzwolfz#9338", (await client.users.fetch("239516219445608449")).avatarURL({dynamic:false, size:512, format:"webp"})!)
+            .addFields(
+                {
+                    name: `${m.temp.istheme ? `Match theme:` : `Match template`}`,
+                    value: `${m.temp.link}`
+                },
                 {
                     name: `${(await client.users.cache.get(m.p1.userid)!).username} Meme Done:`,
                     value: `${m.p1.memedone ? `Yes` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Match Portion Done:',
                     value: `${m.p1.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Meme Link:',
                     value: `${m.p1.memedone ? `${m.p1.memelink}` : `No meme submitted yet`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Time left',
                     value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
-                }, {name: '\u200B', value: '\u200B'},
-
+                },
+                {
+                    name: '\u200B',
+                    value: '\u200B'
+                },
                 {
                     name: `${(await client.users.cache.get(m.p2.userid)!).username} Meme Done:`,
                     value: `${m.p2.memedone ? `Yes` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Match Portion Done:',
                     value: `${m.p2.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Meme Link:',
                     value: `${m.p2.memedone ? `${m.p2.memelink}` : `No meme submitted yet`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Time left',
                     value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
-                }, {name: '\u200B', value: '\u200B'},
-
+                },
+                {
+                    name: '\u200B',
+                    value: '\u200B'
+                },
                 {
                     name: `Voting period:`, value: `${m.votingperiod ? `Yes` : `No`}`, inline: true
-                }, {
+                },
+                {
                     name: `Voting time:`,
                     value: `${m.votingperiod ? `${await toHHMMSS(timeconsts.match.votingtime, m.votetime)}` : "Voting has not started"}`,
                     inline: true
                 });
+
+            if (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) {
+                statsEmbed
+                    .addField(
+                        `Score P1 - P2`,
+                        `${m.votingperiod ? `${m.p1.votes}-${m.p2.votes}` : "Voting has not started"}`,
+                        true
+                    )
+            }
 
             return await message.channel.send({
                 embeds:[

@@ -2,13 +2,13 @@ import { Client, CommandInteraction, GuildChannel, Message, MessageEmbed } from 
 import { deleteReminder, getDoc, insertReminder, updateDoc } from "../../db";
 import type { Command, MatchList, QualList } from "../../types";
 import { matchcard } from "../match/utils";
-import { commissionerDefaultSlashPermissions, refDefaultSlashPermissions, sleep } from "../util";
+import { commissionerDefaultSlashPermissions, refDefaultSlashPermissions } from "../util";
 
 const challonge = require("challonge-js");
 
-export const matchchannelcreate: Command = {
-    name: "channelcreate",
-    description: "!channelcreate <-qual> <round number> <time in hours to complete>",
+export const createChannels: Command = {
+    name: "createchannels",
+    description: "!createchannels <-qual> <round number> <time in hours to complete>",
     group: "tournament-manager",
     owner: false,
     admins: false,
@@ -69,7 +69,7 @@ export const matchchannelcreate: Command = {
                 for (let i = 0; i < match.users.length; i++) {
                     //console.log(match.users[i])
                     try {
-                        let name = (await (await client.users.fetch(match.users[i])).username);
+                        let name = ((await client.users.fetch(match.users[i])).username);
                         names.push({
                             str: name, id: (match.users[i])
                         });
@@ -144,7 +144,6 @@ export const matchchannelcreate: Command = {
                                                         names.find(x => x.str === name1)!.id,
                                                         names.find(x => x.str === name2)!.id
                                                     ]).catch();
-                                                    await sleep(2)
                                                     await channel
                                                         .send({
                                                             content:`<@${names.find(x => x.str === name1)!.id}> <@${names.find(x => x.str === name2)!.id}> You have ${args[1]}h to complete this match. Contact a ref to begin, you may also split your match`,
@@ -370,6 +369,64 @@ export const matchchannelcreate: Command = {
     ]
 };
 
+export const manualCreateChannels: Command = {
+    name: "manualcreatechannel",
+    description: "!manualcreatechannel <time in hours to complete> <position number> <@mentions x2>",
+    aliases:["mcc"],
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:true,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let u1 = message.mentions.users.first()!
+        let u2 = message.mentions.users.last()!
+
+        let channelStringName = `${u1.username.substring(0, 10)}-vs${u2.username.substring(0, 10)}`
+        let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "GUILD_CATEGORY")!;
+
+        await message.guild!.channels.create(channelStringName, {
+            type: 'GUILD_TEXT', topic: `48h to complete`,
+            position:parseInt(args[1]), parent:category.id})
+            .then(async channel => {
+
+                await insertReminder({
+                    _id: channel.id,
+                    mention: `<@${u1.id}> <@${u2.id}>`,
+                    channel: channel.id,
+                    type: "match",
+                    time: [
+                        172800,
+                        165600,
+                        129600,
+                        86400
+                    ],
+                    timestamp: Math.floor(Date.now() / 1000),
+                    basetime: 172800
+                });
+                try{
+                    let image = await matchcard(client, channel.id, [
+                        u1.id,
+                        u2.id
+                    ]).catch();
+                    await channel
+                        .send({
+                            content:`<@${u1.id}> <@${u2.id}> You have ${args[0]}h to complete this match. Contact a ref to begin, you may also split your match`,
+                            files:[
+                                image
+                            ]
+                        });
+                } catch (error) {
+                    await message.channel.send(`${channelStringName} no Match card`)
+                    await message.channel.send(error.stack)
+                    await message.channel.send(error.message)
+                }
+
+            });
+    }
+};
+
 export const qualchannelcreate: Command = {
     name: "qualchannelcreate",
     description: "!qualchannelcreate <portion> <time in hours to complete>",
@@ -552,7 +609,7 @@ export const matchbracket: Command = {
     ]
 };
 
-export const channeldelete: Command = {
+export const channelDelete: Command = {
     name: "deletechannels",
     description: "!deletechannels <category>",
     group: "tournament-manager",
@@ -628,10 +685,11 @@ export const channeldelete: Command = {
 };
 
 export default [
-    matchchannelcreate,
+    createChannels,
     qualchannelcreate,
     matchbracket,
-    channeldelete
+    channelDelete,
+    manualCreateChannels
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });

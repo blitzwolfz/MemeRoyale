@@ -27,11 +27,12 @@ export async function backgroundExhibitionLoop(client: Client) {
                 await deleteMatch(m._id);
             }
 
-            if (m.p1.donesplit && m.p1.memedone && m.p2.memedone && m.p2.donesplit && m.split === false && m.votingperiod === false) {
+            if (m.p1.donesplit && m.p1.memedone && m.p2.memedone && m.p2.donesplit && !m.split && !m.votingperiod) {
                 await exhibitionVotingLogic(client, m);
             }
 
-            if (m.votingperiod === true && (Math.floor(Date.now() / 1000) - m.votetime > 7200) || m.votingperiod === true && (m.p1.votes >= 5 || m.p2.votes >= 5)) {
+            if (m.votingperiod && (Math.floor(
+                Date.now() / 1000) - m.votetime > 7200) || m.votingperiod && (m.p1.votes >= 5 || m.p2.votes >= 5)) {
                 await exhibitionResults(client, m);
             }
 
@@ -45,18 +46,24 @@ export async function backgroundExhibitionLoop(client: Client) {
 
     while (i--) {
         let ch = <TextChannel>await client.channels.cache.get(ex.activematches[i]);
+        
+        if (!ch) {
+            ex.activematches.splice(i, 1);
+            continue
+        }
+        
         let guild = await client.guilds.cache.get((<TextChannel>await client.channels.cache.get(ch.id)).guild.id)!;
 
         if (!guild?.channels.cache.has(ex.activematches[i])) {
             ex.activematches.splice(i, 1);
         }
 
-        if (Math.floor(Date.now() / 1000) - Math.floor(ch.createdTimestamp / 1000) > 4500) {
-            await ch.delete();
-            ex.activematches.splice(i, 1);
-        }
-
-        if (!ch || ch === undefined) {
+        else if (Math.floor(Date.now() / 1000) - Math.floor(ch.createdTimestamp / 1000) > 4500) {
+            try {
+                await ch.delete();
+            } catch {
+            
+            }
             ex.activematches.splice(i, 1);
         }
     }
@@ -361,7 +368,7 @@ async function exhibitionResults(client: Client, m: Match) {
         let e = new MessageEmbed()
         .setTitle("Interested in more?")
         .setDescription("Come join us in the " + "in the Meme Royale Server.\n" + "You can play more duels, and participate in our tournament\n" + "with a chance of winning our Cash Prizes.\nClick on the link in the title to join.")
-        .setURL("https://discord.gg/GK3R5Vt3tz")
+        .setURL("https://discord.gg/rAxJ4qA")
         .setColor(`#${(await getConfig()).colour}`);
 
 

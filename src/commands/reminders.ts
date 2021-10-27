@@ -37,13 +37,13 @@ export async function backgroundReminderLoop(client: Client) {
                         for(let xx of r.mention.match(/\d+/g)!){
                             try {
 
-                                await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`);
+                                await (await client.users.fetch(xx)).send(`You have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match. Exact Timestamp: <t:${r.timestamp + r.basetime}>`);
                                 if(randomLink !== "none") await (await client.users.fetch(xx)).send(`${randomLink}`);
 
                             } catch (error) {
 
                                 console.log(error.message);
-                                await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match`)
+                                await (<TextChannel>await client.channels.fetch(r.channel)).send(`<@${xx}> you have ${(r.basetime - r.time[r.time.length - 1]) / 3600}h left to do your match. Exact Timestamp: <t:${r.timestamp + r.basetime}>`)
 
                             }
                         }

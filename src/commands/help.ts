@@ -1,5 +1,5 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getAllProfiles, getConfig, getTemplatedB, getThemes } from "../db";
+import { getAllMatches, getAllProfiles, getAllQuals, getAllReminders, getConfig, getTemplatedB, getThemes } from "../db";
 import type { Command } from "../types";
 import * as c from "./index";
 
@@ -108,9 +108,28 @@ export const mrStats: Command = {
     async execute(message: Message, client: Client, args: string[]) {
         let statsGif = [
             "https://cdn.discordapp.com/attachments/883032538019397712/890096681759162388/statsssss.gif",
-            "https://tenor.com/view/andre-braugher-statistics-is-so-beautiful-b99-holt-statistics-gif-8718500",
-            "https://tenor.com/view/numbers-dont-lie-statistics-statistics-dont-lie-numbers-data-gif-13863389"
+            "https://cdn.discordapp.com/attachments/798975443058556968/895941628731228170/numbers-dont-lie-statistics.gif"
         ]
+
+        let m = (await getAllMatches()).filter(x => !x.exhibition && !x.votingperiod)
+        let q = (await getAllQuals()).filter(x => !x.votingperiod)
+
+        let reminders = (await getAllReminders()).filter(x => x.type === "match")
+
+        let mTime, qTime;
+
+        mTime = qTime = 0
+
+        for (let r of reminders) {
+            if (m.find(x => x._id === r._id)) {
+                if (r.timestamp >= mTime) mTime = r.timestamp + r.basetime
+            }
+
+            if (q.find(x => x._id === r._id)) {
+                if (r.timestamp >= qTime) qTime = r.timestamp + r.basetime
+            }
+        }
+
         let guild = message.guild!
         let statsEmbed = new MessageEmbed()
             .setTitle("MR Basic Server Stats")
@@ -123,7 +142,11 @@ export const mrStats: Command = {
 
                 {name: 'Total Templates', value: `${(await getTemplatedB()).list.length}`, inline:true},
                 {name: 'Total Themes', value: `${(await getThemes()).list.length}`, inline:true},
-                {name: 'Total Profiles', value: `${(await getAllProfiles()).length}`, inline:true}
+                {name: 'Total Profiles', value: `${(await getAllProfiles()).length}`, inline:true},
+
+                {name: 'Qualifier Time Left', value: `${qTime !== 0 ? `<t:${qTime}>` : "N/A"}`, inline:true},
+                {name: 'Match Time Left', value: `${mTime !== 0 ? `<t:${mTime}>` : "N/A"}`, inline:true},
+                {name: 'Current Time', value: `<t:${Math.floor(Date.now()/1000)}>`, inline:true}
             );
 
         return  message.reply({embeds:[statsEmbed]})

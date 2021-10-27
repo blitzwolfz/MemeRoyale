@@ -125,6 +125,18 @@ export const search: Command = {
             if(channelID) return message.reply(`The channel is <#${channelID}>`)
 
         }
+        
+        if (q === undefined) {
+            let g: QualList = await getDoc("config", "quallist");
+            
+            for (let i = 0; i < g.users.length; i++) {
+        
+                if (g.users[i].includes(id)) {
+                    return await message.reply(`Is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`)
+                }
+            }
+            return message.reply("Not in a group")
+        }
 
         return message.reply("Not in a match or qualifier.")
     }
@@ -237,8 +249,6 @@ export const autoCommand: Command = {
 export async function autoRunCommandLoop(commands: Command[], client: Client) {
     let autoList = await getDoc<AutoCommands>("config", "autocommands");
     let iterations = autoList.todo.length;
-
-    // console.log(iterations)
 
     for (let i = iterations - 1; i >= 0; i--) {
         let c = autoList.todo[i];

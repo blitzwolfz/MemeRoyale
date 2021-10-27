@@ -1,5 +1,7 @@
 import { ApplicationCommandData, Client, Collection, CommandInteraction, Intents, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
-import { connectToDB, getConfig, getMatch, getProfile, getQual, getTemplatedB, getThemes, updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "../db";
+import { connectToDB, dBCollectionCounter, getConfig, getDoc,
+    getMatch, getProfile, getQual, getTemplatedB, getThemes,
+    updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "../db";
 import { autoRunCommandLoop } from "../commands/jointcommands";
 import { cmd, prefix } from "../index";
 import { backgroundMatchLoop } from "../commands/match/background";
@@ -9,6 +11,7 @@ import { backgroundReminderLoop } from "../commands/reminders";
 import { interactionButtonsCommand } from "./interactions/buttons";
 import { qual_winner } from "../commands/quals/util";
 import type { Profile } from "../types";
+import type { AutoCommands } from "../types";
 
 export const client: Client = new Client({
     intents: [
@@ -72,19 +75,19 @@ client.once("ready", async () => {
     // await insertDoc('config', obj4)
 
     setInterval(async function () {
-        await autoRunCommandLoop(cmd, client)
+        if((await getDoc<AutoCommands>("config", "autocommands")).todo.length !== 0) await autoRunCommandLoop(cmd, client)
     }, 30000);
     console.log("Started Atuo Command loop")
 
     setInterval(async function () {
-        await backgroundMatchLoop(client);
-        await backgroundQualLoop(client);
+        if(await dBCollectionCounter("matches", {exhibition: false}) !== 0) await backgroundMatchLoop(client);
+        if(await dBCollectionCounter("quals") !== 0) await backgroundQualLoop(client);
         await backgroundExhibitionLoop(client);
     }, 15000);
     console.log("Started Match loop\nStarted Qual loop\nStarted Duel loop")
 
     setInterval(async function () {
-        await backgroundReminderLoop(client);
+        if(await dBCollectionCounter("reminders") !== 0) await backgroundReminderLoop(client);
     }, 15000);
     console.log("Started Reminder loop")
 

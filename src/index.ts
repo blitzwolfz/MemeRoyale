@@ -1,14 +1,15 @@
-import type { Command, levelProfile } from "./types";
-import { Client, Message, MessageActionRow, MessageAttachment, MessageButton, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
-import * as allCommands from "./commands/index";
-import { client } from "./listeners/index";
+import { Client, Message, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import express from "express";
-import http from "http";
 import { closest } from "fastest-levenshtein";
-import { app } from "./api/router";
-import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
+import http from "http";
 import * as path from "path";
+import { app } from "./api/router";
+import * as allCommands from "./commands/index";
 import { draw, levelCalc } from "./commands/levelsystem";
+import { fetchManyMessages } from "./commands/util";
+import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
+import { client } from "./listeners/index";
+import type { Command, levelProfile, Signups } from "./types";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -66,57 +67,57 @@ client.on("messageCreate", async message => {
     }
 
     if (commandName === "test") {
-
-        // await message.reply("Hello there. General")
-
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                    .setCustomId('Peen Been')
-                    .setStyle('PRIMARY')
-                    .setEmoji("😀"),
-            );
-
-        const embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle('Some title')
-            .setURL('https://discord.js.org')
-            .setDescription('Some description here');
-
-        await message.reply({ content: 'Pong!', embeds: [embed], components: [row] }).then(async m => {
-            await m.react("😀")
-        });
-
         //Always
         return;
     }
 
-    if (commandName === "newtemplatecheck") {
-
-        // try {
-        //     await (<TextChannel>client.channels.cache.get((await message.guild!
-        //         .channels.cache.find(x => x.name.toLowerCase().includes("Total-Amount-of-templates-is".toLowerCase()))!.id)))
-        //         .delete()
-        // } catch {
-        //
-        // }
-        //
-        // let templateList = (await getTemplatedB()).list
-        //
-        // let category = await message.guild!.channels.cache.find(c => c.name.toLowerCase() == "mods"
-        //     && c.type == "GUILD_CATEGORY")!;
-        //
-        // let channel = await message.guild!.channels.create(`Total-Amount-of-templates-is:-${templateList.length}`, {
-        //     type: 'GUILD_TEXT', parent:category.id})
-        //
-        // for (let template of templateList) {
-        //     await channel.send(template).then(async m => {
-        //         await m.react('🤥')
-        //     })
-        // }
-
-        await message.reply("`!tc`")
-
+    if (commandName === "bitch") {
+    
+        let channel = <TextChannel>client.channels.cache.get("722291182461386804");
+    
+        let msg = await fetchManyMessages(channel, parseInt(args[0]))
+        
+        console.log([...msg.values()].length)
+    
+        let finalResults: Array<{
+            name: string, value: number
+        }> = [];
+    
+        for(let m of [...msg.values()]) {
+            let embed = m.embeds[0]!
+            if (!embed) continue;
+            if (!embed.title?.includes("Final Results")) continue
+            // console.log(embed)
+            
+        
+            for (let f of embed.fields) {
+                console.log(f.value)
+                console.log(f.value.match(/\d+/g)!)
+                let u = (await client.users.fetch(`${f.value.match(/\d+/g)![1]}`))
+                let key = u.tag;
+                
+                if (!finalResults.find(x => x.name === key)) {
+                    finalResults.push({
+                        name: key, value: parseInt(f.value.match(/\d+/g)?.splice(1)[0]!)
+                    });
+                }
+            
+                else {
+                    finalResults[finalResults.findIndex(x => x.name === key)].value += parseInt(f.value.match(/\d+/g)?.splice(1)[0]!);
+                }
+            }
+        
+        }
+    
+        let signup: Signups = await getDoc("config", "signups");
+        
+        // @ts-ignore
+        let arr = finalResults.filter(x => !signup.users.includes((y:string) => x.value === parseInt(y)))
+        console.log(arr)
+        for(let a of arr) {
+            await message.channel.send(`<@${a.value}> | ${a.name} is a bitch`)
+        }
+    
         return;
     }
 
@@ -154,7 +155,6 @@ client.on("messageCreate", async message => {
         }
 
         else return;
-
     }
 
     else if (!command && message.guild!.id === "719406444109103117") {

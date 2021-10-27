@@ -42,14 +42,17 @@ export const duel: Command = {
         let ex = await getExhibition();
 
         if (ex.cooldowns.some(x => x.user === message.author.id)) {
-            return message.reply("It hasn't been 5 mins yet");
+            return message.reply("It hasn't been 5 mins yet." +
+                `You can start another duel at <t:${ex.cooldowns.find(x => x.user === message.author.id)!.time+300}>`);
         }
 
         if (ex.cooldowns.some(x => x.user === message.mentions.users.first()!.id)) {
-            return message.reply(`It hasn't been 5 mins for ${message.mentions.users.first()!.username}`);
+            return message.reply(`It hasn't been 5 mins for ${message.mentions.users.first()!.username}`
+            + `You can start another duel at <t:${ex.cooldowns.find(x => x.user === message.mentions.users.first()!.id)!.time+300}>`);
         }
 
         let m = message;
+        await message.react("☑")
 
         const duelWaitForResponseFilter = (response: any) => {
             return (("accept").toLowerCase() === response.content.toLowerCase());

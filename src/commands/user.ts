@@ -138,12 +138,13 @@ export const profile_lb: Command = {
     slashCommand:false,
     serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
-        let profiles = await getAllProfiles();
-
+        let profiles:Profile[] = (await getAllProfiles());
+        profiles = profiles.filter(x => !x._id.includes("-cockrating"))
+        console.log(args)
         let symbol: "wins" | "points" | "loss" | "votetally" | "totalTime" | "ratio" = "wins";
         //@ts-ignore
         let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : args[1];
-
+        console.log(page)
 
         switch (args[0]?.[0].toLowerCase()) {
             case "p":
@@ -326,9 +327,9 @@ export const duel_stats: Command = {
     slashCommand:false,
     serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
-        let user: DuelProfile = await getDuelProfile((args[1] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
-        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
-        let name = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
+        let user: DuelProfile = await getDuelProfile((args[0] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
+        let imgurl = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
+        let name = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
         if (!user) {
             return message.reply("That user profile does not exist! Please do `!duel-create` to create your own user profile");
         }
@@ -343,12 +344,16 @@ export const duel_stats: Command = {
             .setTitle(`Duelist: ${name}`)
             .setThumbnail(imgurl)
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`}, {
-                name: 'Total Wins', value: `${user.wins}`
-            }, {name: 'Total Loss', value: `${user.loss}`}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`
-            }, {name: 'Win Rate', value: `${wr}%`});
-
+            .addFields(
+                {name: 'Win Rate', value: `${wr}%`, inline:true},
+                {name: 'Total Wins', value: `${user.wins}`, inline:true},
+                {name: 'Total Losses', value: `${user.loss}`, inline:true},
+                {name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true},
+                {name: 'Total Points', value: `${user.points}`, inline:true},
+                );
+            
+            if (message.author.id === process.env.owner) UserEmbed.setColor("DARK_RED")
+            
             await message.channel.send({
                 embeds:[
                     UserEmbed
@@ -416,7 +421,8 @@ export async function createDuelProfileAtMatch(userId: string, guildid: string) 
 
 export const duel_lb: Command = {
     name: "duel -lb",
-    description: "`!duel lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your server. If no flag is passed, the lb sorts by wins.",
+    description: "`!duel -lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your" +
+        " server. If no flag is passed, the lb sorts by wins.",
     group: "duels",
     groupCommand: true,
     owner: false,
@@ -425,14 +431,14 @@ export const duel_lb: Command = {
     slashCommand:false,
     serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
+        console.log(args)
         let profiles = await getAllDuelProfiles(message.guild!.id);
-
+        console.log(args)
         let symbol: "wins" | "points" | "loss" | "votetally" | "ratio" | "all" = "wins";
         //@ts-ignore
-        let page: number = typeof args[2] == "undefined" ? isNaN(parseInt(args[1])) ? 1 : parseInt(args[1]) : args[2];
-
-
-        switch (args[1]?.[0]) {
+        let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : parseInt(args[1]);
+        console.log(page)
+        switch (args[0]?.[0]) {
             case "p":
                 symbol = "points";
                 break;

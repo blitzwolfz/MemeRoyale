@@ -146,6 +146,12 @@ export interface DuelProfile {
     loss: number;
 }
 
+export interface CockProfile {
+    _id:string,
+    value: number,
+    timestamp: number,
+}
+
 export interface Contest {
     _id: "contest";
     open: boolean;

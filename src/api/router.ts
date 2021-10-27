@@ -43,7 +43,7 @@ app.get('/user/:id', async (req, res) => {
 app.get('/users', async (req, res) => {
     // Reading isbn from the URL
     try {
-        let user = await getAllProfiles();
+        let user:APIProfile[] = await getAllProfiles();
 
         let data: APIProfile[] = user;
 
