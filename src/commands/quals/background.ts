@@ -2,7 +2,7 @@ import { Client, MessageEmbed, TextChannel } from "discord.js";
 import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, insertReminder, updateProfile, updateQual } from "../../db";
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
-import { QualifierResults } from "./util";
+import { QualifierResults } from "./utils";
 
 require('dotenv').config();
 
@@ -158,7 +158,7 @@ async function matchResults(client: Client, q: Qual) {
             if (!q.players[x].failed && q.players[x].memedone) {
                 fields.push({
                     name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
-                    value: `${`Finished with ${100 / q.players.filter(p => p.memedone).length} | Earned: ${(Math.floor(100 / q.players.filter(p => p.memedone).length) * 100)}% of the votes\nUserID: ${q.players[x].userid}`}`
+                    value: `${`Finished with ${100 / q.players.filter(p => p.memedone).length} | Earned: ${(Math.floor(100 / q.players.filter(p => p.memedone).length))}% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }
 
@@ -193,16 +193,49 @@ async function matchResults(client: Client, q: Qual) {
                 ]
         }).then(async message => {
             let t = channel.topic?.split(" ");
-
-            if (!t) {
+    
+            if (t?.join("").toLocaleLowerCase() === "round1" || t?.join("").toLocaleLowerCase() === "qualifierround" || !t) {
                 await channel.setTopic(message.id);
                 t = [];
                 let string = "";
-
+        
                 for (let p of q.players) {
                     string += `<@${p.userid}>\n`;
                 }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 48h to complete your portion. ${string}`);
+                let c = <TextChannel>client.channels.cache.get(channel.id);
+        
+                let m = (await c.messages.fetch({limit: 100})).last()!;
+        
+                let time = Math.floor(((Math.floor(m.createdTimestamp / 1000) + 345600) - Math.floor(Date.now() / 1000)) / 3600);
+        
+                if (time <= 96) {
+                    await channel.send(`${string} you have ${time}h left to complete Portion 2`);
+            
+                    let timeArr: Array<number> = [];
+                    timeArr.push(172800);
+            
+                    if ((time)* 3600 > 0 && time - 2 > 0) {
+                        timeArr.push(165600);
+                    }
+            
+                    if ((time) * 3600 > 0 && time - 12 > 0) {
+                        timeArr.push(129600);
+                    }
+            
+                    if ((time) * 3600 > 0 && time - 24 > 0) {
+                        timeArr.push(86400);
+                    }
+            
+                    await insertReminder({
+                        _id: channel.id,
+                        mention: `${string}`,
+                        channel: channel.id,
+                        type: "match",
+                        time: timeArr,
+                        timestamp: Math.floor(m.createdTimestamp / 1000) +172800,
+                        basetime: 172800
+                    });
+                }
             }
 
             else if ((t!.concat([message.id])).length === timeconsts.qual.results) {

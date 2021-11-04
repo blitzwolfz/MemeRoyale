@@ -69,20 +69,25 @@ export async function backgroundExhibitionLoop(client: Client) {
     }
 
     for (let i = 0; i < ex.cooldowns.length; i++) {
-
-        let us = await client.users.fetch(ex.cooldowns[i].user);
-
-        if (!ex.cooldowns[i]) {
-            continue;
-        }
-
-        if (Math.floor(Date.now() / 1000) - Math.floor(ex.cooldowns[i].time) >= 300) {
-            try {
-                await us.send("You can start another exhibition match!");
-            } catch {
-                console.log("Could not dm user that cooldown is over");
+    
+        try {
+            let us = await client.users.fetch(ex.cooldowns[i].user);
+            if (!ex.cooldowns[i]) {
+                continue;
             }
-
+    
+            if (Math.floor(Date.now() / 1000) - Math.floor(ex.cooldowns[i].time) >= 300) {
+                try {
+                    await us.send("You can start another exhibition match!");
+                } catch {
+                    console.log("Could not dm user that cooldown is over");
+                }
+        
+                ex.cooldowns.splice(i, 1);
+                i++;
+            }
+        }
+        catch {
             ex.cooldowns.splice(i, 1);
             i++;
         }
@@ -165,7 +170,8 @@ async function exhibitionVotingLogic(client: Client, m: Match) {
         m.messageID.push(msg.id);
     });
 
-    let id = guild.roles.cache.find(x => x.name.toLowerCase().includes("duel"));
+    let id = guild.roles.cache.find(x => x.name.replace(/\s/g, '').toLowerCase().includes("duelping")
+        || x.name.replace(/\s/g, '').toLowerCase().includes("battleping"));
     require('dotenv').config();
     if (id && !process.env.dev) await channel.send(`${id}`);
 

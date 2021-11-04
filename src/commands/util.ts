@@ -72,19 +72,28 @@ export async function sleep(s: number) {
     });
 }
 
-export async function fetchManyMessages(channel: TextChannel, limit = 200) {
+export async function fetchManyMessages(channel: TextChannel, limit = 200, b?:string, a?:string) {
     if (!channel) {
         throw new Error(`Expected channel, got ${typeof channel}.`);
     }
     if (limit <= 100) {
-        return await channel.messages.fetch({limit});
+        return await channel.messages.fetch({limit, after:a, before:b});
     }
-
+    
+    console.log(a)
+    console.log(b)
+    
     let collection: Collection<string, Message> = new Collection();
-    let lastId = null;
+    let lastId = b ? b : null;
     let options: {
-        limit?: number; before?: Snowflake;
-    } = {};
+        limit?: number; before?: Snowflake; after?:Snowflake;
+    } = {
+        before: b ? b : undefined,
+        after: a ? a : undefined
+    };
+    
+    console.log(options)
+    
     let remaining = limit;
 
     while (remaining > 0) {

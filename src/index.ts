@@ -9,7 +9,7 @@ import { draw, levelCalc } from "./commands/levelsystem";
 import { fetchManyMessages } from "./commands/util";
 import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import { client } from "./listeners/index";
-import type { Command, levelProfile, Signups } from "./types";
+import type { Command, levelProfile } from "./types";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -67,58 +67,63 @@ client.on("messageCreate", async message => {
     }
 
     if (commandName === "test") {
+        let channel = await <TextChannel>client.channels.cache.get("722291683030466621");
+        let m = await channel.messages.fetch("900974180307206214");
+    
+        console.log(m.embeds[0])
+        console.log(m.embeds[0].fields[0].value)
+        
         //Always
         return;
     }
 
     if (commandName === "bitch") {
     
-        let channel = <TextChannel>client.channels.cache.get("722291182461386804");
-    
-        let msg = await fetchManyMessages(channel, parseInt(args[0]))
+        let channel = <TextChannel>client.channels.cache.get(args[0]);
+        let b = <string | undefined> undefined;
+        let a = <string | undefined> undefined;
         
-        console.log([...msg.values()].length)
+        if(args[3]) b = args[3];
+        if(args[2]) a = args[2];
     
-        let finalResults: Array<{
-            name: string, value: number
-        }> = [];
-    
+        let msg = await fetchManyMessages(channel, parseInt(args[1]), b, a)
+
         for(let m of [...msg.values()]) {
-            let embed = m.embeds[0]!
-            if (!embed) continue;
-            if (!embed.title?.includes("Final Results")) continue
-            // console.log(embed)
-            
-        
-            for (let f of embed.fields) {
-                console.log(f.value)
-                console.log(f.value.match(/\d+/g)!)
-                let u = (await client.users.fetch(`${f.value.match(/\d+/g)![1]}`))
-                let key = u.tag;
-                
-                if (!finalResults.find(x => x.name === key)) {
-                    finalResults.push({
-                        name: key, value: parseInt(f.value.match(/\d+/g)?.splice(1)[0]!)
-                    });
-                }
-            
-                else {
-                    finalResults[finalResults.findIndex(x => x.name === key)].value += parseInt(f.value.match(/\d+/g)?.splice(1)[0]!);
-                }
-            }
-        
-        }
-    
-        let signup: Signups = await getDoc("config", "signups");
-        
-        // @ts-ignore
-        let arr = finalResults.filter(x => !signup.users.includes((y:string) => x.value === parseInt(y)))
-        console.log(arr)
-        for(let a of arr) {
-            await message.channel.send(`<@${a.value}> | ${a.name} is a bitch`)
+                await message.channel.send(m.url)
         }
     
         return;
+    }
+    
+    if (commandName === "qfs") {
+        let channel = await <TextChannel>client.channels.cache.get(args[0]);
+        
+        let m = (await channel.messages.fetch(args[1]))!
+        let fields = m.embeds[0]!.fields
+        
+        for(let f of fields) {
+            //@ts-ignore
+           f.value = f.value.split(" ").slice(0, 5).join(" ")
+               + " "
+               + Math.floor(parseInt(f.value.split(" ")[5].replace("%", ""))/100).toString()
+               + "% "
+               + f.value.split(" ").slice(6).join(" ")
+        }
+        
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`No votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
+        }).then(async m => {
+            await channel.setTopic(m.id)
+        })
+        
+        return
     }
 
     let command = commands.find(c => {
@@ -167,7 +172,7 @@ client.on("messageCreate", async message => {
             .send(`Did you mean \`!${probablyName}\`? If so, click on the the ${emote} to continue.`);
 
             await msg.react(`${emote}`);
-            let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === `${emote}` && !user.bot;
+            let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === `${emote}` && !user.bot && user.id === message.author.id;
             const approve = msg.createReactionCollector({filter:emoteFilter, time: 50000});
 
             approve.on('collect', async () => {

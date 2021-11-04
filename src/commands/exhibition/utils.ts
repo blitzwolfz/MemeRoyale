@@ -99,8 +99,8 @@ export const duelHelp: Command = {
             .setDescription(
                 "Duels are a way to play matches with other people in this server."+
                 "\nAll you have to do is do the !duel command, and the bot will start a duel for you."+
-                "\nTo the person who is being mentioned, the bot will dm you, and just follow it's instructions."+
-                "You have a chance to duel others every 1h, with the bot dming you when you can."
+                "\nTo the person who is being mentioned, the bot will ask you to react a checkmark"+
+                "\nYou have a chance to duel others every 1h, with the bot dming you when you can."
             )
             .setFields(
                 {
@@ -126,7 +126,6 @@ export const duelHelp: Command = {
             )
             .setTimestamp(new Date)
         ;
-
         return await message.reply({embeds:[helpEmbed]});
     }
 };

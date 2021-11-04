@@ -1,5 +1,6 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
-import { getConfig, getDoc, getProfile, getQual, updateDoc, updateProfile, updateQual } from "../../db";
+import { getAllReminders, getConfig, getDoc, getProfile, getQual, getReminder, insertReminder, updateDoc, updateProfile, updateQual } from "../../db";
+import type { QualList } from "../../types";
 import type { Command, MatchList } from "../../types";
 
 
@@ -284,3 +285,63 @@ export const removeQualWinner: Command = {
         }
     }
 };
+
+export const addQualReminders: Command = {
+    name: "aqr",
+    description: "!aqr",
+    group: "quals",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand: false,
+    serverOnlyCommand: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let qualifiers = []
+        
+        let firstReminder = (await getAllReminders()).filter(x => x.type === "match")[0]
+        console.log(firstReminder)
+    
+        let catChannels = [...message!.guild!.channels.cache.values()]
+            .filter(x => x!.parent !== null && x!.parent.name.toLowerCase() === "qualifiers")
+        let qList: QualList = await getDoc("config", "quallist");
+    
+        for (let channel of catChannels) {
+        
+            try {
+                let r = firstReminder
+                
+                let Null = await getReminder(channel.id)
+                
+                if (!Null) {
+                    qualifiers.push(`<#${channel.id}> `)
+                    r._id = channel.id
+                    r.channel = channel.id
+                    r.mention = qList.users[parseInt(channel.name.toLowerCase().replace("group-", "")) - 1]
+                        .map(i => "<@" + i + ">")
+                        .join(" ")
+                    await insertReminder(r)
+                    
+                }
+        
+                else {
+                    continue;
+                }
+            
+            } catch {
+            
+            }
+        }
+        
+        return message.reply(`These channels got reminders: ${qualifiers}`)
+    },
+};
+
+export default [
+    addQualReminders,
+    forcevote_qual,
+    qual_result_sum,
+    qual_stats,
+    qual_winner,
+    reload_qual,
+    removeQualWinner
+]

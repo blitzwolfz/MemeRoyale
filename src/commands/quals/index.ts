@@ -1,6 +1,7 @@
 import { Client, Message, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import { deleteQual, getConfig, getQual, getTemplatedB, getThemes, insertQual, insertReminder, updateQual } from "../../db";
 import type { Command, Qual } from "../../types";
+import * as utils from "./utils";
 import { createProfileatMatch } from "../user";
 
 export const splitqual: Command = {
@@ -310,3 +311,11 @@ export const endqual: Command = {
         });
     }
 };
+
+export default [
+    cancelqual,
+    endqual,
+    splitqual,
+    startsplitqual
+]
+    .concat(utils.default)

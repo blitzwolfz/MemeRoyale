@@ -9,7 +9,7 @@ import { backgroundQualLoop } from "../commands/quals/background";
 import { backgroundExhibitionLoop } from "../commands/exhibition/background";
 import { backgroundReminderLoop } from "../commands/reminders";
 import { interactionButtonsCommand } from "./interactions/buttons";
-import { qual_winner } from "../commands/quals/util";
+import { qual_winner } from "../commands/quals/utils";
 import type { Profile } from "../types";
 import type { AutoCommands } from "../types";
 
@@ -445,10 +445,10 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
 
                 (<TextChannel>await client.channels.fetch("724827952390340648")).send({content: "New template:", files:[attach]});
             }
-            else if (await messageReaction.message.embeds[0].fields) {
+            else if (await messageReaction.message.embeds[0].fields!) {
                 let obj = await getThemes();
 
-                obj.list.push(messageReaction.message.embeds[0].fields[1].value);
+                obj.list.push(messageReaction.message.embeds[0].fields[0].value);
 
                 await updateThemedB({
                     _id: "themelist", list: obj.list
@@ -459,7 +459,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                     await updateProfile(id);
                 }
 
-                await (<TextChannel>await client.channels.fetch("724837977838059560")).send("New Theme: " + `${messageReaction.message.embeds[0].fields[1].value}`);
+                await (<TextChannel>await client.channels.fetch("724837977838059560")).send("New Theme: " + `${messageReaction.message.embeds[0].fields[0].value}`);
             }
             await messageReaction.message.delete();
         }

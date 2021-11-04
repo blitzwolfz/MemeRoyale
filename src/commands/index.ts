@@ -8,12 +8,10 @@ import { help, mrStats } from "./help";
 import * as imageCommands from "./imagecommands/index";
 import * as e from "./jointcommands";
 import * as level from "./levelsystem";
-import { cancelmatch, splitmatch, startmatch, startsplit } from "./match";
-import { endmatch, forcevote, matchList, matchStats, reload_match } from "./match/utils";
-import { cancelqual, endqual, splitqual, startsplitqual } from "./quals";
-import { forcevote_qual, qual_result_sum, qual_stats, qual_winner, reload_qual, removeQualWinner } from "./quals/util";
+import * as a from "./match";
+import * as q from "./quals";
 import { delay } from "./reminders";
-import { modqualsubmit, modsubmit, qualsubmit, submit, templateSubmission, themeSubmission } from "./submit";
+import * as submit from "./submit";
 import * as b from "./tournament/index";
 import * as d from "./user";
 import { backwardsFilter, cockRatingImage, defaultSlashPermissions, forwardsFilter } from "./util";
@@ -481,36 +479,12 @@ export default [
 	transition,
 	enableCommands,
 	disableCommands,
-	startmatch,
 	delay,
-	startsplit,
-	endmatch,
-	reload_match,
-	reload_qual,
-	qual_result_sum,
 	ping,
-	endmatch,
-	forcevote,
-	forcevote_qual,
-	qual_winner,
-	removeQualWinner,
-	splitmatch,
-	cancelmatch,
-	submit,
-	qualsubmit,
-	modsubmit,
-	modqualsubmit,
-	splitqual,
 	help,
-	startsplitqual,
-	matchList,
-	cancelqual,
-	endqual,
-	qual_stats,
-	matchStats,
-	templateSubmission,
-	themeSubmission,
 ]
+	.concat(a.default)
+	.concat(q.default)
 	.concat(b.default)
 	.concat(c.default)
 	.concat(d.default)
@@ -518,6 +492,7 @@ export default [
 	.concat(f.default)
 	.concat(imageCommands.default)
 	.concat(level.default)
+	.concat(submit.default)
 	.sort(function keyOrder(k1, k2) {
 		if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 	});

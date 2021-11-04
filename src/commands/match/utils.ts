@@ -346,3 +346,12 @@ export async function grandwinner(client: Client, userid: string) {
 
 
 }
+
+
+export default [
+    endmatch,
+    forcevote,
+    matchList,
+    matchStats,
+    reload_match
+]

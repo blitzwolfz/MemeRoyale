@@ -1,6 +1,7 @@
 import { Client, Message, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import { deleteMatch, getConfig, getMatch, getTemplatedB, getThemes, insertMatch, insertReminder, updateMatch } from "../../db";
 import type { Command, Match } from "../../types";
+import * as utils from "./utils";
 import { createProfileatMatch } from "../user";
 
 
@@ -597,3 +598,11 @@ export const cancelmatch: Command = {
 //     .setColor(`#${(await getConfig()).colour}`)
 //     .setDescription(`You have 45 mins to complete your meme\n` + `Use \`!submit\` to submit to submit.`));
 // }
+
+export default [
+    cancelmatch,
+    splitmatch,
+    startmatch,
+    startsplit
+]
+.concat(utils.default)
