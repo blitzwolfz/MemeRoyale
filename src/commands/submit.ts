@@ -40,11 +40,9 @@ export const submit: Command = {
             return ((x.p1.userid === message.author.id && !x.p1.memedone) || (x.p2.userid === message.author.id && !x.p2.memedone) && !x.votingperiod);
         };
 
-        let allPossibleQuals =                 (await getAllQuals())
+        let allPossibleQuals = (await getAllQuals())
             .filter(x => x.players.some(y => y.userid === message.author.id && !y.memedone)
             ).map(x => x._id)!
-
-        console.log("E", allPossibleQuals)
 
         let allPossibleMatches = await (await getAllMatches())
             .filter(q)

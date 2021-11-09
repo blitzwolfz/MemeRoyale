@@ -1,7 +1,7 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getAllDuelProfiles, getAllProfiles, getConfig, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
-import type { Command, DuelProfile, Profile } from "../types";
-import { backwardsFilter, forwardsFilter } from "./util";
+import { getAllDuelProfiles, getAllMatches, getAllProfiles, getAllQuals, getConfig, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
+import type { Command, DuelProfile, Match, Profile } from "../types";
+import { backwardsFilter, forwardsFilter, timeconsts, toHHMMSS } from "./util";
 
 export const create_profile: Command = {
     name: "create",
@@ -66,6 +66,17 @@ export const profile_stats: Command = {
         }
 
         else if (user) {
+    
+            let searchFilter = function (x: Match) {
+                return ((x.p1.userid === user._id) || (x.p2.userid === user._id) && x.votingperiod);
+            };
+            
+            let m = await (await getAllMatches())
+                .filter(searchFilter)
+            
+            let q = (await getAllQuals())
+                .filter(x => x.players.some(y => y.userid === user._id) && x.votingperiod)
+            
 
             let wr = Math.floor(user.wins / (user.wins + user.loss) * 100);
 
@@ -76,12 +87,25 @@ export const profile_stats: Command = {
             .setThumbnail(imgurl)
             //.setColor("#d7be26")
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`, inline:true},
-                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true}, {
-                name: 'Total Wins', value: `${user.wins}`, inline:true
-            }, {name: 'Total Loss', value: `${user.loss}`, inline:true}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true
-            }, {name: 'Win Rate', value: `${wr}%`, inline:true});
+            .addFields(
+                {name: 'Total Points', value: `${user.points}`, inline:true},
+                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true},
+                {name: 'Total Wins', value: `${user.wins}`, inline:true},
+                {name: 'Total Loss', value: `${user.loss}`, inline:true},
+                {name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true},
+                {name: 'Win Rate', value: `${wr}%`, inline:true}
+                );
+            
+            if (m[0].votingperiod) {
+                UserEmbed
+                    .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, m[0].votetime)}`, true)
+            }
+            
+            if(q[0].votingperiod) {
+                UserEmbed
+                    .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, q[0].votetime)}`, true)
+            }
+            
 
             await message.channel.send({
                 embeds:[
