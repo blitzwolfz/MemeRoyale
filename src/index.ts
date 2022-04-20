@@ -9,7 +9,7 @@ import { draw, levelCalc } from "./commands/levelsystem";
 import { fetchManyMessages } from "./commands/util";
 import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import { client } from "./listeners/index";
-import type { Command, levelProfile } from "./types";
+import type { Command, levelProfile, Signups } from "./types";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -67,11 +67,11 @@ client.on("messageCreate", async message => {
     }
 
     if (commandName === "test") {
-        let channel = await <TextChannel>client.channels.cache.get("722291683030466621");
-        let m = await channel.messages.fetch("900974180307206214");
-    
-        console.log(m.embeds[0])
-        console.log(m.embeds[0].fields[0].value)
+        let c = <TextChannel>client.channels.cache.get(r.channel);
+
+        let m = (await c.messages.fetch({limit: 100})).last()!;
+
+        let arr = r.mention.match(/\d+/g)!;
         
         //Always
         return;
@@ -92,6 +92,21 @@ client.on("messageCreate", async message => {
                 await message.channel.send(m.url)
         }
     
+        return;
+    }
+    
+    if (commandName === "bitch2") {
+        //@ts-ignore
+        let oldSignup: Signups = await getDoc("config", "oldsignups");
+    
+        let signup: Signups = await getDoc("config", "signups");
+    
+        let difference = signup.users.filter(x => !oldSignup.users.includes(x));
+        
+        for (let u of difference) {
+            await message.channel.send(`<@${u}>`)
+        }
+        
         return;
     }
     
@@ -124,6 +139,19 @@ client.on("messageCreate", async message => {
         })
         
         return
+    }
+    
+    if (commandName === "dmu") {
+        console.log(args)
+        
+        let messageToSend = args.slice(args.findIndex(x => x.toLowerCase() === "message:")+1).join(" ");
+        
+        console.log(messageToSend)
+        
+        for(let u of [...message.mentions.users.values()]) {
+            await u.send(messageToSend)
+        }
+        return;
     }
 
     let command = commands.find(c => {
@@ -191,13 +219,13 @@ async function runCommand(command: Command, message: Message, client: Client, ar
     if (await (await getConfig()).disabledcommands.includes(command.name)) return message.reply(`${command.name} is currently disabled`);
     if (command.owner || command.admins || command.mods) {
         try {
-            if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
+            if (command.admins && (message.author.id === process.env.owner 
+                || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
                 await command.execute(message, client, args, process.env.owner);
             }
             else if (command.mods && (message.author.id === process.env.owner
-                || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")
-                    || (message.member?.roles.cache.find(x => x.name.toLowerCase().includes("mod")))
-                    || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
+                || (message.member?.roles
+                    .cache.find(x => ["commissioner", "mod", "referee"].includes(x.name.toLowerCase()))))) {
                 await command.execute(message, client, args, process.env.owner);
             }
             else if (command.owner && message.author.id === process.env.owner) {

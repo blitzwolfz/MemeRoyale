@@ -1,6 +1,6 @@
 import type { Client, Message, TextChannel } from "discord.js";
 import type { AutoCommands, Command, Match, MatchList, QualList, Signups } from "../types";
-import { getAllMatches, getAllQuals, getConfig, getDoc, getMatch, getQual, updateConfig, updateDoc, updateMatch, updateQual } from "../db";
+import { dbSoftReset, getAllMatches, getAllQuals, getConfig, getDoc, getMatch, getQual, updateConfig, updateDoc, updateMatch, updateQual } from "../db";
 import { cancelmatch } from "./match";
 import { cancelqual, endqual } from "./quals/index";
 import { endmatch } from "./match/utils";
@@ -118,7 +118,7 @@ export const search: Command = {
         if (m !== undefined) return message.reply(`The channel is <#${m._id}>`);
         if (q !== undefined) return message.reply(`The channel is <#${q._id}>`);
 
-        if(m === undefined) {
+        if (m === undefined) {
             let username = (await client.users.fetch(id)).username.toLowerCase()
             let channelID = message.guild!.channels.cache.find(x => x.name.toLowerCase().includes(username))?.id
 
@@ -126,7 +126,7 @@ export const search: Command = {
 
         }
         
-        if (q === undefined) {
+        else if (q === undefined) {
             let g: QualList = await getDoc("config", "quallist");
             
             for (let i = 0; i < g.users.length; i++) {
@@ -196,6 +196,65 @@ export const cycleRestart: Command = {
         }
 
         return message.reply("Cycle restarted");
+    }
+}
+
+export const seasonRestart: Command = {
+    name: "season-restart",
+    description: "!season-restart [<true> to open signup] [<false> 'message to put in status']",
+    group: "tournament-manager",
+    owner: false,
+    admins: true,
+    mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        if (![
+            "true",
+            "false"
+        ].includes(args[0].toLowerCase())) return message.reply("Need a true or false.");
+        
+        let signup: Signups = await getDoc("config", "signups");
+        let matchlist: MatchList = await getDoc("config", "matchlist");
+        let quallist: QualList = await getDoc("config", "quallist");
+        let config = await getConfig();
+        
+        signup.autoClose = 64;
+        signup.users = [];
+        signup.msgID = "";
+        signup.open = false;
+        
+        matchlist.url = "";
+        matchlist.users = [];
+        
+        quallist.users = [];
+        
+        config.isfinale = false;
+        
+        await updateDoc("config", signup._id, signup);
+        await updateDoc("config", matchlist._id, matchlist);
+        await updateDoc("config", quallist._id, quallist);
+        await updateConfig(config);
+        
+        await dbSoftReset()
+        
+        if (args[0].toLowerCase() === "true") {
+            config.status = "Signup now open!";
+            await client.user!.setActivity("Signup now open!");
+            await signup_manager.execute(message, client, ["-open"])
+        }
+        
+        if (args[0].toLowerCase() === "false") {
+            if (typeof args.slice(1).join(" ") !== 'string') {
+                return message.reply("Status requires a string");
+            }
+            
+            config.status = args.slice(1).join(" ");
+            await client.user!.setActivity(`${args.slice(1).join(" ")}`);
+            await updateConfig(config);
+        }
+        
+        return message.reply("Season restarted");
     }
 }
 
@@ -282,5 +341,6 @@ export default [
     end,
     search,
     cycleRestart,
+    seasonRestart,
     autoCommand
 ];

@@ -96,12 +96,12 @@ export const profile_stats: Command = {
                 {name: 'Win Rate', value: `${wr}%`, inline:true}
                 );
             
-            if (m[0].votingperiod) {
+            if (m.length !== 0 && m[0].votingperiod) {
                 UserEmbed
                     .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, m[0].votetime)}`, true)
             }
             
-            if(q[0].votingperiod) {
+            if(q.length !== 0 && q[0].votingperiod) {
                 UserEmbed
                     .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, q[0].votetime)}`, true)
             }

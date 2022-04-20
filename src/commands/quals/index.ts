@@ -34,7 +34,7 @@ export const splitqual: Command = {
             await createProfileatMatch(u.id)
         }
 
-        if (args.includes("template")) {
+        if (args.includes("-template")) {
             q.temp.istheme = false;
         }
 

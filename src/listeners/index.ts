@@ -222,7 +222,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
         console.log("Check")
 
         if (p && p.voteDM && !m.exhibition) {
-            await user.send(`Vote counted for Player 1's memes in <#${m._id}>. You gained 2 points for voting`);
+            await user.send(`Vote counted for Player 2's memes in <#${m._id}>. You gained 2 points for voting`);
         }
 
         console.log("Check")

@@ -270,7 +270,7 @@ export const splitmatch: Command = {
             }, votetime: 0, votingperiod: false
         };
 
-        if (args[2] === "theme") {
+        if (args.includes("-theme")) {
             m.temp.istheme = true;
         }
 

@@ -1,6 +1,6 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
 import { getAllReminders, getConfig, getDoc, getProfile, getQual, getReminder, insertReminder, updateDoc, updateProfile, updateQual } from "../../db";
-import type { QualList } from "../../types";
+import type { QualList, Signups } from "../../types";
 import type { Command, MatchList } from "../../types";
 
 
@@ -250,6 +250,29 @@ export const qual_winner: Command = {
     }
 };
 
+export const signupToMatchList: Command = {
+    name: "sml",
+    description: "!sml <@mentions>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let ids: Signups= await getDoc("config", "signups")
+        let list: MatchList = await getDoc('config', "matchlist");
+
+        if (list) {
+            list.users = ids.users;
+            list.url = "";
+            await updateDoc('config', list._id, list);
+
+            return message.reply("Done transfer.");
+        }
+    }
+};
+
 export const removeQualWinner: Command = {
     name: "rqw",
     description: "!rqw <@mentions>",
@@ -343,5 +366,6 @@ export default [
     qual_stats,
     qual_winner,
     reload_qual,
-    removeQualWinner
+    removeQualWinner,
+    signupToMatchList
 ]

@@ -97,6 +97,45 @@ export const ping: Command = {
 	slashCommandPermissions: defaultSlashPermissions,
 };
 
+export const snowflakeToTimestamp: Command = {
+	name: "timestamp",
+	aliases: ["ts"],
+	description: "lmao",
+	group: "help",
+	owner: true,
+	admins: false,
+	mods: false,
+	slashCommand: false,
+	serverOnlyCommand: false,
+	async execute(message: Message, client: Client, args: string[]) {
+		message.channel.send({
+			embeds: [
+				new MessageEmbed()
+					.setAuthor(`Pinging`),
+			],
+		}).then(async m => {
+			// The math thingy to calculate the user's ping
+			let ping = m.createdTimestamp - message.createdTimestamp;
+			
+			// Basic embed
+			
+			let embed = new MessageEmbed()
+				.setTitle(`Your ping is ${ping} ms`)
+				// .setImage("https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+				.setColor(m.embeds![0]!.hexColor!);
+			// Then It Edits the message with the ping variable embed that you created
+			await m.edit({embeds: [embed]}).then(async m => {
+				let embed = new MessageEmbed()
+					.setTitle(`Your ping is ${ping} ms`)
+					.setImage(
+						"https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif")
+					.setColor(m.embeds![0]!.hexColor!);
+				await m.edit({embeds: [embed]});
+			});
+		});
+	}
+};
+
 export const disableCommands: Command = {
 	name: "disable",
 	description: "owner",

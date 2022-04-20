@@ -1,30 +1,9 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
-import { getConfig, getDoc, getTemplatedB, updateConfig, updateDoc } from "../../db";
-import type { Command, config, QualList, Signups } from "../../types";
-import { signup, signup_manager, unsignup, view_signup } from "./signup";
+import { getConfig, getDoc, getTemplatedB, updateDoc } from "../../db";
+import type { Command, QualList, Signups } from "../../types";
 import { backwardsFilter, forwardsFilter, shuffle } from "../util";
 import * as s from "./challonge";
-
-export const cycle_restart: Command = {
-    name: "cyclereset",
-    description: "Reset for a cycle",
-    group: "tournament-manager",
-    owner: false,
-    admins: false,
-    mods: true,
-    slashCommand:false,
-    serverOnlyCommand:true,
-    async execute(message: Message, client: Client, args: string[]) {
-        let signup: Signups = await getDoc("config", "signups");
-        signup.users = [];
-        await updateDoc("config", "signups", signup);
-        await signup_manager.execute(message, client, ["open"]);
-
-        let c: config = await getConfig();
-        c.status = "Signups are now open!";
-        await updateConfig(c);
-    }
-};
+import { signup, signup_manager, unsignup, view_signup } from "./signup";
 
 export const create_groups: Command = {
     name: "creategroup",
@@ -351,7 +330,6 @@ export const templatecheck: Command = {
 export default [
     signup,
     signup_manager,
-    cycle_restart,
     view_groups,
     create_groups,
     unsignup,

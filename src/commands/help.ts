@@ -153,3 +153,36 @@ export const mrStats: Command = {
 
     }
 };
+
+export const mute: Command = {
+    name: "mute",
+    aliases: [
+        "timeout"
+    ],
+    group: "stats",
+    description: "!mute <@user> <time| 5 mins> <reason>",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        if(!(await message.mentions.users.first())) {
+            return message.reply("Please mention a user.")
+        }
+        
+        let guildUser = await (await message.guild!.fetch()).members.fetch((await message.mentions.users.first()!.id))
+        let time = 5 * 60 * 1000;
+        
+        if (args[1].toLowerCase().includes("mins")) {
+            time = parseInt(args[1]) * 60 * 1000
+    
+            await guildUser.timeout(time, args.slice(2).join(" "))
+            return  message.reply(`<@${await message.mentions.users.first()!.id}> muted for ${((time/60) / 1000)}`)
+        }
+        
+        else {
+            return  message.reply(`<@${await message.mentions.users.first()!.id}> muted for ${((time/60) / 1000)}`)
+        }
+    }
+};

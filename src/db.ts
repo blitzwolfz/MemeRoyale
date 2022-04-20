@@ -58,6 +58,10 @@ export async function dBCollectionCounter(coll: string, query = {}) {
     return await dB.collection(coll).countDocuments(query)
 }
 
+export async function dbSoftReset(): Promise<void> {
+    await dB.collection("users").deleteMany({})
+}
+
 //Config db commands
 export async function insertConfig(c: config) {
     await dB.collection("config").insertOne(c);

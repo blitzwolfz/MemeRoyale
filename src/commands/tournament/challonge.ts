@@ -369,6 +369,42 @@ export const createChannels: Command = {
     ]
 };
 
+export const testerChallonge: Command = {
+    name: "testCh",
+    description: "",
+    group: "tournament-manager",
+    owner: true,
+    admins: false,
+    mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        if(!args) return message.reply("Please pass in arguments.")
+
+        const cclient = challonge.createClient({
+            apiKey: process.env.CHALLONGE
+        });
+
+        let matchlist: MatchList = await getDoc("config", "matchlist");
+
+        //@ts-ignore
+        await cclient.matches.index({
+            // id: matchlist.url, callback: async (err: any, data: any) => {
+            id: "1pc9kf09", callback: async (err: any, data: any) => {
+                if (err) console.log(err);
+
+                for (let d of data) {
+                    if (d.match.round === parseInt(args[0])) {
+                        console.log(d.match);
+                    }
+
+                    // console.log(d.match.round);
+                }
+            }
+        });
+    }
+};
+
 export const manualCreateChannels: Command = {
     name: "manualcreatechannel",
     description: "!manualcreatechannel <time in hours to complete> <position number> <@mentions x2>",
@@ -689,7 +725,8 @@ export default [
     qualchannelcreate,
     matchbracket,
     channelDelete,
-    manualCreateChannels
+    manualCreateChannels,
+    testerChallonge
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
