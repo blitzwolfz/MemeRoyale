@@ -1,14 +1,15 @@
-import type { Command, levelProfile } from "./types";
-import { Client, Message, MessageAttachment, MessageEmbed, TextChannel, User } from "discord.js";
-import * as allCommands from "./commands/index";
-import { client } from "./listener";
+import { Client, Message, MessageAttachment, MessageEmbed, MessageReaction, TextChannel, User } from "discord.js";
 import express from "express";
-import http from "http";
 import { closest } from "fastest-levenshtein";
-import { app } from "./api/router";
-import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
+import http from "http";
 import * as path from "path";
+import { app } from "./api/router";
+import * as allCommands from "./commands/index";
 import { draw, levelCalc } from "./commands/levelsystem";
+import { fetchManyMessages } from "./commands/util";
+import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
+import { client } from "./listeners/index";
+import type { Command, levelProfile, Signups } from "./types";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -32,14 +33,14 @@ app.get('/', (request, response) => {
     response.sendStatus(200);
 });
 
-const listener = app.listen(Port, () => {
+const httpListener = app.listen(Port, () => {
     //@ts-ignore
-    console.log(`Your app is listening on port ${listener.address().port}`);
+    console.log(`Your app is listening on port ${httpListener.address().port}`);
 });
 
-client.on("message", async message => {
+client.on("messageCreate", async message => {
     if (message.author.bot) return;
-    // if (message.author.id !== process.env.owner && message.channel.type !== "dm" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
+    if (message.author.id !== process.env.owner && message.channel.type !== "DM" && await (await getConfig()).servers.includes(message.guild!.id!)) return;
     let args: Array<string>;
 
     if (message.content.startsWith(process.env.prefix!) || message.content.startsWith(`<@!${client.user!.id}>`)) {
@@ -53,7 +54,7 @@ client.on("message", async message => {
     }
 
     else {
-        if (message.channel.type !== "dm" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
+        if (message.channel.type !== "DM" && message.guild!.id === "719406444109103117" && message.author.id !== "722303830368190485"){
             await levelUp(message)
         }
         return;
@@ -66,10 +67,90 @@ client.on("message", async message => {
     }
 
     if (commandName === "test") {
+        let c = <TextChannel>client.channels.cache.get(r.channel);
 
-        await message.reply("Hello there. General")
+        let m = (await c.messages.fetch({limit: 100})).last()!;
 
+        let arr = r.mention.match(/\d+/g)!;
+        
         //Always
+        return;
+    }
+
+    if (commandName === "bitch") {
+    
+        let channel = <TextChannel>client.channels.cache.get(args[0]);
+        let b = <string | undefined> undefined;
+        let a = <string | undefined> undefined;
+        
+        if(args[3]) b = args[3];
+        if(args[2]) a = args[2];
+    
+        let msg = await fetchManyMessages(channel, parseInt(args[1]), b, a)
+
+        for(let m of [...msg.values()]) {
+                await message.channel.send(m.url)
+        }
+    
+        return;
+    }
+    
+    if (commandName === "bitch2") {
+        //@ts-ignore
+        let oldSignup: Signups = await getDoc("config", "oldsignups");
+    
+        let signup: Signups = await getDoc("config", "signups");
+    
+        let difference = signup.users.filter(x => !oldSignup.users.includes(x));
+        
+        for (let u of difference) {
+            await message.channel.send(`<@${u}>`)
+        }
+        
+        return;
+    }
+    
+    if (commandName === "qfs") {
+        let channel = await <TextChannel>client.channels.cache.get(args[0]);
+        
+        let m = (await channel.messages.fetch(args[1]))!
+        let fields = m.embeds[0]!.fields
+        
+        for(let f of fields) {
+            //@ts-ignore
+           f.value = f.value.split(" ").slice(0, 5).join(" ")
+               + " "
+               + Math.floor(parseInt(f.value.split(" ")[5].replace("%", ""))/100).toString()
+               + "% "
+               + f.value.split(" ").slice(6).join(" ")
+        }
+        
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`No votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
+        }).then(async m => {
+            await channel.setTopic(m.id)
+        })
+        
+        return
+    }
+    
+    if (commandName === "dmu") {
+        console.log(args)
+        
+        let messageToSend = args.slice(args.findIndex(x => x.toLowerCase() === "message:")+1).join(" ");
+        
+        console.log(messageToSend)
+        
+        for(let u of [...message.mentions.users.values()]) {
+            await u.send(messageToSend)
+        }
         return;
     }
 
@@ -100,12 +181,18 @@ client.on("message", async message => {
     }
 
     if (command) {
-        await runCommand(command, message, client, args);
+
+        if (!command.serverOnlyCommand || (command.serverOnlyCommand && message.guild!.id === "719406444109103117")) {
+            console.log("Running Command")
+            await runCommand(command, message, client, args);
+        }
+
+        else return;
     }
 
-    else if (!command) {
+    else if (!command && message.guild!.id === "719406444109103117") {
         //let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({ format: "webp", size: 512 }))
-        await message.channel.send(await commandError(message, client, commandName, false)).then(async mssg => {
+        await message.channel.send({embeds:[<MessageEmbed> await commandError(message, client, commandName, false)]}).then(async mssg => {
             let probablyName = closest(commandName!, commands.map(cmd => cmd.name).sort());
             let emote = `☑️`
             let msg = await message
@@ -113,8 +200,8 @@ client.on("message", async message => {
             .send(`Did you mean \`!${probablyName}\`? If so, click on the the ${emote} to continue.`);
 
             await msg.react(`${emote}`);
-            let emoteFilter = (reaction: { emoji: { name: string; }; }, user: User) => reaction.emoji.name === `${emote}` && !user.bot;
-            const approve = msg.createReactionCollector(emoteFilter, {time: 50000});
+            let emoteFilter = (reaction: MessageReaction, user:User) => reaction.emoji.name === `${emote}` && !user.bot && user.id === message.author.id;
+            const approve = msg.createReactionCollector({filter:emoteFilter, time: 50000});
 
             approve.on('collect', async () => {
                 let cmd = commands.find(c => c.name.toLowerCase() === probablyName)!;
@@ -132,10 +219,13 @@ async function runCommand(command: Command, message: Message, client: Client, ar
     if (await (await getConfig()).disabledcommands.includes(command.name)) return message.reply(`${command.name} is currently disabled`);
     if (command.owner || command.admins || command.mods) {
         try {
-            if (command.admins && (message.author.id === process.env.owner || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
+            if (command.admins && (message.author.id === process.env.owner 
+                || message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner"))) {
                 await command.execute(message, client, args, process.env.owner);
             }
-            else if (command.mods && (message.author.id === process.env.owner || (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner") || message.member?.roles.cache.find(x => x.name.toLowerCase() === "referee")))) {
+            else if (command.mods && (message.author.id === process.env.owner
+                || (message.member?.roles
+                    .cache.find(x => ["commissioner", "mod", "referee"].includes(x.name.toLowerCase()))))) {
                 await command.execute(message, client, args, process.env.owner);
             }
             else if (command.owner && message.author.id === process.env.owner) {
@@ -146,7 +236,7 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             }
 
         } catch (error) {
-            await commandError(message, client, error, false);
+            message.channel.send(<string>await commandError(message, client, error, true, error));
         }
     }
     else {
@@ -154,12 +244,12 @@ async function runCommand(command: Command, message: Message, client: Client, ar
             await command.execute(message, client, args);
 
         } catch (error) {
-            message.channel.send(await commandError(message, client, command.name, true, error));
+            message.channel.send(<string>await commandError(message, client, error, true, error));
         }
     }
 }
 
-async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed> {
+async function commandError(message: Message, client: Client, name:string, exist?: boolean, err?: any): Promise<MessageEmbed | string> {
     // noinspection SpellCheckingInspection
     console.log(err)
     let imgurl = (client.users.cache.get("239516219445608449")!.displayAvatarURL({format: "webp", size: 512}));
@@ -187,7 +277,17 @@ async function commandError(message: Message, client: Client, name:string, exist
         em
         .setDescription(`\`\`\`${err.message}\n${err.stack}\`\`\``)
         .setFooter("blitzwolfz#9338", `${imgurl}`);
-        return em;
+        let errorChannel = <TextChannel>client.channels.cache.get("889897949579063336");
+
+        await errorChannel.send({
+            embeds: [
+                em
+            ],
+            content: `<@239516219445608449>, <@${message.author.id}> caused this error. Happened in Channel <#${message.channel.id}>`
+        })
+
+
+        return "A command error has happened. blitzwolfz has been notified.";
     }
 }
 
@@ -230,8 +330,20 @@ async  function levelUp(message: Message){
             }
         )
         await (<TextChannel>await client.channels.cache.get("724839353129369681"))
-        .send(`Congrats <@${message.author.id}>, you have achieved Level ${profile.level}.`, new MessageAttachment(levelImage, "level.png"))
+            .send({content:`Congrats <@${message.author.id}>, you have achieved Level ${profile.level}.`, files:[new MessageAttachment(levelImage, "level.png")]});
     }
 
     await updateDoc("levels", message.author.id, profile)
 }
+
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err);
+});
+
+
+// .setColor(`#${(await getConfig()).colour}`)
+// [...message.attachments.values()]
+// (reaction: MessageReaction, user:User)
+// [...message.mentions.users.values()]
+// setTimeout(() => m.delete(), 10000);
+// [...message.mentions.channel.values()]

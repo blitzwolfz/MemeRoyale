@@ -1,6 +1,6 @@
 import type { Command, MatchList } from "../../types";
 import { Client, Message, MessageAttachment, MessageEmbed, TextChannel } from "discord.js";
-import { getDoc, getMatch, updateMatch } from "../../db";
+import { getConfig, getDoc, getMatch, updateMatch } from "../../db";
 import { backwardsFilter, forwardsFilter, timeconsts, toHHMMSS } from "../util";
 import Canvas from 'canvas';
 
@@ -11,6 +11,8 @@ export const reload_match: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
@@ -33,8 +35,8 @@ export const reload_match: Command = {
         match.messageID = [];
 
         await updateMatch(match);
-        return message.reply("Reloading").then(m => {
-            m.delete({timeout: 1500});
+        return message.reply("Reloading").then(async m => {
+            await setTimeout(() => m.delete(), 1500);
         });
     }
 };
@@ -46,12 +48,14 @@ export const endmatch: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
         return message.reply("Ending").then(async m => {
             match.votetime -= 7200;
-            m.delete({timeout: 1500});
+            setTimeout(() => m.delete(), 1500);
             await updateMatch(match);
         });
     }
@@ -64,6 +68,8 @@ export const forcevote: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getMatch(message.channel.id);
@@ -84,24 +90,38 @@ export const matchList: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let list: MatchList = await getDoc('config', "matchlist");
         let page: number = parseInt(args[0]) || 1;
 
-        const m = <Message>(await message.channel.send({embed: await matchlistEmbed(page!, client, list.users)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await matchlistEmbed(page!, client, list.users)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await matchlistEmbed(--page, client, list.users)});
+            m.edit({
+                embeds:[
+                    await matchlistEmbed(--page, client, list.users)
+                ]
+            });
         });
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await matchlistEmbed(++page, client, list.users)});
+            m.edit({
+                embeds:[
+                    await matchlistEmbed(++page, client, list.users)
+                ]
+            });
         });
     }
 };
@@ -109,10 +129,13 @@ export const matchList: Command = {
 export const matchStats: Command = {
     name: "match-stats",
     description: "View Match Statistics except voting.\mJust mention the channel name" + `\`!match-stats @Channel\``,
+    aliases:["ms", "matchstats"],
     group: "match",
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (!message.mentions.channels.first()) {
             return message.reply("Please mention channel");
@@ -123,57 +146,85 @@ export const matchStats: Command = {
             if (!m) return message.reply("No match is in that channel.");
 
             let statsEmbed = new MessageEmbed()
-            .setTitle(`${message.mentions.channels.first()!.name}`)
+            .setTitle(`Match Stats`)
             .setColor("LUMINOUS_VIVID_PINK")
-            .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512")
-            .addFields({name: `${m.temp.istheme ? `Match theme:` : `Match template`}`, value: `${m.temp.link}`},
-
-
+            .setFooter("blitzwolfz#9338", (await client.users.fetch("239516219445608449")).avatarURL({dynamic:false, size:512, format:"webp"})!)
+            .addFields(
+                {
+                    name: `${m.temp.istheme ? `Match theme:` : `Match template`}`,
+                    value: `${m.temp.link}`
+                },
                 {
                     name: `${(await client.users.cache.get(m.p1.userid)!).username} Meme Done:`,
                     value: `${m.p1.memedone ? `Yes` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Match Portion Done:',
                     value: `${m.p1.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Meme Link:',
                     value: `${m.p1.memedone ? `${m.p1.memelink}` : `No meme submitted yet`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Time left',
                     value: `${m.p1.donesplit ? `${m.p1.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p1.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
-                }, {name: '\u200B', value: '\u200B'},
-
+                },
+                {
+                    name: '\u200B',
+                    value: '\u200B'
+                },
                 {
                     name: `${(await client.users.cache.get(m.p2.userid)!).username} Meme Done:`,
                     value: `${m.p2.memedone ? `Yes` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Match Portion Done:',
                     value: `${m.p2.donesplit ? `${m.split ? `Yes` : `Not a split match`}` : `No`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Meme Link:',
                     value: `${m.p2.memedone ? `${m.p2.memelink}` : `No meme submitted yet`}`,
                     inline: true
-                }, {
+                },
+                {
                     name: 'Time left',
                     value: `${m.p2.donesplit ? `${m.p2.memedone ? "Submitted meme" : `${45 - Math.floor(((Date.now() / 1000) - m.p2.time) / 60)} mins left`}` : `${m.split ? `Hasn't started portion` : `Time up`}`}`,
                     inline: true
-                }, {name: '\u200B', value: '\u200B'},
-
+                },
+                {
+                    name: '\u200B',
+                    value: '\u200B'
+                },
                 {
                     name: `Voting period:`, value: `${m.votingperiod ? `Yes` : `No`}`, inline: true
-                }, {
+                },
+                {
                     name: `Voting time:`,
                     value: `${m.votingperiod ? `${await toHHMMSS(timeconsts.match.votingtime, m.votetime)}` : "Voting has not started"}`,
                     inline: true
                 });
 
-            return await message.channel.send(statsEmbed);
+            if (message.member?.roles.cache.find(x => x.name.toLowerCase() === "commissioner")) {
+                statsEmbed
+                    .addField(
+                        `Score P1 - P2`,
+                        `${m.votingperiod ? `${m.p1.votes}-${m.p2.votes}` : "Voting has not started"}`,
+                        true
+                    )
+            }
+
+            return await message.channel.send({
+                embeds:[
+                    statsEmbed
+                ]
+            });
         }
     }
 };
@@ -196,12 +247,12 @@ async function matchlistEmbed(page: number = 1, client: Client, list: string[], 
 
     }
 
-    return {
-        title: `All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}. ${list.length} users.`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`All the users in the bracket. You are on page ${page! || 1} of ${Math.floor(list.length / 10) + 1}. ${list.length} users.`)
+        .setFields(fields)
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date())
+    ;
 }
 
 export async function matchcard(client: Client, channelid: string, users: string[]) {
@@ -295,3 +346,12 @@ export async function grandwinner(client: Client, userid: string) {
 
 
 }
+
+
+export default [
+    endmatch,
+    forcevote,
+    matchList,
+    matchStats,
+    reload_match
+]

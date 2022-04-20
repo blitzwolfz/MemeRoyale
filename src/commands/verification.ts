@@ -12,6 +12,8 @@ export const manualverify: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (!args[0]) {
             return message.reply("Please supply a name.");
@@ -40,15 +42,18 @@ export const manualverify: Command = {
 
 
         await message.mentions.users.first()!
-        .send(new MessageEmbed()
-            .setDescription(`Remember to check\n` + `⇒ [#info](${linkObj[0]})\n` + `⇒ [#annoucements](${linkObj[1]})\n` + `⇒ [#rules](${linkObj[2]})\n` + `Also signup for both vote pings\nand signup pings in [#roles](${linkObj[3]})! Enjoy your stay!`)
-            .setColor((await getConfig()).colour)
-            .setTitle("Welcome to Meme Royale!")
-            .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                format: "webp",
-                size: 512
-            }))}`)
-        );
+            .send({
+                embeds: [
+                    new MessageEmbed()
+                        .setDescription(`Remember to check\n` + `⇒ [#info](${linkObj[0]})\n` + `⇒ [#annoucements](${linkObj[1]})\n` + `⇒ [#rules](${linkObj[2]})\n` + `Also signup for both vote pings\nand signup pings in [#roles](${linkObj[3]})! Enjoy your stay!`)
+                        .setColor(`#${(await getConfig()).colour}`)
+                        .setTitle("Welcome to Meme Royale!")
+                        .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                            format: "webp",
+                            size: 512
+                        }))}`)
+                ]
+            });
         await (<TextChannel>client.channels.cache.get(("722285800225505879"))!)
         .send(`A new contender entered the arena of Meme Royale. Welcome <@${message.mentions.users.first()!.id}>`);
     }
@@ -61,6 +66,8 @@ export const verify: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         const snoowrap = require('snoowrap');
 
@@ -135,12 +142,12 @@ export const verify: Command = {
                     `⇒ [#rules](${linkObj[2]})\n` +
                     `Also signup for both vote pings\nand signup pings in [#roles](${linkObj[3]})! Enjoy your stay!`
                 )
-                .setColor((await getConfig()).colour)
+                .setColor(`#${(await getConfig()).colour}`)
                 .setTitle("Welcome to Meme Royale!")
-                .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                    format: "webp",
-                    size: 512
-                }))}`)
+            .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
 
 
             try{
@@ -151,7 +158,7 @@ export const verify: Command = {
                 console.log(error.stack)
             }
 
-            await client.users.cache.get(u._id)!.send(embed)
+            await client.users.cache.get(u._id)!.send({embeds:[embed]})
 
             verifyDoc.users.splice(verifyDoc.users.findIndex(x => x._id === message.author.id), 1);
 

@@ -54,6 +54,14 @@ export async function deleteDoc(coll: string, id: string | number) {
     await dB.collection(coll).deleteOne({_id: id});
 }
 
+export async function dBCollectionCounter(coll: string, query = {}) {
+    return await dB.collection(coll).countDocuments(query)
+}
+
+export async function dbSoftReset(): Promise<void> {
+    await dB.collection("users").deleteMany({})
+}
+
 //Config db commands
 export async function insertConfig(c: config) {
     await dB.collection("config").insertOne(c);
@@ -201,7 +209,7 @@ export async function updateProfile(u: Profile): Promise<void> {
     await dB.collection("users").updateOne({_id: u._id}, {$set: u})!;
 }
 
-export async function getAllProfiles(): Promise<Profile[]> {
+export async function getAllProfiles<t>(): Promise<t[]> {
     return dB.collection("users").find({}).toArray();
 }
 

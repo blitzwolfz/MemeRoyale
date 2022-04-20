@@ -23,17 +23,19 @@ export const contestSubmit: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
-        if (message.channel.type !== "dm") {
+        if (message.channel.type !== "DM") {
             return message
             .reply("You didn't not submit this in the DM with the bot.\nIt has been deleted. Please try again in" + " again in bot dm.")
             .then(async m => {
                 await message.delete();
-                await m.delete({timeout: 30000, reason: "Sent Match submission in server not bot dm."});
+                await setTimeout(() => m.delete(), 30000);
             });
         }
 
-        if (message.attachments.array()[0].url.includes("imgur")) {
+        if ([...message.attachments.values()][0].url.includes("imgur")) {
             return message.reply("You can't submit imgur links");
         }
 
@@ -53,12 +55,12 @@ export const contestSubmit: Command = {
 
         if (index === -1) {
             doc.users.push({
-                _id: message.author.id, url: message.attachments.array()[0].url
+                _id: message.author.id, url: [...message.attachments.values()][0].url
             });
         }
 
         else {
-            doc.users[index].url = message.attachments.array()[0].url;
+            doc.users[index].url = [...message.attachments.values()][0].url;
         }
 
         await updateDoc("contest", doc._id, doc);
@@ -76,6 +78,8 @@ export const contestManager: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let doc: Contest = await getDoc("contest", "contest");
 
@@ -97,14 +101,14 @@ export const contestManager: Command = {
                     .setTitle(`Winner is ${user.username}`)
                     .setDescription("Entered with this image submission")
                     .setURL(winner.url)
-                    .setColor((await getConfig()).colour)
-                    .setFooter("MemeRoyale#3101", `${(client.users.cache.get("722303830368190485")!.displayAvatarURL({
-                        format: "webp",
-                        size: 512
-                    }))}`)
+                    .setColor(`#${(await getConfig()).colour}`)
+                .setFooter("MemeRoyale#3101", `${((await client.users.cache.get("722303830368190485"))!.displayAvatarURL({
+                format: "webp",
+                size: 512
+            }))}`)
                 ;
 
-                await channel.send(em);
+                await channel.send({embeds:[em]});
 
                 await updateDoc("contest", doc._id, doc);
                 return message.reply("Done.")

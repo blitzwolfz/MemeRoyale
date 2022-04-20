@@ -1,6 +1,6 @@
 import type { Client, Message, TextChannel } from "discord.js";
 import type { AutoCommands, Command, Match, MatchList, QualList, Signups } from "../types";
-import { getAllMatches, getAllQuals, getConfig, getDoc, getMatch, getQual, updateConfig, updateDoc, updateMatch, updateQual } from "../db";
+import { dbSoftReset, getAllMatches, getAllQuals, getConfig, getDoc, getMatch, getQual, updateConfig, updateDoc, updateMatch, updateQual } from "../db";
 import { cancelmatch } from "./match";
 import { cancelqual, endqual } from "./quals/index";
 import { endmatch } from "./match/utils";
@@ -15,13 +15,15 @@ export const pause: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let channel = await <TextChannel>client.channels.cache.get(id);
 
         if (!(await getMatch(id)) && !(await getQual(id))) return message.reply(`There is no match in <#${id}>`)
 
-        if (channel.type === "text" && channel?.parent?.name.toLowerCase() === "matches") {
+        if (channel.type === "GUILD_TEXT" && channel?.parent?.name.toLowerCase() === "matches") {
             let m = await getMatch(id);
             m.pause = m.pause ? false : true;
             await updateMatch(m);
@@ -29,7 +31,7 @@ export const pause: Command = {
             return message.reply(`Match is now ${m.pause ? "paused" : "un-paused"}.`);
         }
 
-        if (channel.type === "text" && channel?.parent?.name.toLowerCase() === "qualifiers") {
+        if (channel.type === "GUILD_TEXT" && channel?.parent?.name.toLowerCase() === "qualifiers") {
             let m = await getQual(id);
             m.pause = m.pause ? false : true;
             await updateQual(m);
@@ -48,6 +50,8 @@ export const cancel: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -73,6 +77,8 @@ export const end: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = message.mentions.channels.first() ? message.mentions.channels.first()!.id : message.channel.id!;
         let m = await getMatch(id)
@@ -97,6 +103,8 @@ export const search: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
 
@@ -109,7 +117,28 @@ export const search: Command = {
         if (m !== undefined && q !== undefined) return message.reply(`You are in a Qualifier: <#${q._id}> & Match: <#${m._id}>`);
         if (m !== undefined) return message.reply(`The channel is <#${m._id}>`);
         if (q !== undefined) return message.reply(`The channel is <#${q._id}>`);
-        else return message.reply("You aren't in a match or qualifier.")
+
+        if (m === undefined) {
+            let username = (await client.users.fetch(id)).username.toLowerCase()
+            let channelID = message.guild!.channels.cache.find(x => x.name.toLowerCase().includes(username))?.id
+
+            if(channelID) return message.reply(`The channel is <#${channelID}>`)
+
+        }
+        
+        else if (q === undefined) {
+            let g: QualList = await getDoc("config", "quallist");
+            
+            for (let i = 0; i < g.users.length; i++) {
+        
+                if (g.users[i].includes(id)) {
+                    return await message.reply(`Is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`)
+                }
+            }
+            return message.reply("Not in a group")
+        }
+
+        return message.reply("Not in a match or qualifier.")
     }
 };
 
@@ -120,6 +149,8 @@ export const cycleRestart: Command = {
     owner: false,
     admins: true,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (![
             "true",
@@ -168,6 +199,65 @@ export const cycleRestart: Command = {
     }
 }
 
+export const seasonRestart: Command = {
+    name: "season-restart",
+    description: "!season-restart [<true> to open signup] [<false> 'message to put in status']",
+    group: "tournament-manager",
+    owner: false,
+    admins: true,
+    mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        if (![
+            "true",
+            "false"
+        ].includes(args[0].toLowerCase())) return message.reply("Need a true or false.");
+        
+        let signup: Signups = await getDoc("config", "signups");
+        let matchlist: MatchList = await getDoc("config", "matchlist");
+        let quallist: QualList = await getDoc("config", "quallist");
+        let config = await getConfig();
+        
+        signup.autoClose = 64;
+        signup.users = [];
+        signup.msgID = "";
+        signup.open = false;
+        
+        matchlist.url = "";
+        matchlist.users = [];
+        
+        quallist.users = [];
+        
+        config.isfinale = false;
+        
+        await updateDoc("config", signup._id, signup);
+        await updateDoc("config", matchlist._id, matchlist);
+        await updateDoc("config", quallist._id, quallist);
+        await updateConfig(config);
+        
+        await dbSoftReset()
+        
+        if (args[0].toLowerCase() === "true") {
+            config.status = "Signup now open!";
+            await client.user!.setActivity("Signup now open!");
+            await signup_manager.execute(message, client, ["-open"])
+        }
+        
+        if (args[0].toLowerCase() === "false") {
+            if (typeof args.slice(1).join(" ") !== 'string') {
+                return message.reply("Status requires a string");
+            }
+            
+            config.status = args.slice(1).join(" ");
+            await client.user!.setActivity(`${args.slice(1).join(" ")}`);
+            await updateConfig(config);
+        }
+        
+        return message.reply("Season restarted");
+    }
+}
+
 export const autoCommand: Command = {
     name: "auto",
     description: "!auto <Date> <hours after 12 am EST> <command name> <arguments,arguments2,etc>",
@@ -175,6 +265,8 @@ export const autoCommand: Command = {
     owner: true,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let date = args[0];
         let hours = args[1];
@@ -217,8 +309,6 @@ export async function autoRunCommandLoop(commands: Command[], client: Client) {
     let autoList = await getDoc<AutoCommands>("config", "autocommands");
     let iterations = autoList.todo.length;
 
-    // console.log(iterations)
-
     for (let i = iterations - 1; i >= 0; i--) {
         let c = autoList.todo[i];
         let channel = await <TextChannel>client.channels.cache.get(c.message.channelID);
@@ -251,5 +341,6 @@ export default [
     end,
     search,
     cycleRestart,
+    seasonRestart,
     autoCommand
 ];

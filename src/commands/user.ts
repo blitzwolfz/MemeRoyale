@@ -1,7 +1,7 @@
 import { Client, Message, MessageEmbed } from "discord.js";
-import { getAllDuelProfiles, getAllProfiles, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
-import type { Command, DuelProfile, Profile } from "../types";
-import { backwardsFilter, forwardsFilter } from "./util";
+import { getAllDuelProfiles, getAllMatches, getAllProfiles, getAllQuals, getConfig, getDuelProfile, getProfile, insertDuelProfile, insertProfile, updateProfile } from "../db";
+import type { Command, DuelProfile, Match, Profile } from "../types";
+import { backwardsFilter, forwardsFilter, timeconsts, toHHMMSS } from "./util";
 
 export const create_profile: Command = {
     name: "create",
@@ -10,6 +10,8 @@ export const create_profile: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
@@ -24,13 +26,21 @@ export const create_profile: Command = {
             });
 
 
-            await message.channel.send(new MessageEmbed()
-            .setTitle(`${message.author.username}`)
-            .setColor("RANDOM")
-            .setThumbnail(`${imgurl}`)
-            .addFields({name: 'Total points', value: `${0}`}, {name: 'Total wins', value: `${0}`}, {
-                name: 'Total loss', value: `${0}`
-            }, {name: 'Total matches', value: `${0}`}, {name: 'Win Rate', value: `${0}%`}));
+            await message.channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`${message.author.username}`)
+                        .setColor("RANDOM")
+                        .setThumbnail(`${imgurl}`)
+                        .addFields(
+                                {name: 'Total points', value: `${0}`},
+                                {name: 'Total wins', value: `${0}`},
+                                {name: 'Total loss', value: `${0}`},
+                                {name: 'Total matches', value: `${0}`},
+                                {name: 'Win Rate', value: `${0}%`}
+                        )
+                ]
+            });
         }
     }
 };
@@ -42,6 +52,8 @@ export const profile_stats: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(args[0] ? (message.mentions.users.first()!.id) : message.author.id);//message.mentions?.users?.first()?.id
         // ||
@@ -54,6 +66,17 @@ export const profile_stats: Command = {
         }
 
         else if (user) {
+    
+            let searchFilter = function (x: Match) {
+                return ((x.p1.userid === user._id) || (x.p2.userid === user._id) && x.votingperiod);
+            };
+            
+            let m = await (await getAllMatches())
+                .filter(searchFilter)
+            
+            let q = (await getAllQuals())
+                .filter(x => x.players.some(y => y.userid === user._id) && x.votingperiod)
+            
 
             let wr = Math.floor(user.wins / (user.wins + user.loss) * 100);
 
@@ -64,14 +87,31 @@ export const profile_stats: Command = {
             .setThumbnail(imgurl)
             //.setColor("#d7be26")
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`, inline:true},
-                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true}, {
-                name: 'Total Wins', value: `${user.wins}`, inline:true
-            }, {name: 'Total Loss', value: `${user.loss}`, inline:true}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true
-            }, {name: 'Win Rate', value: `${wr}%`, inline:true});
+            .addFields(
+                {name: 'Total Points', value: `${user.points}`, inline:true},
+                {name: 'Avg. time', value: `${(user.totalTime/60).toFixed(2)} mins`, inline:true},
+                {name: 'Total Wins', value: `${user.wins}`, inline:true},
+                {name: 'Total Loss', value: `${user.loss}`, inline:true},
+                {name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true},
+                {name: 'Win Rate', value: `${wr}%`, inline:true}
+                );
+            
+            if (m.length !== 0 && m[0].votingperiod) {
+                UserEmbed
+                    .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, m[0].votetime)}`, true)
+            }
+            
+            if(q.length !== 0 && q[0].votingperiod) {
+                UserEmbed
+                    .addField("Match Voting time", `${await toHHMMSS(timeconsts.match.votingtime, q[0].votetime)}`, true)
+            }
+            
 
-            await message.channel.send(UserEmbed);
+            await message.channel.send({
+                embeds:[
+                    UserEmbed
+                ]
+            });
         }
     }
 };
@@ -83,6 +123,8 @@ export const disableDM: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let user: Profile = await getProfile(message.author.id);
         if (!user) {
@@ -117,13 +159,16 @@ export const profile_lb: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
-        let profiles = await getAllProfiles();
-
+        let profiles:Profile[] = (await getAllProfiles());
+        profiles = profiles.filter(x => !x._id.includes("-cockrating"))
+        console.log(args)
         let symbol: "wins" | "points" | "loss" | "votetally" | "totalTime" | "ratio" = "wins";
         //@ts-ignore
         let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : args[1];
-
+        console.log(page)
 
         switch (args[0]?.[0].toLowerCase()) {
             case "p":
@@ -145,21 +190,33 @@ export const profile_lb: Command = {
                 symbol = "wins";
         }
 
-        const m = <Message>(await message.channel.send({embed: await makeProfileEmbed(page!, client, profiles, symbol, message.author.id)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await makeProfileEmbed(page!, client, profiles, symbol, message.author.id)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeProfileEmbed(--page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds:[
+                    await makeProfileEmbed(--page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
         forwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeProfileEmbed(++page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds:[
+                    await makeProfileEmbed(++page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
 
     }
@@ -270,14 +327,17 @@ async function makeProfileEmbed(page: number = 1, client: Client, profiles: Prof
             strrr += `Wins.`;
     }
 
-    return {
-        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
-            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`)
+        .setDescription(
+            `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}. `
+            +`There ${profiles.length > 1 ? `are ${profiles.length} profiles that have` : `is ${profiles.length} profile that has`} been sorted.`
+        )
+        .setFields(
+            fields
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date());
 }
 
 export const duel_stats: Command = {
@@ -288,10 +348,12 @@ export const duel_stats: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
-        let user: DuelProfile = await getDuelProfile((args[1] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
-        let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
-        let name = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
+        let user: DuelProfile = await getDuelProfile((args[0] ? (message.mentions.users.first()!.id) : message.author.id), message.guild!.id);//message.mentions?.users?.first()?.id || args[0] ||
+        let imgurl = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
+        let name = args[0] ? (client.users.cache.get(message.mentions.users.first()!.id)!.username) : message.author.username;
         if (!user) {
             return message.reply("That user profile does not exist! Please do `!duel-create` to create your own user profile");
         }
@@ -306,13 +368,21 @@ export const duel_stats: Command = {
             .setTitle(`Duelist: ${name}`)
             .setThumbnail(imgurl)
             .setColor("RANDOM")
-            .addFields({name: 'Total Points', value: `${user.points}`}, {
-                name: 'Total Wins', value: `${user.wins}`
-            }, {name: 'Total Loss', value: `${user.loss}`}, {
-                name: 'Total Matches', value: `${user.wins + user.loss}`
-            }, {name: 'Win Rate', value: `${wr}%`});
-
-            await message.channel.send(UserEmbed);
+            .addFields(
+                {name: 'Win Rate', value: `${wr}%`, inline:true},
+                {name: 'Total Wins', value: `${user.wins}`, inline:true},
+                {name: 'Total Losses', value: `${user.loss}`, inline:true},
+                {name: 'Total Matches', value: `${user.wins + user.loss}`, inline:true},
+                {name: 'Total Points', value: `${user.points}`, inline:true},
+                );
+            
+            if (message.author.id === process.env.owner) UserEmbed.setColor("DARK_RED")
+            
+            await message.channel.send({
+                embeds:[
+                    UserEmbed
+                ]
+            });
         }
     }
 };
@@ -325,11 +395,13 @@ export const duel_stats_create: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[1] ? (client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL()) : message.author.displayAvatarURL();
 
         if (await getDuelProfile(message.author.id, message.guild!.id)) {
-            return message.reply("That user profile does exist! Please do `!duel-stats` to check the user profile");
+            return message.reply("That user profile does exist! Please do `!duel -stats` to check the user profile");
         }
 
         else {
@@ -339,18 +411,26 @@ export const duel_stats_create: Command = {
             }, message.guild!.id);
 
 
-            await message.channel.send(new MessageEmbed()
-            .setTitle(`Duelist: ${message.author.username}`)
-            .setColor("RANDOM")
-            .setThumbnail(`${imgurl}`)
-            .addFields({name: 'Total points', value: `${0}`}, {name: 'Total wins', value: `${0}`}, {
-                name: 'Total loss', value: `${0}`
-            }, {name: 'Total matches', value: `${0}`}, {name: 'Win Rate', value: `${0}%`}));
+            await message.channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`Duelist: ${message.author.username}`)
+                        .setColor("RANDOM")
+                        .setThumbnail(`${imgurl}`)
+                        .addFields(
+                            {name: 'Total points', value: `${0}`},
+                            {name: 'Total wins', value: `${0}`},
+                            {name: 'Total loss', value: `${0}`},
+                            {name: 'Total matches', value: `${0}`},
+                            {name: 'Win Rate', value: `${0}%`}
+                        )
+                ]
+            });
         }
     }
 };
 
-export async function createDuelProfileatMatch(userId: string, guildid: string) {
+export async function createDuelProfileAtMatch(userId: string, guildid: string) {
 
     if (await getDuelProfile(userId, guildid)) {
         return;
@@ -365,21 +445,24 @@ export async function createDuelProfileatMatch(userId: string, guildid: string) 
 
 export const duel_lb: Command = {
     name: "duel -lb",
-    description: "`!duel lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your server. If no flag is passed, the lb sorts by wins.",
+    description: "`!duel -lb <points | ratio | loss | votes | all>`. See how you rank with other duelist in your" +
+        " server. If no flag is passed, the lb sorts by wins.",
     group: "duels",
     groupCommand: true,
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
+        console.log(args)
         let profiles = await getAllDuelProfiles(message.guild!.id);
-
+        console.log(args)
         let symbol: "wins" | "points" | "loss" | "votetally" | "ratio" | "all" = "wins";
         //@ts-ignore
-        let page: number = typeof args[2] == "undefined" ? isNaN(parseInt(args[1])) ? 1 : parseInt(args[1]) : args[2];
-
-
-        switch (args[1]?.[0]) {
+        let page: number = typeof args[1] == "undefined" ? isNaN(parseInt(args[0])) ? 1 : parseInt(args[0]) : parseInt(args[1]);
+        console.log(page)
+        switch (args[0]?.[0]) {
             case "p":
                 symbol = "points";
                 break;
@@ -399,21 +482,35 @@ export const duel_lb: Command = {
                 symbol = "wins";
         }
 
-        const m = <Message>(await message.channel.send({embed: await makeDuelProfileEmbed(page!, client, profiles, symbol, message.author.id)}));
+        const m = <Message>(await message.channel.send({
+            embeds:[
+                await makeDuelProfileEmbed(page!, client, profiles, symbol, message.author.id)
+            ]
+        }));
         await m.react("⬅");
         await m.react("➡");
 
 
-        const backwards = m.createReactionCollector(backwardsFilter, {time: 100000});
-        const forwards = m.createReactionCollector(forwardsFilter, {time: 100000});
+        const backwards = m.createReactionCollector({filter:backwardsFilter, time: 100000});
+        const forwards = m.createReactionCollector({filter:forwardsFilter, time: 100000});
 
         backwards.on('collect', async () => {
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeDuelProfileEmbed(--page, client, profiles, symbol, message.author.id)});
+            m.edit({
+                embeds: [
+                    await makeDuelProfileEmbed(--page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
         forwards.on('collect', async () => {
+            console.log("A")
             m.reactions.cache.forEach(reaction => reaction.users.remove(message.author.id));
-            m.edit({embed: await makeDuelProfileEmbed(++page, client, profiles, symbol, message.author.id)});
+            // [...m.reactions.cache.values()].forEach(reaction => reaction.users.remove(message.author.id));
+            await m.edit({
+                embeds:[
+                    await makeDuelProfileEmbed(++page, client, profiles, symbol, message.author.id)
+                ]
+            });
         });
     }
 };
@@ -525,13 +622,15 @@ async function makeDuelProfileEmbed(page: number = 1, client: Client, profiles: 
             strrr += `Wins.`;
     }
 
-    return {
-        title: `Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`,
-        description: `Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`,
-        fields,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Leaderboard sorted by ${strrr} You are on page ${page! || 1} of ${Math.floor(profiles.length / 10) + 1}`)
+        .setDescription(`Your rank is: ${profiles.findIndex(item => item._id == userid) + 1}`)
+        .setFields(
+            fields
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date()
+    );
 }
 
 export default [

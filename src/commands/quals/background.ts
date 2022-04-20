@@ -2,7 +2,8 @@ import { Client, MessageEmbed, TextChannel } from "discord.js";
 import { deleteQual, deleteReminder, getAllQuals, getConfig, getProfile, insertReminder, updateProfile, updateQual } from "../../db";
 import type { Qual } from "../../types";
 import { emojis, timeconsts } from "../util";
-import { QualifierResults } from "./util";
+import { QualifierResults } from "./utils";
+
 require('dotenv').config();
 
 export async function backgroundQualLoop(client: Client) {
@@ -74,38 +75,54 @@ async function matchVotingLogic(client: Client, m: Qual) {
     // }
 
     if (m.temp.istheme) {
-        channel.send(new MessageEmbed()
-        .setTitle("Theme")
-        .setDescription(`The theme is ${m.temp.link}`)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle("Theme")
+                    .setDescription(`The theme is ${m.temp.link}`)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
     else {
-        channel.send(new MessageEmbed()
-        .setTitle("Template")
-        .setImage(m.temp.link)
-        .setColor("GREEN")).then(async msg => {
+        channel.send({
+            embeds:[
+                new MessageEmbed()
+                    .setTitle("Template")
+                    .setImage(m.temp.link)
+                    .setColor("GREEN")
+            ]
+        }).then(async msg => {
             m.messageID.push(msg.id);
         });
     }
 
     for (let p of m.players) {
         if (p.failed === false) {
-            channel.send(new MessageEmbed()
-            .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
-            .setImage(p.memelink)
-            .setColor((await getConfig()).colour)).then(async msg => {
+            channel.send({
+                embeds:[
+                    new MessageEmbed()
+                        .setTitle(`Player ${m.players.findIndex(e => e.userid === p.userid) + 1}`)
+                        .setImage(p.memelink)
+                        .setColor(`#${(await getConfig()).colour}`)
+                ]
+            }).then(async msg => {
                 m.messageID.push(msg.id);
             });
         }
     }
 
-    await channel.send(new MessageEmbed()
-    .setTitle("Voting time")
-    .setDescription(`Vote for the best two memes\nVote by reacting with corresponding emote\nYou have **2 hours** to vote`)
-    .setColor(await (await getConfig()).colour)).then(async (msg) => {
+    await channel.send({
+        embeds:[
+            new MessageEmbed()
+                .setTitle("Voting time")
+                .setDescription(`Vote for the best two memes\nVote by reacting with corresponding emote\nYou have **2 hours** to vote`)
+                .setColor(await `#${(await getConfig()).colour}`)
+        ]
+    }).then(async (msg) => {
         m.messageID.push(msg.id);
 
         for (let p of m.players) {
@@ -141,7 +158,7 @@ async function matchResults(client: Client, q: Qual) {
             if (!q.players[x].failed && q.players[x].memedone) {
                 fields.push({
                     name: `${((await client.users.fetch(q.players[x].userid)).username)} | Meme #${q.players.indexOf(q.players[x]) + 1}`,
-                    value: `${`Finished with ${100 / q.players.filter(p => p.memedone).length} | Earned: ${(Math.floor(100 / q.players.filter(p => p.memedone).length) * 100)}% of the votes\nUserID: ${q.players[x].userid}`}`
+                    value: `${`Finished with ${100 / q.players.filter(p => p.memedone).length} | Earned: ${(Math.floor(100 / q.players.filter(p => p.memedone).length))}% of the votes\nUserID: ${q.players[x].userid}`}`
                 });
             }
 
@@ -155,36 +172,70 @@ async function matchResults(client: Client, q: Qual) {
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
         .send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `No votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`No votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         });
 
-
         channel.send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `No votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+                embeds: [
+                    new MessageEmbed()
+                        .setTitle(`Votes for ${channel.name} are in!`)
+                        .setDescription(`No votes for this qualifier`)
+                        .setFields(fields)
+                        .setColor(`#${(await getConfig()).colour}`)
+                        .setTimestamp(new Date())
+                ]
         }).then(async message => {
             let t = channel.topic?.split(" ");
-
-            if (!t) {
+    
+            if (t?.join("").toLocaleLowerCase() === "round1" || t?.join("").toLocaleLowerCase() === "qualifierround" || !t) {
                 await channel.setTopic(message.id);
                 t = [];
                 let string = "";
-
+        
                 for (let p of q.players) {
                     string += `<@${p.userid}>\n`;
                 }
-                await channel.send(`Portion ${timeconsts.qual.results - t!.concat([message.id]).length} has begun. You have 48h to complete your portion. ${string}`);
+                let c = <TextChannel>client.channels.cache.get(channel.id);
+        
+                let m = (await c.messages.fetch({limit: 100})).last()!;
+        
+                let time = Math.floor(((Math.floor(m.createdTimestamp / 1000) + 345600) - Math.floor(Date.now() / 1000)) / 3600);
+        
+                if (time <= 96) {
+                    await channel.send(`${string} you have ${time}h left to complete Portion 2`);
+            
+                    let timeArr: Array<number> = [];
+                    timeArr.push(172800);
+            
+                    if ((time)* 3600 > 0 && time - 2 > 0) {
+                        timeArr.push(165600);
+                    }
+            
+                    if ((time) * 3600 > 0 && time - 12 > 0) {
+                        timeArr.push(129600);
+                    }
+            
+                    if ((time) * 3600 > 0 && time - 24 > 0) {
+                        timeArr.push(86400);
+                    }
+            
+                    await insertReminder({
+                        _id: channel.id,
+                        mention: `${string}`,
+                        channel: channel.id,
+                        type: "match",
+                        time: timeArr,
+                        timestamp: Math.floor(m.createdTimestamp / 1000) +172800,
+                        basetime: 172800
+                    });
+                }
             }
 
             else if ((t!.concat([message.id])).length === timeconsts.qual.results) {
@@ -192,12 +243,12 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm}).then(async m => {
+                await channel.send({embeds:[emm]}).then(async m => {
                     await m.react("👌")
                 });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                    .send({embeds:[emm]});
             }
 
             else if (t!.concat([message.id]).length < timeconsts.qual.results) {
@@ -268,28 +319,29 @@ async function matchResults(client: Client, q: Qual) {
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
         .send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `${totalvotes} votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`${totalvotes} votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         });
 
-
         channel.send({
-            embed: {
-                title: `Votes for ${channel.name} are in!`,
-                description: `${totalvotes} votes for this qualifier`,
-                fields,
-                color: "#d7be26",
-                timestamp: new Date()
-            }
+            embeds:[
+                new MessageEmbed()
+                    .setTitle(`Votes for ${channel.name} are in!`)
+                    .setDescription(`${totalvotes} votes for this qualifier`)
+                    .setFields(fields)
+                    .setColor(`#${(await getConfig()).colour}`)
+                    .setTimestamp(new Date())
+            ]
         }).then(async message => {
             let t = channel.topic?.split(" ");
 
-            if (t?.join("").toLocaleLowerCase() === "round1" || !t) {
+            if (t?.join("").toLocaleLowerCase() === "round1" || t?.join("").toLocaleLowerCase() === "qualifierround" || !t) {
                 await channel.setTopic(message.id);
                 t = [];
                 let string = "";
@@ -338,12 +390,12 @@ async function matchResults(client: Client, q: Qual) {
 
                 let emm = await QualifierResults(channel, client, t);
 
-                await channel.send({embed: emm}).then(async m => {
+                await channel.send({embeds:[emm]}).then(async m => {
                     await m.react("👌")
                 });
 
                 await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-                .send({embed: emm});
+                .send({embeds:[emm]});
             }
 
 

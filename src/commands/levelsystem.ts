@@ -17,22 +17,30 @@ export const level: Command = {
     owner: false,
     admins: false,
     mods: false,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         let imgurl = args[0] ?
-            (message.mentions.users.array().length === 1
+            (
+                [...message.mentions.users.values()].length === 1
                 ? client.users.cache.get(message.mentions.users.first()!.id)!.displayAvatarURL({format:"png"})
-                :client.users.cache.get(args[0])!.displayAvatarURL({format:"png"}))
+                :client.users.cache.get(args[0])!.displayAvatarURL({format:"png"})
+            )
             : message.author.displayAvatarURL({format:"png"});
         let tag = args[0] ?
-            (message.mentions.users.array().length === 1
+            (
+                [...message.mentions.users.values()].length === 1
                 ? client.users.cache.get(message.mentions.users.first()!.id)!.tag
-                : client.users.cache.get(args[0])!.tag)
+                : client.users.cache.get(args[0])!.tag
+            )
             : message.author.tag;
 
         let id = args[0] ?
-            (message.mentions.users.array().length === 1
+            (
+                [...message.mentions.users.values()].length === 1
                 ? message.mentions.users.first()!.id
-                : args[0])
+                : args[0]
+            )
             : message.author.id;
 
         let profile:levelProfile = await getDoc("levels", id)
@@ -57,7 +65,7 @@ export const level: Command = {
             currentLevel: profile.level // number
         });
 
-        await message.channel.send(new MessageAttachment(image, "level.png"))
+        await message.channel.send({files:[new MessageAttachment(image, "level.png")]})
     }
 };
 

@@ -1,5 +1,6 @@
 import { Client, Message, MessageEmbed, TextChannel } from "discord.js";
-import { getDoc, getProfile, getQual, updateDoc, updateProfile, updateQual } from "../../db";
+import { getAllReminders, getConfig, getDoc, getProfile, getQual, getReminder, insertReminder, updateDoc, updateProfile, updateQual } from "../../db";
+import type { QualList, Signups } from "../../types";
 import type { Command, MatchList } from "../../types";
 
 
@@ -10,12 +11,18 @@ export const reload_qual: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         let match = await getQual(message.channel.id);
         let channel = <TextChannel>await client.channels.cache.get(message.channel.id)!;
         for (let ms of match.messageID) {
-            (await channel.messages.fetch(ms)).delete();
+            try {
+                await (await channel.messages.fetch(ms)).delete();
+            } catch {
+                continue;
+            }
         }
 
         for (let p of match.players) {
@@ -23,10 +30,11 @@ export const reload_qual: Command = {
         }
 
         match.votingperiod = false;
+        match.messageID = []
 
         await updateQual(match);
-        return message.reply("Reloading").then(m => {
-            m.delete({timeout: 1500});
+        return message.reply("Reloading").then(async m => {
+            await setTimeout(() => m.delete(), 1500);
         });
     }
 };
@@ -38,6 +46,8 @@ export const qual_stats: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
         if (!message.mentions.channels.first()) {
             return message.reply("Please mention channel");
@@ -48,9 +58,9 @@ export const qual_stats: Command = {
             if (!q) return message.reply("No qualifier is in that channel.");
 
             let statsEmbed = new MessageEmbed()
-            .setTitle(`${message.mentions.channels.first()!.name}`)
+            .setTitle(`Qual Stats`)
             .setColor("LUMINOUS_VIVID_PINK")
-            .setFooter("blitzwolfz#9338", "https://cdn.discordapp.com/avatars/239516219445608449/12fa541557ca2635a34a5af5e8c65d26.webp?size=512");
+            .setFooter("blitzwolfz#9338", (await client.users.fetch("239516219445608449")).avatarURL({dynamic:false, size:512, format:"webp"})!);
 
             for (let p of q.players) {
                 statsEmbed.addFields({
@@ -66,7 +76,11 @@ export const qual_stats: Command = {
                 }, {name: '\u200B', value: '\u200B'});
             }
 
-            return await message.channel.send(statsEmbed);
+            return await message.channel.send({
+                embeds:[
+                    statsEmbed
+                ]
+            });
         }
     }
 };
@@ -78,6 +92,8 @@ export const qual_result_sum: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         if (args.length <= 1 && args.length >= 2) return message.reply("Please supply two msg ids.");
@@ -89,20 +105,30 @@ export const qual_result_sum: Command = {
             args[1]
         ]);
 
-        await message.channel.send({embed: emm}).then(async m => m.react('👌'));
+        await message.channel.send({
+            embeds:[
+                emm
+            ]
+        }).then(async m => m.react('👌'));
 
         await (await (<TextChannel>client.channels.cache.get("722291182461386804")))
-        .send({embed: emm});
+        .send({
+            embeds:[
+                emm
+            ]
+        });
     }
 };
 
 export const forcevote_qual: Command = {
-    name: "forcevote-match",
+    name: "forcevote-qual",
     description: "This will force the voting portion of a match to come.",
-    group: "match",
+    group: "quals",
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[]) {
 
         // let match = await getQual(message.channel.id)
@@ -116,47 +142,6 @@ export const forcevote_qual: Command = {
 
     }
 };
-
-// export const search: Command = {
-//     name: "search",
-//     description: "!creategroup #Amount in each group",
-//     group: "tournament-manager",
-//     owner: false,
-//     admins: false,
-//     mods: false,
-//     async execute(message: Message, client: Client, args: string[]) {
-//         let signup: QualList = await getDoc("config", "quallist");
-//         let id = (message.mentions?.users?.first()?.id || args[0] || message.author.id);
-//         if (!id) return message.reply("invaild input. Please use User ID or a User mention");
-//
-//         //let name = await (await message.guild!.members.cache.get(id))!.nickname || await (await
-//         // client.users.fetch(id)).username
-//         if (message.member!.roles.cache.has('719936221572235295')) {
-//             for (let i = 0; i < signup.users.length; i++) {
-//
-//                 if (signup.users[i].includes(id)) {
-//                     return await message.reply(`This person is in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-//                 }
-//             }
-//             return message.reply("They are not in a group");
-//         }
-//
-//         else {
-//             if (id !== message.author.id) {
-//                 return message.reply("You don't have those premissions");
-//             }
-//             else {
-//                 for (let i = 0; i < signup.users.length; i++) {
-//
-//                     if (signup.users[i].includes(id)) {
-//                         return await message.reply(`You are in <#${message.guild!.channels.cache.find(channel => channel.name === `group-${i + 1}`)!.id}>`);
-//                     }
-//                 }
-//                 return message.reply("They are not in a group");
-//             }
-//         }
-//     }
-// };
 
 export async function QualifierResults(channel: TextChannel, client: Client, ids: string[]) {
     let msgArr: Message[] = [];
@@ -202,13 +187,16 @@ export async function QualifierResults(channel: TextChannel, client: Client, ids
         f.name = (await client.users.fetch(f.name)).username;
     }
 
-    return {
-        title: `Final Results for Group ${channel.name}`,
-        description: `Players with highest move on`,
-        fields: finalResults,
-        color: "#d7be26",
-        timestamp: new Date()
-    };
+    return new MessageEmbed()
+        .setTitle(`Final Results for Group ${channel.name}`)
+        .setDescription(`Players with highest move on`)
+        .setFields(
+            //@ts-ignore
+            finalResults
+        )
+        .setColor(`#${(await getConfig()).colour}`)
+        .setTimestamp(new Date())
+        ;
 }
 
 export const qual_winner: Command = {
@@ -218,8 +206,10 @@ export const qual_winner: Command = {
     owner: false,
     admins: false,
     mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
     async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
-        let ids: string[] = (message.mentions?.users?.array().map(a => a.id).length >= 1 ? message.mentions?.users?.array().map(a => a.id) : args);
+        let ids: string[] = ([...message.mentions.users.values()].map(a => a.id).length >= 1 ? [...message.mentions.users.values()].map(a => a.id) : args);
         let list: MatchList = await getDoc('config', "matchlist");
 
         if (list) {
@@ -248,7 +238,7 @@ export const qual_winner: Command = {
                 }
             }
             await updateDoc('config', list._id, list);
-            if (message.mentions.users.array().map(a => a.id).length >= 1) {
+            if ([...message.mentions.users.values()].map(a => a.id).length >= 1) {
                 return message.reply("Added users.");
             }
 
@@ -259,3 +249,123 @@ export const qual_winner: Command = {
         }
     }
 };
+
+export const signupToMatchList: Command = {
+    name: "sml",
+    description: "!sml <@mentions>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let ids: Signups= await getDoc("config", "signups")
+        let list: MatchList = await getDoc('config', "matchlist");
+
+        if (list) {
+            list.users = ids.users;
+            list.url = "";
+            await updateDoc('config', list._id, list);
+
+            return message.reply("Done transfer.");
+        }
+    }
+};
+
+export const removeQualWinner: Command = {
+    name: "rqw",
+    description: "!rqw <@mentions>",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:false,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[], owner: "2", silentargs: string[]) {
+        let ids: string[] = ([...message.mentions.users.values()].map(a => a.id).length >= 1 ? [...message.mentions.users.values()].map(a => a.id) : args);
+        let list: MatchList = await getDoc('config', "matchlist");
+
+        if (list) {
+            let index = list.users.indexOf(ids[0]);
+
+            if (index === -1) return message.reply("User is not in list");
+
+            list.users.splice(index, 1)
+            await updateDoc('config', list._id, list);
+
+            try{
+                let u = await getProfile(ids[0]);
+                u.wins -= 1;
+                u.points -= 25;
+                await updateProfile(u);
+            } catch {
+                console.log("No profile.")
+            }
+
+            message.channel.send(`<@${message.author.id}>, Removed <@${ids[0]}>.`);
+            return;
+        }
+    }
+};
+
+export const addQualReminders: Command = {
+    name: "aqr",
+    description: "!aqr",
+    group: "quals",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand: false,
+    serverOnlyCommand: true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let qualifiers = []
+        
+        let firstReminder = (await getAllReminders()).filter(x => x.type === "match")[0]
+        console.log(firstReminder)
+    
+        let catChannels = [...message!.guild!.channels.cache.values()]
+            .filter(x => x!.parent !== null && x!.parent.name.toLowerCase() === "qualifiers")
+        let qList: QualList = await getDoc("config", "quallist");
+    
+        for (let channel of catChannels) {
+        
+            try {
+                let r = firstReminder
+                
+                let Null = await getReminder(channel.id)
+                
+                if (!Null) {
+                    qualifiers.push(`<#${channel.id}> `)
+                    r._id = channel.id
+                    r.channel = channel.id
+                    r.mention = qList.users[parseInt(channel.name.toLowerCase().replace("group-", "")) - 1]
+                        .map(i => "<@" + i + ">")
+                        .join(" ")
+                    await insertReminder(r)
+                    
+                }
+        
+                else {
+                    continue;
+                }
+            
+            } catch {
+            
+            }
+        }
+        
+        return message.reply(`These channels got reminders: ${qualifiers}`)
+    },
+};
+
+export default [
+    addQualReminders,
+    forcevote_qual,
+    qual_result_sum,
+    qual_stats,
+    qual_winner,
+    reload_qual,
+    removeQualWinner,
+    signupToMatchList
+]

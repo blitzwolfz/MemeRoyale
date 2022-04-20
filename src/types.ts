@@ -1,4 +1,5 @@
-import type { Client, Message } from "discord.js";
+import type { ApplicationCommandPermissionData, Client, Message } from "discord.js";
+import type { ApplicationCommandData, CommandInteraction } from "discord.js";
 
 export interface Command {
     name: string
@@ -9,9 +10,16 @@ export interface Command {
     owner: boolean;
     admins: boolean;
     mods: boolean;
+    slashCommand:boolean;
+    serverOnlyCommand:boolean;
 
     // Making `args` optional
     execute(message: Message, client: Client, args?: string[], ownerID?: string, silentargs?: string[]): Promise<any>;
+
+    // Slash Commands
+    slashCommandFunction?(interaction: CommandInteraction, client: Client): Promise<any>;
+    slashCommandData?: ApplicationCommandData[];
+    slashCommandPermissions?: ApplicationCommandPermissionData[];
 }
 
 export interface config {
@@ -136,6 +144,12 @@ export interface DuelProfile {
     points: number;
     wins: number;
     loss: number;
+}
+
+export interface CockProfile {
+    _id:string,
+    value: number,
+    timestamp: number,
 }
 
 export interface Contest {
