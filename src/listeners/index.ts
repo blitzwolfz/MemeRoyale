@@ -1,4 +1,4 @@
-import { ApplicationCommandData, Client, Collection, CommandInteraction, Intents, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
+import { Client, Collection, CommandInteraction, Intents, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
 import { connectToDB, dBCollectionCounter, getConfig, getDoc,
     getMatch, getProfile, getQual, getTemplatedB, getThemes,
     updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "../db";
@@ -10,8 +10,7 @@ import { backgroundExhibitionLoop } from "../commands/exhibition/background";
 import { backgroundReminderLoop } from "../commands/reminders";
 import { interactionButtonsCommand } from "./interactions/buttons";
 import { qual_winner } from "../commands/quals/utils";
-import type { Profile } from "../types";
-import type { AutoCommands } from "../types";
+import type { Profile, AutoCommands } from "../types";
 
 export const client: Client = new Client({
     intents: [
@@ -99,40 +98,41 @@ client.once("ready", async () => {
     console.log(`Logged in as ${client.user?.tag}\nPrefix is ${prefix}`);
     console.log(`In ${client.guilds.cache.size} servers\nTotal users is ${client.users.cache.size}\n\n`);
 
-    if (!process.env.dev) {
-        let data:ApplicationCommandData[] = [];
+    // Disabled Slash commands from 2022-05-09
+    // if (!process.env.dev) {
+    //     let data:ApplicationCommandData[] = [];
 
-        for(let c of cmd){
-            if(c.slashCommand) {
-                if(c.slashCommandData) {
-                    if(data.length !== 0) data = data.concat(c.slashCommandData)
-                    //@ts-ignore
-                    else data.push(c.slashCommandData)
-                }
-            }
-        }
+    //     for(let c of cmd){
+    //         if(c.slashCommand) {
+    //             if(c.slashCommandData) {
+    //                 if(data.length !== 0) data = data.concat(c.slashCommandData)
+    //                 //@ts-ignore
+    //                 else data.push(c.slashCommandData)
+    //             }
+    //         }
+    //     }
 
-        let setSlashCommands = await client.guilds.cache.get('719406444109103117')!.commands.set(data.flat(1));
+    //     let setSlashCommands = await client.guilds.cache.get('719406444109103117')!.commands.set(data.flat(1));
 
-        for(let s of setSlashCommands.values()) {
-            let command = cmd.find(c => {
-                if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
-                    return (c.aliases?.includes(s.name.toLowerCase()!)
-                        || c.name.toLowerCase() === s.name.toLowerCase()!);
-                }
-                else {
-                    return c.name.toLowerCase() === s.name.toLowerCase()!;
-                }
-            });
+    //     for(let s of setSlashCommands.values()) {
+    //         let command = cmd.find(c => {
+    //             if (typeof (c.aliases!) !== 'undefined' && c.aliases!.length > 0) {
+    //                 return (c.aliases?.includes(s.name.toLowerCase()!)
+    //                     || c.name.toLowerCase() === s.name.toLowerCase()!);
+    //             }
+    //             else {
+    //                 return c.name.toLowerCase() === s.name.toLowerCase()!;
+    //             }
+    //         });
 
-            if(!command) continue;
-            if(!command.slashCommand) continue;
-            if(!command.slashCommandData) continue;
-            if(!command.slashCommandPermissions) continue;
+    //         if(!command) continue;
+    //         if(!command.slashCommand) continue;
+    //         if(!command.slashCommandData) continue;
+    //         if(!command.slashCommandPermissions) continue;
 
-            await s.permissions.add({permissions: command.slashCommandPermissions})
-        }
-    }
+    //         await s.permissions.add({permissions: command.slashCommandPermissions})
+    //     }
+    // }
 
     await client.user!.setActivity(`${((await getConfig()).status)}`);
     await client.user!.setStatus('dnd');

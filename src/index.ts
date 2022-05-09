@@ -67,11 +67,6 @@ client.on("messageCreate", async message => {
     }
 
     if (commandName === "test") {
-        let c = <TextChannel>client.channels.cache.get(r.channel);
-
-        let m = (await c.messages.fetch({limit: 100})).last()!;
-
-        let arr = r.mention.match(/\d+/g)!;
         
         //Always
         return;
@@ -235,16 +230,16 @@ async function runCommand(command: Command, message: Message, client: Client, ar
                 return message.reply("You are not allowed to use this command");
             }
 
-        } catch (error) {
-            message.channel.send(<string>await commandError(message, client, error, true, error));
+        } catch (err) {
+            message.channel.send(<string>await commandError(message, client, err, true, err));
         }
     }
     else {
         try {
             await command.execute(message, client, args);
 
-        } catch (error) {
-            message.channel.send(<string>await commandError(message, client, error, true, error));
+        } catch (err) {
+            message.channel.send(<string>await commandError(message, client, err, true, err));
         }
     }
 }

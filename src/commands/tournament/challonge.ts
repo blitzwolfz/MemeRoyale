@@ -385,7 +385,7 @@ export const testerChallonge: Command = {
             apiKey: process.env.CHALLONGE
         });
 
-        let matchlist: MatchList = await getDoc("config", "matchlist");
+        // let matchlist: MatchList = await getDoc("config", "matchlist");
 
         //@ts-ignore
         await cclient.matches.index({
