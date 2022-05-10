@@ -209,7 +209,7 @@ export const unsignup: Command = {
     admins: false,
     mods: false,
     slashCommand:false,
-    serverOnlyCommand:true,
+    serverOnlyCommand:false,
     async execute(message: Message, client: Client, args: string[]) {
         let signup: Signups = await getDoc("config", "signups");
 

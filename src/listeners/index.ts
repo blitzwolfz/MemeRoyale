@@ -134,8 +134,8 @@ client.once("ready", async () => {
     //     }
     // }
 
-    await client.user!.setActivity(`${((await getConfig()).status)}`);
-    await client.user!.setStatus('dnd');
+    client.user!.setActivity(`${((await getConfig()).status)}`);
+    client.user!.setStatus("dnd");
 });
 
 client.on("guildMemberAdd", async function (member) {

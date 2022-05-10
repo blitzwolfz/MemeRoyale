@@ -10,6 +10,7 @@ import { fetchManyMessages } from "./commands/util";
 import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
 import { client } from "./listeners/index";
 import type { Command, levelProfile, Signups } from "./types";
+import { writeFileSync, readFileSync } from "fs";
 
 export const cmd = allCommands.default;
 export let prefix: string = process.env.prefix!;
@@ -90,18 +91,45 @@ client.on("messageCreate", async message => {
         return;
     }
     
-    if (commandName === "bitch2") {
+    if (commandName === "signup-copy") {
         //@ts-ignore
-        let oldSignup: Signups = await getDoc("config", "oldsignups");
-    
-        let signup: Signups = await getDoc("config", "signups");
-    
-        let difference = signup.users.filter(x => !oldSignup.users.includes(x));
+        let oldSignup: Signups = await getDoc("config", "signups");
         
-        for (let u of difference) {
-            await message.channel.send(`<@${u}>`)
+        for (let id of oldSignup.users) {
+            let u = await client.users.cache.get(id);
+
+            if (!u) continue;
+
+            await message.channel.send(`ID: ${u.id} | Tag:${u.tag} | <@${u.id}>`)
+        }
+
+        let arr: {id:string, tag:string}[] = [];
+
+        for (let id of oldSignup.users) {
+            let u = await client.users.cache.get(id);
+
+            if (!u) continue;
+
+            arr.push({id:u.id, tag:u.tag});
+        }
+
+        let u2 = {
+            "data":arr
         }
         
+        let json = JSON.stringify(u2);
+
+        //@ts-ignore
+        await writeFileSync('./signup.json', json, 'utf8', function (err:Error) {
+          if (err) return console.log(err);
+        })
+
+        const buffer = readFileSync("./signup.json");
+        const attachment = new MessageAttachment(buffer, 'signup.json');
+
+        await message.channel.send({attachments:[attachment]});
+
+
         return;
     }
     
