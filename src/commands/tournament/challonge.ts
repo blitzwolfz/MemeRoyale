@@ -771,7 +771,8 @@ export default [
     matchbracket,
     channelDelete,
     manualCreateChannels,
-    testerChallonge
+    testerChallonge,
+    bracketBulkName
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });
