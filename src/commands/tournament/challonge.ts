@@ -4,7 +4,7 @@ import type { Command, MatchList, QualList } from "../../types";
 import { matchcard } from "../match/utils";
 import { commissionerDefaultSlashPermissions, refDefaultSlashPermissions } from "../util";
 
-const challonge = require("challonge-js");
+const challonge = require("challonge");
 
 export const createChannels: Command = {
     name: "createchannels",
@@ -61,7 +61,7 @@ export const createChannels: Command = {
                 return message.reply("Please input round number and how long the round is!");
             }
             else {
-
+                console.log("check 1")
                 let names: { str: string, id: string }[] = [];
 
                 let match: MatchList = await getDoc("config", "matchlist");
@@ -80,6 +80,8 @@ export const createChannels: Command = {
                     // disclient.users.fetch(i)).username), i])
                 }
 
+                console.log("check 2")
+
                 const cclient = challonge.createClient({
                     apiKey: process.env.CHALLONGE
                 });
@@ -92,8 +94,10 @@ export const createChannels: Command = {
                         if (err) console.log(err);
 
                         for (let d of data) {
+                            console.log(data)
                             if (d.match.round === parseInt(args[0])) {
                                 if (d.match.player1Id === null || d.match.player2Id === null) continue;
+                                console.log("check 3")
 
                                 let channelstringname: string = "", name1: string = "", name2: string = "";
 
@@ -165,6 +169,7 @@ export const createChannels: Command = {
                     }
                 });
             }
+            console.log("check 2")
             return message.reply("Made all Match Channels");
         }
     },
@@ -460,6 +465,75 @@ export const manualCreateChannels: Command = {
                 }
 
             });
+    }
+};
+
+export const bulkManualCreateChannels: Command = {
+    name: "bulkmcc",
+    description: "!bulkmcc <time in hours to complete> <position number> <@mentions>",
+    aliases:["bmcc"],
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:true,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+        let arr = [];
+
+        for(var i = 0; i < [...await message.mentions.users.values()].length; i += 2) {
+            arr.push([...await message.mentions.users.values()].slice(i, i + 2));
+        }
+
+        let ipos = 1;
+        
+        for (let a of arr) {
+            let u1 = a[0];
+            let u2 = a[a.length-1]!
+    
+            let channelStringName = `${u1.username.substring(0, 10)}-vs${u2.username.substring(0, 10)}`
+            let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "GUILD_CATEGORY")!;
+    
+            await message.guild!.channels.create(channelStringName, {
+                type: 'GUILD_TEXT', topic: `48h to complete`,
+                position:ipos, parent:category.id})
+                .then(async channel => {
+    
+                    await insertReminder({
+                        _id: channel.id,
+                        mention: `<@${u1.id}> <@${u2.id}>`,
+                        channel: channel.id,
+                        type: "match",
+                        time: [
+                            172800,
+                            165600,
+                            129600,
+                            86400
+                        ],
+                        timestamp: Math.floor(Date.now() / 1000),
+                        basetime: 172800
+                    });
+                    try{
+                        let image = await matchcard(client, channel.id, [
+                            u1.id,
+                            u2.id
+                        ]).catch();
+                        await channel
+                            .send({
+                                content:`<@${u1.id}> <@${u2.id}> You have ${args[0]}h to complete this match. Contact a ref to begin, you may also split your match`,
+                                files:[
+                                    image
+                                ]
+                            });
+                    } catch (error) {
+                        await message.channel.send(`${channelStringName} no Match card`)
+                        await message.channel.send(error.stack)
+                        await message.channel.send(error.message)
+                    }
+    
+                });
+            ipos++;
+        }
     }
 };
 
@@ -772,7 +846,8 @@ export default [
     channelDelete,
     manualCreateChannels,
     testerChallonge,
-    bracketBulkName
+    bracketBulkName,
+    bulkManualCreateChannels
 ].sort(function keyOrder(k1, k2) {
     if (k1.name < k2.name) return -1; else if (k1.name > k2.name) return 1; else return 0;
 });

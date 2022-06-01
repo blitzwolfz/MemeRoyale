@@ -19,6 +19,7 @@
     "canvas": "^2.6.1",
     "challonge": "^2.2.0",
     "challonge-js": "^1.1.1",
+    "challonge-node": "^1.0.2",
     "discord.js": "13.4.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
