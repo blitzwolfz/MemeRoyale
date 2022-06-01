@@ -491,7 +491,7 @@ export const bulkManualCreateChannels: Command = {
             let u1 = a[0];
             let u2 = a[a.length-1]!
     
-            let channelStringName = `${u1.username.substring(0, 10)}-vs${u2.username.substring(0, 10)}`
+            let channelStringName = `${u1.username.substring(0, 10)}-vs-${u2.username.substring(0, 10)}`
             let category = await message.guild!.channels.cache.find(c => c.name == "matches" && c.type == "GUILD_CATEGORY")!;
     
             await message.guild!.channels.create(channelStringName, {
