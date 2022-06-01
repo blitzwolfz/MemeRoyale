@@ -4,7 +4,7 @@ import type { Command, MatchList, QualList } from "../../types";
 import { matchcard } from "../match/utils";
 import { commissionerDefaultSlashPermissions, refDefaultSlashPermissions } from "../util";
 
-const challonge = require("challonge-js");
+const challonge = require("challonge");
 
 export const createChannels: Command = {
     name: "createchannels",
