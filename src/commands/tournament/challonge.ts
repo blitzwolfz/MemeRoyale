@@ -722,9 +722,9 @@ export const channelDelete: Command = {
     ]
 };
 
-export const matchbracket: Command = {
-    name: "createbracket",
-    description: "Will make bracket",
+export const bracketBulkName: Command = {
+    name: "bracketnamebulk",
+    description: "Will give all names",
     group: "tournament-manager",
     owner: false,
     admins: false,
