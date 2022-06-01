@@ -555,6 +555,8 @@ export const matchbracket: Command = {
                     console.log(err);
                 }
             });
+
+            console.log(name)
         }
 
         matchlist.url = `${matchid}`;
