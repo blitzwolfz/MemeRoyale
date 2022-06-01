@@ -722,6 +722,49 @@ export const channelDelete: Command = {
     ]
 };
 
+export const matchbracket: Command = {
+    name: "createbracket",
+    description: "Will make bracket",
+    group: "tournament-manager",
+    owner: false,
+    admins: false,
+    mods: true,
+    slashCommand:true,
+    serverOnlyCommand:true,
+    async execute(message: Message, client: Client, args: string[]) {
+
+        let matchlist: MatchList = await getDoc("config", "matchlist");
+
+        let randrun = Math.floor(Math.random() * 10) + 1;
+
+        while (randrun !== 0) {
+            for (let i = matchlist.users.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [
+                    matchlist.users[i],
+                    matchlist.users[j]
+                ] = [
+                    matchlist.users[j],
+                    matchlist.users[i]
+                ];
+            }
+            randrun--
+        }
+
+        let s = "";
+
+        for (let i = 0; i < matchlist.users.length; i++) {
+            let name = (await client.users.fetch(matchlist.users[i])).username;
+
+            s += name + ",\n";
+            
+            console.log(name)
+        }
+
+        return message.reply(s);
+    }
+};
+
 export default [
     createChannels,
     qualchannelcreate,
