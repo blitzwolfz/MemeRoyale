@@ -206,7 +206,7 @@ client.on("messageCreate", async message => {
     if (command) {
 
         if (!command.serverOnlyCommand || (command.serverOnlyCommand && message.guild!.id === "719406444109103117")) {
-            console.log("Running Command")
+            console.log("Running Command: %s", command.name)
             await runCommand(command, message, client, args);
         }
 
