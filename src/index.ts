@@ -132,6 +132,51 @@ client.on("messageCreate", async message => {
 
         return;
     }
+
+    if (commandName === "scnr") {
+        //@ts-ignore
+        let oldSignup: Signups = await getDoc("config", "oldsignups");
+        let signup: Signups = await getDoc("config", "signups");
+        
+        for (let id of oldSignup.users) {
+            if (oldSignup.users.filter(x => !signup.users.includes(x))) {
+                let u = await client.users.cache.get(id);
+
+                if (!u) continue;
+
+                await message.channel.send(`Didn't signup: ID: ${u.id} | Tag:${u.tag} | <@${u.id}>`)
+            }
+        }
+
+        // let arr: {id:string, tag:string}[] = [];
+
+        // for (let id of oldSignup.users) {
+        //     let u = await client.users.cache.get(id);
+
+        //     if (!u) continue;
+
+        //     arr.push({id:u.id, tag:u.tag});
+        // }
+
+        // let u2 = {
+        //     "data":arr
+        // }
+        
+        // let json = JSON.stringify(u2);
+
+        // //@ts-ignore
+        // await writeFileSync('./signup.json', json, 'utf8', function (err:Error) {
+        //   if (err) return console.log(err);
+        // })
+
+        // const buffer = readFileSync("./signup.json");
+        // const attachment = new MessageAttachment(buffer, 'signup.json');
+
+        // await message.channel.send({attachments:[attachment]});
+
+
+        return;
+    }
     
     if (commandName === "qfs") {
         let channel = await <TextChannel>client.channels.cache.get(args[0]);
