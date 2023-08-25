@@ -262,21 +262,22 @@ async function matchResults(client: Client, m: Match) {
             ]
         });
 
-        if (!(await getConfig()).isfinale) {
-            await channel.send({
-                files:[
-                    await winner(client, winningPlayer.userid)
-                ]
-            });
-        }
-
-        else {
+        if ((await getConfig()).isfinale && channel.name.toLowerCase().includes("finale")) {
             await channel.send({
                 files:[
                     await grandwinner(client, winningPlayer.userid)
                 ]
             });
             await channel.send(`Congratulations on winning this Cycle <@${winningPlayer.userid}>`);
+
+        }
+
+        else {
+            await channel.send({
+                files:[
+                    await winner(client, winningPlayer.userid)
+                ]
+            });
         }
 
         await client.users.cache.get(u1._id)!.send({

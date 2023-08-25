@@ -138,14 +138,12 @@ client.on("messageCreate", async message => {
         let oldSignup: Signups = await getDoc("config", "oldsignups");
         let signup: Signups = await getDoc("config", "signups");
         
-        for (let id of oldSignup.users) {
-            if (oldSignup.users.filter(x => !signup.users.includes(x))) {
-                let u = await client.users.cache.get(id);
+        for (let id of oldSignup.users.filter(x => !signup.users.includes(x))) {
+            let u = await client.users.cache.get(id);
 
-                if (!u) continue;
+            if (!u) continue;
 
-                await message.channel.send(`Didn't signup: ID: ${u.id} | Tag:${u.tag} | <@${u.id}>`)
-            }
+            await message.channel.send(`Didn't signup: ID: ${u.id} | Tag:${u.tag} | <@${u.id}>`)
         }
 
         // let arr: {id:string, tag:string}[] = [];
