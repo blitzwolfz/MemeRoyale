@@ -1,7 +1,0 @@
-src
-oldIndex.ts
-oldindex.txt
-README.md
-.gitignore
-tsconfig.json
-./dist/tsconfig.tsbuildinfo
