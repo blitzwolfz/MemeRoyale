@@ -1,5 +1,4 @@
-import type { ApplicationCommandPermissionData, Client, Message } from "discord.js";
-import type { ApplicationCommandData, CommandInteraction } from "discord.js";
+import type { ApplicationCommandPermissionData, Client, CommandInteraction, Message } from "discord.js";
 
 export interface Command {
     name: string
@@ -122,6 +121,7 @@ export interface Reminder {
 
 export interface Profile {
     _id: string;
+    img: string;
     votetally: number;
     points: number;
     wins: number;
