@@ -1,1 +1,49 @@
-<HTML><HEAD> <TITLE>Hey!</TITLE></HEAD><BODY> <h2>Hello there</h2> <IMG SRC="https://cdn.discordapp.com/attachments/722306381893599242/855600330405838849/catping.gif"></BODY></HTML>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Add your CSS styles here -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Enter User ID">
+            <button id="search-button">Search</button>
+        </div>
+        <div class="profile-section">
+            <div class="profile-image">
+                <img src="profile-image-link.jpg" alt="Profile Picture">
+            </div>
+            <div class="profile-stats">
+                <div class="stat">
+                    <span class="stat-label">Wins:</span>
+                    <span class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Losses:</span>
+                    <span class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Total Matches:</span>
+                    <span class="stat-value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Win Rate:</span>
+                    <span class="stat-value">0%</span>
+                </div>
+                <div class="signup-button">
+                    <button id="signup-button" disabled>Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include your JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
