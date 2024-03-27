@@ -3,11 +3,12 @@ import express from "express";
 import { closest } from "fastest-levenshtein";
 import http from "http";
 import * as path from "path";
+import * as fs from 'fs';
 import { app } from "./api/router";
 import * as allCommands from "./commands/index";
 import { draw, levelCalc } from "./commands/levelsystem";
 import { fetchManyMessages } from "./commands/util";
-import { getConfig, getDoc, insertDoc, updateDoc } from "./db";
+import { getAllProfiles, getConfig, getDoc, insertDoc, insertProfile, updateDoc, updateProfile } from "./db";
 import { client } from "./listeners/index";
 import type { Command, levelProfile, Signups } from "./types";
 import { writeFileSync, readFileSync } from "fs";
@@ -68,7 +69,17 @@ client.on("messageCreate", async message => {
     }
 
     if (commandName === "test") {
-        
+        let users = await getAllProfiles();
+        const jsonData = JSON.stringify(users);
+        const filePath = './profiles.json';
+
+        try {
+        // Write the JSON data to the file
+        fs.writeFileSync(filePath, jsonData, 'utf-8');
+        console.log('Data saved to JSON file successfully.');
+        } catch (error) {
+        console.error('Error saving data to JSON file:', error);
+        }
         //Always
         return;
     }

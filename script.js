@@ -1,57 +1,68 @@
-import { getProfile } from './dist/db.js';
-
-$(document).ready(async function() {
-    // Function to handle the user search
-    async function searchUser() {
-        // Get the input value from the search bar
-        let searchTerm = $('#search-input').val();
-    
-        // Assuming you have a function called getUserData that returns user data as JSON
-        let userData = await getProfile(searchTerm);
-    
-        // Update the profile information with the retrieved data
-        $('.profile-image img').attr('src', userData.profileImage);
-        $('.stat-value').eq(0).text(userData.wins);
-        $('.stat-value').eq(1).text(userData.losses);
-        $('.stat-value').eq(2).text((userData.wins + userData.losses));
-        $('.stat-value').eq(3).text((userData.wins / (userData.wins + userData.losses)));
-    
-        // Toggle the "Sign Up" button based on a boolean value
-        let isSignUpEnabled = userData.isSignUpEnabled;
-        toggleSignUpButton(isSignUpEnabled);
-    }    
-
-    // Function to enable or disable the "Sign Up" button
-    function toggleSignUpButton(enabled) {
-        if (enabled) {
-            $('#signup-button').removeAttr('disabled');
-        } else {
-            $('#signup-button').attr('disabled', 'disabled');
+$(document).ready(function() {
+    function loadDefaultUser() {
+      // Load the JSON data from the default-profile.json file
+      $.ajax({
+        url: './default.json', // Adjust the path to your default profile JSON file
+        dataType: 'json',
+        success: function(defaultUserData) {
+          // Update the profile information with the default data
+          console.log(defaultUserData);
+          $('.profile-image img').attr('src', defaultUserData.img.replace('webp', 'jpg'));
+          $('.stat-value').eq(0).text(defaultUserData.wins);
+          $('.stat-value').eq(1).text(defaultUserData.loss);
+          $('.stat-value').eq(2).text(defaultUserData.wins + defaultUserData.loss);
+          $('.stat-value').eq(3).text(((defaultUserData.wins / (defaultUserData.wins + defaultUserData.loss)) * 100).toFixed(2) + '%');
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading default JSON:', status, error);
         }
+      });
     }
-
-    // Bind the searchUser function to the click event of the search button
-    $('#search-button').click(async function() {
-        await searchUser();
-    });
-
-    // You can also trigger the search when the user presses Enter in the input field
-    $('#search-input').keypress(async function(event) {
-        if (event.which === 13) { // Enter key pressed
-            await searchUser();
+  
+    function searchUser() {
+      let searchTerm = $('#search-input').val();
+  
+      $.ajax({
+        url: './profiles.json',
+        dataType: 'json',
+        success: function(data) {
+          let userData = data.find(profile => profile._id === searchTerm);
+  
+          if (userData) {
+            console.log(userData);
+            $('.profile-image img').attr('src', userData.img.replace('webp', 'jpg'));
+            $('.stat-value').eq(0).text(userData.wins);
+            $('.stat-value').eq(1).text(userData.loss);
+            $('.stat-value').eq(2).text((userData.wins + userData.loss));
+            $('.stat-value').eq(3).text(((userData.wins / (userData.wins + userData.loss)) * 100).toFixed(2) + '%');
+          } else {
+            alert('Profile not found.');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading JSON:', status, error);
         }
+      });
+    }
+  
+    // Load the default user when the page loads
+    loadDefaultUser();
+  
+    $('#search-button').click(function() {
+      searchUser();
     });
-
-    // Event handler for the "Sign Up" button click
+  
+    $('#search-input').keypress(function(event) {
+      if (event.which === 13) {
+        searchUser();
+      }
+    });
+  
     $('#signup-button').click(function() {
-        if ($('#signup-button').prop('disabled')) {
-            // Button is disabled, do nothing
-            return;
-        }
-
-        // Perform signup action here (e.g., send notification)
-        alert('Sign up successful!');
+      if ($('#signup-button').prop('disabled')) {
+        return;
+      }
+      alert('Sign up successful!');
     });
-
-    // ...
-});
+  });
+  

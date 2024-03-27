@@ -22,7 +22,7 @@ export const create_profile: Command = {
         else {
 
             await insertProfile({
-                _id: message.author.id, totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0, voteDM:true,
+                _id: message.author.id, img: message.author.displayAvatarURL(), totalMemes: 0, totalTime: 0, votetally: 0, points: 0, wins: 0, loss: 0, voteDM:true,
             });
 
 

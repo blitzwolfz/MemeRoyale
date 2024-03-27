@@ -209,7 +209,7 @@ export async function updateProfile(u: Profile): Promise<void> {
     await dB.collection("users").updateOne({_id: u._id}, {$set: u})!;
 }
 
-export async function getAllProfiles<t>(): Promise<t[]> {
+export async function getAllProfiles<t>(): Promise<Profile[]> {
     return dB.collection("users").find({}).toArray();
 }
 
