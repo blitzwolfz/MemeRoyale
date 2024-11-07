@@ -1,41 +1,62 @@
-import { Client, Collection, CommandInteraction, Intents, MessageAttachment, MessageReaction, TextChannel } from "discord.js";
-import { connectToDB, dBCollectionCounter, getConfig, getDoc,
-    getMatch, getProfile, getQual, getTemplatedB, getThemes,
-    updateMatch, updateProfile, updateQual, updateTemplatedB, updateThemedB } from "../db";
-import { autoRunCommandLoop } from "../commands/jointcommands";
-import { cmd, prefix } from "../index";
-import { backgroundMatchLoop } from "../commands/match/background";
-import { backgroundQualLoop } from "../commands/quals/background";
-import { backgroundExhibitionLoop } from "../commands/exhibition/background";
-import { backgroundReminderLoop } from "../commands/reminders";
-import { interactionButtonsCommand } from "./interactions/buttons";
-import { qual_winner } from "../commands/quals/utils";
-import type { Profile, AutoCommands } from "../types";
+import {
+    AttachmentBuilder,
+    Client,
+    Collection,
+    CommandInteraction,
+    GatewayIntentBits,
+    MessageReaction,
+    Partials,
+    TextChannel
+} from "discord.js";
+import {
+    connectToDB,
+    dBCollectionCounter,
+    getConfig,
+    getDoc,
+    getMatch,
+    getProfile,
+    getQual,
+    getTemplatedB,
+    getThemes,
+    updateMatch,
+    updateProfile,
+    updateQual,
+    updateTemplatedB,
+    updateThemedB
+} from "../db";
+import {autoRunCommandLoop} from "../commands/jointcommands";
+import {cmd, prefix} from "../index";
+import {backgroundMatchLoop} from "../commands/match/background";
+import {backgroundQualLoop} from "../commands/quals/background";
+import {backgroundExhibitionLoop} from "../commands/exhibition/background";
+import {backgroundReminderLoop} from "../commands/reminders";
+import {interactionButtonsCommand} from "./interactions/buttons";
+import {qual_winner} from "../commands/quals/utils";
+import type {AutoCommands, Profile} from "../types";
 
 export const client: Client = new Client({
     intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_BANS,
-        Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
-        Intents.FLAGS.GUILD_INTEGRATIONS,
-        Intents.FLAGS.GUILD_WEBHOOKS,
-        Intents.FLAGS.GUILD_INVITES,
-        Intents.FLAGS.GUILD_VOICE_STATES,
-        Intents.FLAGS.GUILD_PRESENCES,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_MESSAGE_TYPING,
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-        Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildBans,
+        GatewayIntentBits.GuildEmojisAndStickers,
+        GatewayIntentBits.GuildIntegrations,
+        GatewayIntentBits.GuildWebhooks,
+        GatewayIntentBits.GuildInvites,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMessageTyping,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.DirectMessageTyping,
     ],
     allowedMentions: {
         parse: ['users', 'roles', 'everyone'],
         repliedUser: true
     },
-    partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"],
-    restRequestTimeout: 90000,
+    partials: [Partials.User, Partials.Channel, Partials.GuildMember, Partials.Message, Partials.Reaction],
 });
 
 client.once("ready", async () => {
@@ -162,9 +183,9 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
     if (user.bot) return;
     if(!messageReaction.emoji.name) return;
 
-    if (messageReaction.partial === true) messageReaction = await messageReaction.fetch();
-    if (messageReaction.message.partial === true) await messageReaction.message.fetch(true);
-    if (user.partial === true) user = await user.fetch(true);
+    if (messageReaction.partial) messageReaction = await messageReaction.fetch();
+    if (messageReaction.message.partial) await messageReaction.message.fetch(true);
+    if (user.partial) user = await user.fetch(true);
 
     if (messageReaction.emoji.name === "1️⃣" && await getMatch(messageReaction.message.channel.id)) {
         await messageReaction.users.remove(user.id);
@@ -441,7 +462,7 @@ client.on("messageReactionAdd", async (messageReaction, user) => {
                     await updateProfile(id);
                 }
 
-                let attach = new MessageAttachment(messageReaction.message.embeds[0].image!.url);
+                let attach = new AttachmentBuilder(messageReaction.message.embeds[0].image!.url);
 
                 (<TextChannel>await client.channels.fetch("724827952390340648")).send({content: "New template:", files:[attach]});
             }

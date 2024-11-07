@@ -3,32 +3,33 @@ import type { config, DuelProfile, exhibition, Match, Profile, Qual, Reminder } 
 //import { config } from "./types"
 require("dotenv").config();
 const url: string = process.env.dburl!;
-const client = new mongodb.MongoClient(url, {
-    useNewUrlParser: true, connectWithNoPrimary: false, useUnifiedTopology: true
-});
+const client = new mongodb.MongoClient(url);
 const dbn = process.env.dbname!;
-let dB: any;
+let dB: mongodb.Db;
 
 export async function connectToDB(): Promise<void> {
-    return await new Promise(resolve => {
-        client.connect(async (err: any) => {
-            if (err) throw err;
-            try {
-                await client.db(dbn).createCollection("users");
-                await client.db(dbn).createCollection("matches");
-                await client.db(dbn).createCollection("quals");
-                await client.db(dbn).createCollection("config");
-                await client.db(dbn).createCollection("reminders");
-                await client.db(dbn).createCollection("levels");
-                await client.db(dbn).createCollection("contest");
-            } catch (error) {
+    try {
+        await client.connect();
+        console.log("Successfully connected to MongoDB");
 
+        dB = client.db(dbn); // Replace with your actual database name
+        const existingCollections = await dB.listCollections().toArray();
+        const existingCollectionNames = existingCollections.map(col => col.name);
+
+        const collectionsToEnsure = ["users", "matches", "quals", "config", "reminders", "levels", "contest"];
+
+        for (const collection of collectionsToEnsure) {
+            if (!existingCollectionNames.includes(collection)) {
+                await dB.createCollection(collection);
+                console.log(`Collection '${collection}' created.`);
             }
-            console.log("Successfully connected");
-            await resolve();
-            dB = client.db(dbn);
-        });
-    });
+        }
+
+        console.log("Database setup complete.");
+    } catch (error) {
+        console.error("Error connecting to MongoDB or setting up collections:", error);
+        throw error;
+    }
 }
 
 //General db commands
